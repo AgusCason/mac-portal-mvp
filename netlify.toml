@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# El plugin oficial de Next.js para Netlify traduce automáticamente Server
+# Actions, Route Handlers, middleware/proxy e ISR a Netlify Functions/Edge
+# Functions — no hace falta configuración adicional de redirects.

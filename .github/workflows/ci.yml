@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    name: Lint · Typecheck · Reglas · Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+        env:
+          # Placeholders — el build no necesita credenciales reales, solo que
+          # las variables existan (ver .env.example).
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: placeholder-service-role-key
+          GOOGLE_SERVICE_ACCOUNT_EMAIL: placeholder@example.iam.gserviceaccount.com
+          GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nPLACEHOLDER\n-----END PRIVATE KEY-----\n"
+          GOOGLE_DRIVE_ROOT_FOLDER_ID: placeholder-folder-id
+          WHATSAPP_WEBHOOK_VERIFY_TOKEN: placeholder-token
+          ANTHROPIC_API_KEY: sk-ant-placeholder
+          ANTHROPIC_MODEL: claude-sonnet-4-5

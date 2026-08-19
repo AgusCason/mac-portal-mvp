@@ -1,0 +1,469 @@
+/**
+ * Tipos manuales alineados a supabase/migrations/*.sql.
+ * Si preferís tipos 100% generados, corré:
+ *   npx supabase gen types typescript --project-id <tu-project-id> > src/types/database.ts
+ * (requiere Supabase CLI y estar logueado: ver README.md)
+ */
+
+export type UserRole = "admin" | "editor" | "client";
+export type ClientStatus = "active" | "paused" | "churned";
+export type DriveFolderType = "crudos" | "en_edicion" | "entregables_finales";
+export type ContentNetwork =
+  | "instagram_reel"
+  | "instagram_feed"
+  | "instagram_story"
+  | "tiktok"
+  | "youtube_short"
+  | "youtube_long";
+export type ContentStatus =
+  | "borrador"
+  | "en_edicion"
+  | "por_aprobar"
+  | "requiere_cambios"
+  | "aprobado"
+  | "programado"
+  | "publicado";
+export type ContractStatus = "pendiente" | "firmado";
+export type MessageDirection = "inbound" | "outbound";
+export type SocialPlatform = "instagram" | "tiktok" | "youtube";
+export type PlanStatus = "active" | "paused" | "ended";
+export type AiMessageRole = "user" | "assistant" | "system";
+export type AiActionStatus = "proposed" | "confirmed" | "executed" | "rejected" | "failed";
+
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: UserRole;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  brand_name: string | null;
+  logo_url: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  status: ClientStatus;
+  drive_root_folder_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ClientMember {
+  client_id: string;
+  profile_id: string;
+  created_at: string;
+}
+
+export interface Plan {
+  id: string;
+  name: string;
+  description: string | null;
+  price_monthly: number;
+  currency: string;
+  features: string[];
+  created_at: string;
+}
+
+export interface ClientPlan {
+  id: string;
+  client_id: string;
+  plan_id: string;
+  price_override: number | null;
+  status: PlanStatus;
+  start_date: string;
+  end_date: string | null;
+  created_at: string;
+}
+
+export interface EditorClientAssignment {
+  id: string;
+  editor_id: string;
+  client_id: string;
+  can_view_chat: boolean;
+  can_view_drive: boolean;
+  assigned_by: string | null;
+  created_at: string;
+}
+
+export interface DriveFolder {
+  id: string;
+  client_id: string;
+  folder_type: DriveFolderType;
+  drive_folder_id: string;
+  created_at: string;
+}
+
+export interface ContentItem {
+  id: string;
+  client_id: string;
+  title: string;
+  description: string | null;
+  network: ContentNetwork;
+  status: ContentStatus;
+  scheduled_at: string | null;
+  drive_file_id: string | null;
+  thumbnail_url: string | null;
+  assigned_editor_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ContentComment {
+  id: string;
+  content_item_id: string;
+  author_id: string;
+  body: string;
+  timestamp_seconds: number | null;
+  created_at: string;
+}
+
+export interface Contract {
+  id: string;
+  client_id: string;
+  title: string;
+  file_url: string;
+  status: ContractStatus;
+  signed_at: string | null;
+  created_at: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  client_id: string;
+  sender_profile_id: string | null;
+  direction: MessageDirection;
+  body: string;
+  whatsapp_message_id: string | null;
+  created_at: string;
+}
+
+export interface SocialAccount {
+  id: string;
+  client_id: string;
+  platform: SocialPlatform;
+  external_account_id: string;
+  display_name: string | null;
+  connected_by: string | null;
+  connected_at: string;
+}
+
+export interface SocialMetric {
+  id: string;
+  social_account_id: string;
+  metric_date: string;
+  reach: number;
+  impressions: number;
+  engagement_rate: number;
+  followers: number;
+  plays: number;
+}
+
+export interface AiConversation {
+  id: string;
+  admin_id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AiMessage {
+  id: string;
+  conversation_id: string;
+  role: AiMessageRole;
+  content: string;
+  pending_action: AiProposedAction | null;
+  audit_log_id: string | null;
+  created_at: string;
+}
+
+export interface AiAuditLog {
+  id: string;
+  admin_id: string;
+  conversation_id: string | null;
+  action_type: string;
+  target_table: string | null;
+  target_id: string | null;
+  summary: string;
+  diff: Record<string, unknown>;
+  status: AiActionStatus;
+  error: string | null;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+/** Forma de una propuesta de cambio generada por el asistente (tool `propose_change`). */
+export interface AiProposedAction {
+  action_type: string;
+  target_table: string;
+  target_id: string;
+  summary: string;
+  payload: Record<string, unknown>;
+}
+
+// ---------------------------------------------------------------------------
+// Definición del cliente tipado de Supabase (Row/Insert/Update/Relationships
+// por tabla + Functions para las RPC security-definer). Ver postgrest-js
+// GenericSchema — Relationships solo necesita listar los FKs que realmente
+// usamos en `.select("*, tabla(...)")` a lo largo del código.
+// ---------------------------------------------------------------------------
+
+type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+// Los `interface` (Profile, Client, ...) no traen un index signature implícito,
+// así que TS los rechaza en los checks `extends Record<string, unknown>` que usa
+// postgrest-js internamente. `Flatten` los "aplana" a un object type literal
+// (mapped type) que sí cumple esa condición — sin esto, TODA la tabla cae a
+// `never` en silencio y cada `.insert()/.update()/.select()` deja de tipar.
+type Flatten<T> = { [K in keyof T]: T[K] };
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: Flatten<Profile>;
+        Insert: Flatten<Optional<Profile, "full_name" | "role" | "avatar_url" | "created_at">>;
+        Update: Flatten<Partial<Profile>>;
+        Relationships: [];
+      };
+      clients: {
+        Row: Flatten<Client>;
+        Insert: Flatten<
+          Optional<
+            Client,
+            | "id"
+            | "brand_name"
+            | "logo_url"
+            | "contact_email"
+            | "contact_phone"
+            | "status"
+            | "drive_root_folder_id"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<Client>>;
+        Relationships: [];
+      };
+      client_members: {
+        Row: Flatten<ClientMember>;
+        Insert: Flatten<Optional<ClientMember, "created_at">>;
+        Update: Flatten<Partial<ClientMember>>;
+        Relationships: [];
+      };
+      plans: {
+        Row: Flatten<Plan>;
+        Insert: Flatten<
+          Optional<Plan, "id" | "description" | "currency" | "features" | "created_at">
+        >;
+        Update: Flatten<Partial<Plan>>;
+        Relationships: [];
+      };
+      client_plans: {
+        Row: Flatten<ClientPlan>;
+        Insert: Flatten<
+          Optional<
+            ClientPlan,
+            "id" | "price_override" | "status" | "start_date" | "end_date" | "created_at"
+          >
+        >;
+        Update: Flatten<Partial<ClientPlan>>;
+        Relationships: [
+          {
+            foreignKeyName: "client_plans_plan_id_fkey";
+            columns: ["plan_id"];
+            isOneToOne: false;
+            referencedRelation: "plans";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      editor_client_assignments: {
+        Row: Flatten<EditorClientAssignment>;
+        Insert: Flatten<
+          Optional<
+            EditorClientAssignment,
+            "id" | "can_view_chat" | "can_view_drive" | "assigned_by" | "created_at"
+          >
+        >;
+        Update: Flatten<Partial<EditorClientAssignment>>;
+        Relationships: [
+          {
+            foreignKeyName: "editor_client_assignments_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "editor_client_assignments_editor_id_fkey";
+            columns: ["editor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      drive_folders: {
+        Row: Flatten<DriveFolder>;
+        Insert: Flatten<Optional<DriveFolder, "id" | "created_at">>;
+        Update: Flatten<Partial<DriveFolder>>;
+        Relationships: [];
+      };
+      content_items: {
+        Row: Flatten<ContentItem>;
+        Insert: Flatten<
+          Optional<
+            ContentItem,
+            | "id"
+            | "description"
+            | "status"
+            | "scheduled_at"
+            | "drive_file_id"
+            | "thumbnail_url"
+            | "assigned_editor_id"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<ContentItem>>;
+        Relationships: [
+          {
+            foreignKeyName: "content_items_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      content_comments: {
+        Row: Flatten<ContentComment>;
+        Insert: Flatten<Optional<ContentComment, "id" | "timestamp_seconds" | "created_at">>;
+        Update: Flatten<Partial<ContentComment>>;
+        Relationships: [];
+      };
+      contracts: {
+        Row: Flatten<Contract>;
+        Insert: Flatten<Optional<Contract, "id" | "status" | "signed_at" | "created_at">>;
+        Update: Flatten<Partial<Contract>>;
+        Relationships: [
+          {
+            foreignKeyName: "contracts_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chat_messages: {
+        Row: Flatten<ChatMessage>;
+        Insert: Flatten<
+          Optional<ChatMessage, "id" | "sender_profile_id" | "whatsapp_message_id" | "created_at">
+        >;
+        Update: Flatten<Partial<ChatMessage>>;
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_sender_profile_id_fkey";
+            columns: ["sender_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      social_accounts: {
+        Row: Flatten<SocialAccount>;
+        Insert: Flatten<
+          Optional<SocialAccount, "id" | "display_name" | "connected_by" | "connected_at">
+        >;
+        Update: Flatten<Partial<SocialAccount>>;
+        Relationships: [
+          {
+            foreignKeyName: "social_accounts_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      social_metrics: {
+        Row: Flatten<SocialMetric>;
+        Insert: Flatten<
+          Optional<
+            SocialMetric,
+            "id" | "reach" | "impressions" | "engagement_rate" | "followers" | "plays"
+          >
+        >;
+        Update: Flatten<Partial<SocialMetric>>;
+        Relationships: [];
+      };
+      ai_conversations: {
+        Row: Flatten<AiConversation>;
+        Insert: Flatten<Optional<AiConversation, "id" | "title" | "created_at" | "updated_at">>;
+        Update: Flatten<Partial<AiConversation>>;
+        Relationships: [];
+      };
+      ai_messages: {
+        Row: Flatten<AiMessage>;
+        Insert: Flatten<
+          Optional<AiMessage, "id" | "content" | "pending_action" | "audit_log_id" | "created_at">
+        >;
+        Update: Flatten<Partial<AiMessage>>;
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "ai_conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_audit_log: {
+        Row: Flatten<AiAuditLog>;
+        Insert: Flatten<
+          Optional<
+            AiAuditLog,
+            | "id"
+            | "conversation_id"
+            | "target_table"
+            | "target_id"
+            | "diff"
+            | "status"
+            | "error"
+            | "created_at"
+            | "resolved_at"
+          >
+        >;
+        Update: Flatten<Partial<AiAuditLog>>;
+        Relationships: [];
+      };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      set_content_approval: {
+        Args: Flatten<{
+          target_content_id: string;
+          new_status: ContentStatus;
+          feedback?: string | null;
+        }>;
+        Returns: Flatten<ContentItem>;
+      };
+      sign_contract: {
+        Args: Flatten<{ target_contract_id: string }>;
+        Returns: Flatten<Contract>;
+      };
+    };
+  };
+}
