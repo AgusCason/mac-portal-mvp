@@ -36,6 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# carpeta de descarte usada por el puente de archivos del asistente en local
+# (device_bash no puede borrar, así que mueve ahí lo que hay que eliminar) —
+# nunca debe llegar al build ni al repo.
+/_to_delete/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
