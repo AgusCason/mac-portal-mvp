@@ -31,13 +31,13 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Panel general</h1>
         <p className="text-muted-foreground text-sm">
-          Visibilidad total de clientes, equipo, contenido en curso y facturación.
+          Visibilidad total de cuentas, equipo, contenido en curso y facturación.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          label="Clientes activos"
+          label="Cuentas activas"
           value={`${data.activeClients}/${data.totalClients}`}
           icon={Users}
           hint="Cuentas activas sobre el total"
@@ -93,7 +93,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Clientes recientes</CardTitle>
+            <CardTitle>Cuentas recientes</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.recentClients.map((c) => (
@@ -111,7 +111,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
             ))}
             <Button asChild variant="ghost" size="sm" className="mt-1 w-full justify-between">
               <Link href="/admin/clientes">
-                Gestionar clientes <ArrowUpRight className="size-3.5" />
+                Gestionar cuentas <ArrowUpRight className="size-3.5" />
               </Link>
             </Button>
           </CardContent>

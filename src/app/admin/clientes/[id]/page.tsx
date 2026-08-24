@@ -21,10 +21,29 @@ import { InvoiceList } from "@/components/billing/invoice-list";
 import { NewInvoiceDialog } from "@/components/billing/new-invoice-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarDays, FileSignature, FolderOpen } from "lucide-react";
+import {
+  CalendarDays,
+  FileSignature,
+  FolderOpen,
+  Camera,
+  ThumbsUp,
+  Video,
+  Globe,
+  Music2,
+} from "lucide-react";
+import { getInitials } from "@/lib/utils";
 import type { Plan } from "@/types/database";
+
+const PLATFORM_LINKS = [
+  { key: "social_instagram", icon: Camera, label: "Instagram" },
+  { key: "social_tiktok", icon: Music2, label: "TikTok" },
+  { key: "social_facebook", icon: ThumbsUp, label: "Facebook" },
+  { key: "social_youtube", icon: Video, label: "YouTube" },
+  { key: "social_website", icon: Globe, label: "Sitio web" },
+] as const;
 
 /**
  * Ficha de cliente — Fase 2.2 de la adaptación "estilo MB Suite": funciona
@@ -62,11 +81,33 @@ export default async function AdminClientDetailPage({
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
-          <p className="text-muted-foreground text-sm">
-            {client.brand_name ?? "Sin nombre de marca"} · {client.contact_email ?? "sin email"}
-          </p>
+        <div className="flex items-center gap-3">
+          <Avatar className="size-12 rounded-lg">
+            <AvatarImage src={client.logo_url ?? undefined} alt={client.name} />
+            <AvatarFallback className="rounded-lg bg-primary/10 text-base font-semibold text-primary">
+              {getInitials(client.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
+            <p className="text-muted-foreground text-sm">
+              {client.brand_name ?? "Sin nombre de marca"} · {client.contact_email ?? "sin email"}
+            </p>
+            <div className="mt-1 flex items-center gap-2 text-muted-foreground">
+              {PLATFORM_LINKS.filter((p) => client[p.key]).map((p) => (
+                <a
+                  key={p.key}
+                  href={client[p.key] ?? undefined}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={p.label}
+                  className="hover:text-foreground"
+                >
+                  <p.icon className="size-3.5" />
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
         <div className="flex gap-2">
           <Badge variant={client.status === "active" ? "success" : "secondary"}>

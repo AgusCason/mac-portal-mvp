@@ -1,0 +1,385 @@
+"use client";
+
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
+import { User, Palette, Bell, Camera, Loader2, Check, Moon, Sun, Sparkles as SparklesIcon } from "lucide-react";
+
+import {
+  updateMyNotificationsAction,
+  updateMyPreferencesAction,
+  updateMyProfileAction,
+} from "@/app/actions/my-profile";
+import { createClient } from "@/lib/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { getInitials, cn } from "@/lib/utils";
+import type { Profile, ProfileTheme } from "@/types/database";
+
+type SectionKey = "perfil" | "preferencias" | "notificaciones";
+
+const SECTIONS: { key: SectionKey; label: string; icon: typeof User }[] = [
+  { key: "perfil", label: "Perfil de Cuenta", icon: User },
+  { key: "preferencias", label: "Preferencias", icon: Palette },
+  { key: "notificaciones", label: "Notificaciones", icon: Bell },
+];
+
+const THEME_CARDS: { value: ProfileTheme; label: string; tagline: string; icon: typeof Moon }[] = [
+  { value: "midnight_dark", label: "Midnight Dark", tagline: "Deep & Premium", icon: Moon },
+  { value: "modern_mix", label: "Modern Mix", tagline: "Dark chrome, light content", icon: Palette },
+  { value: "pure_light", label: "Pure Light", tagline: "Clean & Bright", icon: Sun },
+  { value: "psychedelic", label: "Psychedelic", tagline: "Fun & Crazy", icon: SparklesIcon },
+];
+
+// Este portal solo tiene dos skins reales (claro/oscuro, vía next-themes) —
+// las 4 tarjetas de MB Suite se replican tal cual visualmente, pero cada una
+// mapea a la aproximación más cercana disponible hoy.
+const THEME_TO_NEXT_THEME: Record<ProfileTheme, string> = {
+  midnight_dark: "dark",
+  modern_mix: "system",
+  pure_light: "light",
+  psychedelic: "light",
+};
+
+function ProfileTab({ profile }: { profile: Profile }) {
+  const [isPending, startTransition] = useTransition();
+  const [isUploading, setIsUploading] = React.useState(false);
+  const [preview, setPreview] = React.useState<string | null>(profile.avatar_url);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPreview(URL.createObjectURL(file));
+    setIsUploading(true);
+    try {
+      const supabase = createClient();
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${profile.id}/avatar-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type || undefined });
+      if (uploadError) throw uploadError;
+
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({ avatar_url: pub.publicUrl })
+        .eq("id", profile.id);
+      if (updateError) throw updateError;
+
+      toast.success("Foto de perfil actualizada");
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo subir la imagen.");
+      setPreview(profile.avatar_url);
+    } finally {
+      setIsUploading(false);
+    }
+  }
+
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      const res = await updateMyProfileAction(formData);
+      if (res.ok) {
+        toast.success("Perfil actualizado");
+        router.refresh();
+      } else {
+        toast.error(res.error);
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-lg font-semibold">Perfil de Cuenta</h2>
+        <p className="text-muted-foreground text-sm">Gestiona tu información personal y seguridad.</p>
+      </div>
+
+      <div className="flex items-center gap-3 border-b border-border pb-5">
+        <button
+          type="button"
+          className="group relative shrink-0"
+          onClick={() => fileInputRef.current?.click()}
+          aria-label="Cambiar foto de perfil"
+          disabled={isUploading}
+        >
+          <Avatar className="size-14">
+            <AvatarImage src={preview ?? undefined} />
+            <AvatarFallback className="text-base">{getInitials(profile.full_name || profile.email)}</AvatarFallback>
+          </Avatar>
+          <span className="bg-primary text-primary-foreground absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full">
+            {isUploading ? <Loader2 className="size-3 animate-spin" /> : <Camera className="size-3" />}
+          </span>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+            disabled={isUploading}
+          />
+        </button>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{profile.full_name || "Sin nombre"}</p>
+          <p className="text-muted-foreground truncate text-xs">{profile.email}</p>
+        </div>
+      </div>
+
+      <form action={handleSubmit} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="fullName">Nombre (Display Name)</Label>
+            <Input id="fullName" name="fullName" required defaultValue={profile.full_name} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="jobTitle">Cargo / Título</Label>
+            <Input id="jobTitle" name="jobTitle" placeholder="ej. Project Manager" defaultValue={profile.job_title} />
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="phone">Teléfono</Label>
+            <Input id="phone" name="phone" placeholder="+54 11 ..." defaultValue={profile.phone} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="location">Ubicación</Label>
+            <Input id="location" name="location" placeholder="Ciudad, País" defaultValue={profile.location} />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="bio">Bio / Sobre mí</Label>
+          <Textarea id="bio" name="bio" rows={3} placeholder="Breve descripción..." defaultValue={profile.bio} />
+        </div>
+        <Button type="submit" disabled={isPending}>
+          {isPending && <Loader2 className="animate-spin" />}
+          Guardar cambios
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+function PreferencesTab({ profile }: { profile: Profile }) {
+  const [isPending, startTransition] = useTransition();
+  const [theme, setThemeChoice] = React.useState<ProfileTheme>(profile.theme_preference);
+  const { setTheme } = useTheme();
+  const router = useRouter();
+
+  function handleSubmit(formData: FormData) {
+    formData.set("theme", theme);
+    startTransition(async () => {
+      const res = await updateMyPreferencesAction(formData);
+      if (res.ok) {
+        setTheme(THEME_TO_NEXT_THEME[theme]);
+        toast.success("Preferencias guardadas");
+        router.refresh();
+      } else {
+        toast.error(res.error);
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-lg font-semibold">Preferencias</h2>
+        <p className="text-muted-foreground text-sm">Personaliza tu experiencia en la plataforma.</p>
+      </div>
+
+      <form action={handleSubmit} className="space-y-5">
+        <div className="space-y-1.5">
+          <Label htmlFor="language">Idioma</Label>
+          <Select name="language" defaultValue={profile.language}>
+            <SelectTrigger id="language" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="es">Español</SelectItem>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="pt">Português</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="numberFormat">Formato de Números</Label>
+          <Select name="numberFormat" defaultValue={profile.number_format}>
+            <SelectTrigger id="numberFormat" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="es_latam">1.000,00 (Europe/LatAm)</SelectItem>
+              <SelectItem value="en_us">1,000.00 (US)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Tema</Label>
+          {THEME_CARDS.map((card) => {
+            const Icon = card.icon;
+            const active = theme === card.value;
+            return (
+              <button
+                key={card.value}
+                type="button"
+                onClick={() => setThemeChoice(card.value)}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors duration-150",
+                  active ? "border-primary bg-primary/5" : "border-border hover:bg-accent"
+                )}
+              >
+                <span
+                  className={cn(
+                    "flex size-8 shrink-0 items-center justify-center rounded-md",
+                    active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <Icon className="size-4" />
+                </span>
+                <span className="flex-1">
+                  <span className="block text-sm font-medium">{card.label}</span>
+                  <span className="text-muted-foreground block text-xs">{card.tagline}</span>
+                </span>
+                {active && <Check className="text-primary size-4 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+
+        <Button type="submit" disabled={isPending}>
+          {isPending && <Loader2 className="animate-spin" />}
+          Guardar cambios
+        </Button>
+      </form>
+    </div>
+  );
+}
+
+function NotificationsTab({ profile }: { profile: Profile }) {
+  const [marketing, setMarketing] = React.useState(profile.notify_marketing);
+  const [productUpdates, setProductUpdates] = React.useState(profile.notify_product_updates);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  function persist(nextMarketing: boolean, nextProductUpdates: boolean) {
+    startTransition(async () => {
+      const res = await updateMyNotificationsAction(nextMarketing, nextProductUpdates);
+      if (res.ok) {
+        router.refresh();
+      } else {
+        toast.error(res.error);
+      }
+    });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-lg font-semibold">Notificaciones</h2>
+        <p className="text-muted-foreground text-sm">Gestiona cómo nos comunicamos contigo.</p>
+      </div>
+
+      <div className="space-y-2">
+        <div className="border-border flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
+          <div>
+            <p className="text-sm font-medium">Marketing y Ofertas</p>
+            <p className="text-muted-foreground text-xs">Tips, tutoriales y promociones especiales.</p>
+          </div>
+          <Switch
+            checked={marketing}
+            disabled={isPending}
+            onCheckedChange={(checked) => {
+              setMarketing(checked);
+              persist(checked, productUpdates);
+            }}
+          />
+        </div>
+        <div className="border-border flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
+          <div>
+            <p className="text-sm font-medium">Actualizaciones de Producto</p>
+            <p className="text-muted-foreground text-xs">Nuevas funciones, mejoras y changelogs.</p>
+          </div>
+          <Switch
+            checked={productUpdates}
+            disabled={isPending}
+            onCheckedChange={(checked) => {
+              setProductUpdates(checked);
+              persist(marketing, checked);
+            }}
+          />
+        </div>
+        <div className="border-border flex items-center justify-between gap-3 rounded-lg border px-4 py-3 opacity-70">
+          <div>
+            <p className="text-sm font-medium">Alertas de Seguridad</p>
+            <p className="text-muted-foreground text-xs">Avisos de inicio de sesión y seguridad (Obligatorio).</p>
+          </div>
+          <Switch checked disabled />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function MyProfileDialog({
+  profile,
+  open,
+  onOpenChange,
+}: {
+  profile: Profile;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [section, setSection] = React.useState<SectionKey>("perfil");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="grid max-w-2xl grid-cols-[200px_1fr] gap-0 p-0 sm:max-w-2xl">
+        <DialogTitle className="sr-only">Perfil de Cuenta</DialogTitle>
+        <div className="bg-muted/40 space-y-0.5 rounded-l-lg border-r border-border p-3">
+          {SECTIONS.map((s) => {
+            const Icon = s.icon;
+            const active = section === s.key;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => setSection(s.key)}
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors duration-150",
+                  active ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60"
+                )}
+              >
+                <Icon className="size-4" />
+                {s.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="max-h-[70vh] overflow-y-auto p-6">
+          {section === "perfil" && <ProfileTab profile={profile} />}
+          {section === "preferencias" && <PreferencesTab profile={profile} />}
+          {section === "notificaciones" && <NotificationsTab profile={profile} />}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

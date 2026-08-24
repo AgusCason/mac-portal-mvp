@@ -64,12 +64,12 @@ export const MODULES_CATALOG: ModuleCategory[] = [
   },
   {
     area: "Gestión",
-    category: "Clientes",
+    category: "Cuentas",
     modules: [
       {
-        key: "clientes",
-        label: "Clientes",
-        description: "Alta, ficha y mini-workspace por cliente (contenido, reportes, contratos, facturación).",
+        key: "cuentas",
+        label: "Cuentas",
+        description: "Alta, ficha y mini-workspace por cuenta (contenido, reportes, contratos, facturación).",
         status: "incluido",
       },
       {

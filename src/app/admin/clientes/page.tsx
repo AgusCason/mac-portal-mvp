@@ -1,84 +1,42 @@
-import Link from "next/link";
 import { requireRole } from "@/lib/auth";
-import { getClients } from "@/lib/queries/clients";
+import { getAccountsOverview } from "@/lib/queries/clients";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { NewClientDialog } from "@/components/clients/new-client-dialog";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { formatDate } from "@/lib/utils";
+import { AccountsView } from "@/components/clients/accounts-view";
 
-const STATUS_LABEL: Record<string, string> = {
-  active: "Activo",
-  paused: "Pausado",
-  churned: "Perdido",
-};
-
+/**
+ * Cuentas — Fase de la adaptación "estilo MB Suite" que transforma la vieja
+ * sección "Clientes" en el equivalente de `/demo-agency/accounts`: mismos
+ * datos reales de Supabase (`clients`), presentados como tarjetas con logo,
+ * suscripción, equipo asignado y plataformas conectadas, con favoritos,
+ * buscador y toggle grilla/tabla.
+ */
 export default async function AdminClientesPage() {
-  await requireRole(["admin"]);
-  const [clients, supabase] = await Promise.all([getClients(), createSupabaseServerClient()]);
+  const admin = await requireRole(["admin"]);
+  const [accounts, supabase] = await Promise.all([
+    getAccountsOverview(admin.id),
+    createSupabaseServerClient(),
+  ]);
   const { data: plans } = await supabase.from("plans").select("*").order("price_monthly");
+
+  const activeCount = accounts.filter((a) => a.status === "active").length;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Clientes</h1>
-          <p className="text-muted-foreground text-sm">
-            {clients.length} cliente{clients.length === 1 ? "" : "s"} en la agencia.
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight">
+            Cuentas
+            <span className="text-muted-foreground ml-2 text-sm font-normal align-middle">
+              · {activeCount} activa{activeCount === 1 ? "" : "s"} de {accounts.length}
+            </span>
+          </h1>
+          <p className="text-muted-foreground text-sm">Gestiona tus clientes y proyectos.</p>
         </div>
         <NewClientDialog plans={plans ?? []} />
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Estado</TableHead>
-              <TableHead>Contacto</TableHead>
-              <TableHead>Alta</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clients.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">
-                  <Link href={`/admin/clientes/${c.id}`} className="hover:underline">
-                    {c.name}
-                  </Link>
-                  {c.brand_name && (
-                    <p className="text-muted-foreground text-xs">{c.brand_name}</p>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={c.status === "active" ? "success" : "secondary"}>
-                    {STATUS_LABEL[c.status]}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {c.contact_email || "—"}
-                </TableCell>
-                <TableCell className="tabular-nums text-sm">{formatDate(c.created_at)}</TableCell>
-              </TableRow>
-            ))}
-            {clients.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
-                  Todavía no cargaste ningún cliente.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <AccountsView accounts={accounts} />
     </div>
   );
 }

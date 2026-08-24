@@ -9,7 +9,7 @@ const ROLE_ROUTES: Record<string, UserRole[]> = {
   "/client": ["client"],
 };
 
-const PUBLIC_ROUTES = ["/login", "/auth", "/api/webhooks"];
+const PUBLIC_ROUTES = ["/login", "/auth", "/api/webhooks", "/f"];
 
 // Next.js 16 renombró `middleware.ts` a `proxy.ts` (misma funcionalidad,
 // la función debe llamarse `proxy` — ver AGENTS.md de este repo).

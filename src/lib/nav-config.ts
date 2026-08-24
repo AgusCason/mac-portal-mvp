@@ -1,11 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
-  Users,
+  Briefcase,
   UserCog,
   CalendarDays,
   FileSignature,
-  Share2,
   Inbox,
   Wallet,
   FolderOpen,
@@ -16,6 +15,23 @@ import {
   Palette,
   Puzzle,
   KeyRound,
+  BarChart3,
+  Radar,
+  Compass,
+  AlertTriangle,
+  Send,
+  Link2,
+  ListChecks,
+  FolderKanban,
+  Users,
+  Image as ImageIcon,
+  BookOpen,
+  ClipboardList,
+  Activity,
+  Share2,
+  Sparkle,
+  Swords,
+  LayoutGrid,
 } from "lucide-react";
 import type { UserRole } from "@/types/database";
 
@@ -36,11 +52,50 @@ export interface NavItem {
 export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
   admin: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Clientes", href: "/admin/clientes", icon: Users },
+    { label: "Cuentas", href: "/admin/clientes", icon: Briefcase },
+    {
+      label: "Analytics",
+      icon: BarChart3,
+      children: [
+        { label: "Overview", href: "/admin/analytics", icon: BarChart3 },
+        { label: "Monitors", href: "/admin/redes", icon: Radar },
+        { label: "Dashboards", href: "/admin/analytics/dashboards", icon: LayoutDashboard },
+        { label: "Explorer", href: "/admin/analytics/explorer", icon: Compass },
+        { label: "Reports", href: "/admin/reportes", icon: FileText },
+        { label: "Alertas", href: "/admin/analytics/alertas", icon: AlertTriangle },
+        { label: "Envíos", href: "/admin/analytics/envios", icon: Send },
+        { label: "UTM Builder", href: "/admin/analytics/utm-builder", icon: Link2 },
+      ],
+    },
+    {
+      label: "Management",
+      icon: ListChecks,
+      children: [
+        { label: "Tareas", href: "/admin/tareas", icon: ListChecks },
+        { label: "Proyectos", href: "/admin/proyectos", icon: FolderKanban },
+        { label: "Contactos", href: "/admin/contactos", icon: Users },
+        { label: "Media Library", href: "/admin/media-library", icon: ImageIcon },
+        { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookOpen },
+        { label: "Web Forms", href: "/admin/web-forms", icon: ClipboardList },
+        { label: "Bóveda", href: "/admin/configuracion/boveda", icon: KeyRound },
+        { label: "Actividad", href: "/admin/actividad", icon: Activity },
+      ],
+    },
+    {
+      label: "Social Media",
+      icon: Share2,
+      children: [
+        { label: "Overview", href: "/admin/social-media", icon: Share2 },
+        { label: "Insights", href: "/admin/redes", icon: Radar },
+        { label: "Planner", href: "/admin/social-media/planner", icon: Compass },
+        { label: "Content Studio", href: "/admin/social-media/content-studio", icon: Sparkle },
+        { label: "Brand Voice", href: "/admin/social-media/brand-voice", icon: LayoutGrid },
+        { label: "Competidores", href: "/admin/social-media/competidores", icon: Swords },
+      ],
+    },
     { label: "Equipo", href: "/admin/equipo", icon: UserCog },
     { label: "Calendario", href: "/admin/calendario", icon: CalendarDays },
     { label: "Contratos", href: "/admin/contratos", icon: FileSignature },
-    { label: "Redes sociales", href: "/admin/redes", icon: Share2 },
     { label: "Chat", href: "/admin/chat", icon: Inbox },
     {
       label: "Comercial",
@@ -50,7 +105,6 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
         { label: "CRM", href: "/admin/crm", icon: Handshake },
       ],
     },
-    { label: "Reportes con IA", href: "/admin/reportes", icon: FileText },
     { label: "Asistente IA", href: "/admin/asistente", icon: Sparkles },
     {
       label: "Configuración",

@@ -171,6 +171,28 @@ export async function createClientAction(
   };
 }
 
+/**
+ * Marca/desmarca una Cuenta como favorita para el admin actual — análogo al
+ * ícono de estrella en las tarjetas de Cuentas de MB Suite. Favorito personal
+ * (client_favorites), no afecta a otros admins de la agencia.
+ */
+export async function toggleClientFavoriteAction(clientId: string, makeFavorite: boolean) {
+  const admin = await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+
+  const { error } = makeFavorite
+    ? await supabase.from("client_favorites").insert({ profile_id: admin.id, client_id: clientId })
+    : await supabase
+        .from("client_favorites")
+        .delete()
+        .eq("profile_id", admin.id)
+        .eq("client_id", clientId);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/clientes");
+  return { ok: true };
+}
+
 /** Cambia el estado comercial de un cliente (activo/pausado/perdido). Solo admin. */
 export async function updateClientStatusAction(
   clientId: string,

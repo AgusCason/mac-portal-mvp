@@ -45,6 +45,13 @@ export type CrmLeadStage =
   | "propuesta"
   | "ganado"
   | "perdido";
+export type TaskStatus = "pendiente" | "en_curso" | "completada" | "cancelada";
+export type TaskPriority = "baja" | "media" | "alta" | "urgente";
+export type ProjectStatus = "por_iniciar" | "en_curso" | "en_pausa" | "completado" | "cancelado";
+
+export type ProfileTheme = "midnight_dark" | "modern_mix" | "pure_light" | "psychedelic";
+export type ProfileLanguage = "es" | "en" | "pt";
+export type ProfileNumberFormat = "es_latam" | "en_us";
 
 export interface Profile {
   id: string;
@@ -52,6 +59,15 @@ export interface Profile {
   full_name: string;
   role: UserRole;
   avatar_url: string | null;
+  job_title: string;
+  phone: string;
+  location: string;
+  bio: string;
+  language: ProfileLanguage;
+  number_format: ProfileNumberFormat;
+  theme_preference: ProfileTheme;
+  notify_marketing: boolean;
+  notify_product_updates: boolean;
   created_at: string;
 }
 
@@ -79,6 +95,13 @@ export interface Client {
 export interface ClientMember {
   client_id: string;
   profile_id: string;
+  created_at: string;
+}
+
+/** Favorito de Cuenta por admin — ver 0015_account_favorites.sql. */
+export interface ClientFavorite {
+  profile_id: string;
+  client_id: string;
   created_at: string;
 }
 
@@ -236,6 +259,171 @@ export interface CrmLead {
   updated_at: string;
 }
 
+// ---------------------------------------------------------------------------
+// Management (Fase "Management" de la adaptación estilo MB Suite) — ver
+// supabase/migrations/0017_management.sql.
+// ---------------------------------------------------------------------------
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  due_date: string | null;
+  client_id: string | null;
+  assigned_to: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description: string;
+  client_id: string | null;
+  status: ProjectStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectItem {
+  id: string;
+  project_id: string;
+  title: string;
+  status: ProjectStatus;
+  assigned_to: string | null;
+  due_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Contact {
+  id: string;
+  name: string;
+  role_title: string | null;
+  email: string | null;
+  phone: string | null;
+  tags: string[];
+  client_id: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MediaFolder {
+  id: string;
+  name: string;
+  color: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface MediaAsset {
+  id: string;
+  folder_id: string | null;
+  client_id: string | null;
+  file_name: string;
+  storage_path: string;
+  mime_type: string;
+  size_bytes: number;
+  uploaded_by: string | null;
+  created_at: string;
+}
+
+export interface KbArticle {
+  id: string;
+  title: string;
+  body: string;
+  is_pinned: boolean;
+  views_count: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface KbArticleFavorite {
+  profile_id: string;
+  article_id: string;
+  created_at: string;
+}
+
+export interface WebForm {
+  id: string;
+  name: string;
+  description: string;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface FormSubmission {
+  id: string;
+  form_id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+}
+
+export type ContentIdeaType = "serie_social" | "sesion_fotos" | "video_script" | "caption" | "content_bank";
+
+/** Social Media > Content Studio — banco de ideas/guiones de contenido. */
+export interface ContentIdea {
+  id: string;
+  type: ContentIdeaType;
+  client_id: string | null;
+  title: string;
+  body: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Social Media > Brand Voice — ficha de tono de marca, una por cuenta. */
+export interface ClientBrandVoice {
+  client_id: string;
+  tone_personality: string;
+  vocabulary: string;
+  emoji_rules: string;
+  target_audience: string;
+  platform_settings: string;
+  updated_by: string | null;
+  updated_at: string;
+}
+
+/** Social Media > Competidores — perfiles de la competencia por cuenta. */
+export interface Competitor {
+  id: string;
+  client_id: string | null;
+  name: string;
+  platform: SocialPlatform;
+  handle: string;
+  followers_count: number | null;
+  engagement_rate: number | null;
+  notes: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+/** Un link con parámetros UTM generado desde Analytics > UTM Builder. */
+export interface UtmLink {
+  id: string;
+  client_id: string | null;
+  created_by: string | null;
+  base_url: string;
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  utm_term: string | null;
+  utm_content: string | null;
+  generated_url: string;
+  created_at: string;
+}
+
 /** Fila de la bóveda TAL COMO se lee del cliente: nunca incluye el secreto en
  * texto plano (`secret_encrypted` es un bytea cifrado, se omite en el SELECT
  * de listado) — el valor real solo sale vía `vault_reveal_credential`. */
@@ -363,7 +551,24 @@ export interface Database {
     Tables: {
       profiles: {
         Row: Flatten<Profile>;
-        Insert: Flatten<Optional<Profile, "full_name" | "role" | "avatar_url" | "created_at">>;
+        Insert: Flatten<
+          Optional<
+            Profile,
+            | "full_name"
+            | "role"
+            | "avatar_url"
+            | "job_title"
+            | "phone"
+            | "location"
+            | "bio"
+            | "language"
+            | "number_format"
+            | "theme_preference"
+            | "notify_marketing"
+            | "notify_product_updates"
+            | "created_at"
+          >
+        >;
         Update: Flatten<Partial<Profile>>;
         Relationships: [];
       };
@@ -398,6 +603,12 @@ export interface Database {
         Row: Flatten<ClientMember>;
         Insert: Flatten<Optional<ClientMember, "created_at">>;
         Update: Flatten<Partial<ClientMember>>;
+        Relationships: [];
+      };
+      client_favorites: {
+        Row: Flatten<ClientFavorite>;
+        Insert: Flatten<Optional<ClientFavorite, "created_at">>;
+        Update: Flatten<Partial<ClientFavorite>>;
         Relationships: [];
       };
       plans: {
@@ -705,6 +916,236 @@ export interface Database {
         >;
         Update: Flatten<Partial<CrmLead>>;
         Relationships: [];
+      };
+      utm_links: {
+        Row: Flatten<UtmLink>;
+        Insert: Flatten<
+          Optional<UtmLink, "id" | "client_id" | "created_by" | "utm_term" | "utm_content" | "created_at">
+        >;
+        Update: Flatten<Partial<UtmLink>>;
+        Relationships: [
+          {
+            foreignKeyName: "utm_links_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tasks: {
+        Row: Flatten<Task>;
+        Insert: Flatten<
+          Optional<
+            Task,
+            | "id"
+            | "description"
+            | "status"
+            | "priority"
+            | "due_date"
+            | "client_id"
+            | "assigned_to"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<Task>>;
+        Relationships: [
+          {
+            foreignKeyName: "tasks_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tasks_assigned_to_fkey";
+            columns: ["assigned_to"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "tasks_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      projects: {
+        Row: Flatten<Project>;
+        Insert: Flatten<
+          Optional<Project, "id" | "description" | "client_id" | "status" | "created_by" | "created_at" | "updated_at">
+        >;
+        Update: Flatten<Partial<Project>>;
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_items: {
+        Row: Flatten<ProjectItem>;
+        Insert: Flatten<
+          Optional<ProjectItem, "id" | "status" | "assigned_to" | "due_date" | "created_at" | "updated_at">
+        >;
+        Update: Flatten<Partial<ProjectItem>>;
+        Relationships: [
+          {
+            foreignKeyName: "project_items_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contacts: {
+        Row: Flatten<Contact>;
+        Insert: Flatten<
+          Optional<
+            Contact,
+            | "id"
+            | "role_title"
+            | "email"
+            | "phone"
+            | "tags"
+            | "client_id"
+            | "notes"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<Contact>>;
+        Relationships: [
+          {
+            foreignKeyName: "contacts_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      media_folders: {
+        Row: Flatten<MediaFolder>;
+        Insert: Flatten<Optional<MediaFolder, "id" | "color" | "created_by" | "created_at">>;
+        Update: Flatten<Partial<MediaFolder>>;
+        Relationships: [];
+      };
+      media_assets: {
+        Row: Flatten<MediaAsset>;
+        Insert: Flatten<
+          Optional<MediaAsset, "id" | "folder_id" | "client_id" | "size_bytes" | "uploaded_by" | "created_at">
+        >;
+        Update: Flatten<Partial<MediaAsset>>;
+        Relationships: [
+          {
+            foreignKeyName: "media_assets_folder_id_fkey";
+            columns: ["folder_id"];
+            isOneToOne: false;
+            referencedRelation: "media_folders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "media_assets_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kb_articles: {
+        Row: Flatten<KbArticle>;
+        Insert: Flatten<
+          Optional<KbArticle, "id" | "body" | "is_pinned" | "views_count" | "created_by" | "created_at" | "updated_at">
+        >;
+        Update: Flatten<Partial<KbArticle>>;
+        Relationships: [];
+      };
+      kb_article_favorites: {
+        Row: Flatten<KbArticleFavorite>;
+        Insert: Flatten<Optional<KbArticleFavorite, "created_at">>;
+        Update: Flatten<Partial<KbArticleFavorite>>;
+        Relationships: [];
+      };
+      web_forms: {
+        Row: Flatten<WebForm>;
+        Insert: Flatten<Optional<WebForm, "id" | "description" | "is_active" | "created_by" | "created_at">>;
+        Update: Flatten<Partial<WebForm>>;
+        Relationships: [];
+      };
+      form_submissions: {
+        Row: Flatten<FormSubmission>;
+        Insert: Flatten<Optional<FormSubmission, "id" | "message" | "created_at">>;
+        Update: Flatten<Partial<FormSubmission>>;
+        Relationships: [
+          {
+            foreignKeyName: "form_submissions_form_id_fkey";
+            columns: ["form_id"];
+            isOneToOne: false;
+            referencedRelation: "web_forms";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      content_ideas: {
+        Row: Flatten<ContentIdea>;
+        Insert: Flatten<Optional<ContentIdea, "id" | "body" | "client_id" | "created_by" | "created_at" | "updated_at">>;
+        Update: Flatten<Partial<ContentIdea>>;
+        Relationships: [
+          {
+            foreignKeyName: "content_ideas_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      client_brand_voice: {
+        Row: Flatten<ClientBrandVoice>;
+        Insert: Flatten<
+          Optional<
+            ClientBrandVoice,
+            "tone_personality" | "vocabulary" | "emoji_rules" | "target_audience" | "platform_settings" | "updated_by" | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<ClientBrandVoice>>;
+        Relationships: [
+          {
+            foreignKeyName: "client_brand_voice_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: true;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      competitors: {
+        Row: Flatten<Competitor>;
+        Insert: Flatten<
+          Optional<Competitor, "id" | "client_id" | "followers_count" | "engagement_rate" | "notes" | "created_by" | "created_at">
+        >;
+        Update: Flatten<Partial<Competitor>>;
+        Relationships: [
+          {
+            foreignKeyName: "competitors_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       vault_credentials: {
         Row: Flatten<VaultCredential & { secret_encrypted: string }>;

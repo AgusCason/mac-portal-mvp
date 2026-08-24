@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, ChevronDown } from "lucide-react";
+import { Menu, ChevronDown, UserCircle } from "lucide-react";
 
 import { NAV_CONFIG, ROLE_LABELS, type NavItem } from "@/lib/nav-config";
 import type { Profile, AgencyBranding } from "@/types/database";
@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -24,6 +25,7 @@ import { LogoutMenuItem } from "@/components/shared/logout-button";
 import { ActivityPanel } from "@/components/shared/activity-panel";
 import { NotificationsPanel } from "@/components/shared/notifications-panel";
 import { SettingsPanel } from "@/components/shared/settings-panel";
+import { MyProfileDialog } from "@/components/shared/my-profile-dialog";
 import type { ActivityEventWithClient } from "@/lib/queries/activity";
 import type { AppNotification } from "@/types/database";
 
@@ -205,6 +207,8 @@ export function AppShell({
   unreadCount,
   branding,
 }: AppShellProps) {
+  const [profileOpen, setProfileOpen] = React.useState(false);
+
   return (
     <div className="bg-sidebar min-h-dvh">
       <div className="flex">
@@ -265,9 +269,20 @@ export function AppShell({
                     </p>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setProfileOpen(true);
+                    }}
+                  >
+                    <UserCircle />
+                    Mi Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <LogoutMenuItem />
                 </DropdownMenuContent>
               </DropdownMenu>
+              <MyProfileDialog profile={profile} open={profileOpen} onOpenChange={setProfileOpen} />
             </div>
           </header>
 

@@ -16,3 +16,18 @@ export async function getEditors(): Promise<Profile[]> {
   }
   return data ?? [];
 }
+
+/** Personal de la agencia (admin + editor) — para asignar Tareas/Proyectos. */
+export async function getAgencyStaff(): Promise<Profile[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .in("role", ["admin", "editor"])
+    .order("full_name");
+  if (error) {
+    console.error("[getAgencyStaff]", error.message);
+    return [];
+  }
+  return data ?? [];
+}
