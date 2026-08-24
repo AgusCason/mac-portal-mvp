@@ -6,7 +6,7 @@ import { ReportList } from "@/components/reports/report-list";
 export default async function ClientReportesPage() {
   const profile = await requireRole(["client"]);
   const clientId = await getPrimaryClientId(profile.id);
-  const reports = clientId ? await getReports(clientId) : [];
+  const reports = clientId ? await getReports({ clientId }) : [];
 
   return (
     <div className="space-y-4">

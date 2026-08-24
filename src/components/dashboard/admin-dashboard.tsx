@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, UserCog, Wallet, Clock, ArrowUpRight } from "lucide-react";
+import { Users, UserCog, Wallet, Clock, ArrowUpRight, TrendingDown } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { ContentStatusBadge } from "@/components/dashboard/content-status-badge";
 import {
@@ -13,6 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { AdminDashboardData } from "@/lib/queries/dashboard";
+
+const METRIC_LABELS: Record<string, string> = {
+  reach: "Alcance",
+  followers: "Seguidores",
+};
 
 /** Vista del dashboard para el Super Administrador (Agencia / Project Manager). */
 export function AdminDashboard({ data }: { data: AdminDashboardData }) {
@@ -112,6 +117,43 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Alertas de métricas</CardTitle>
+          <CardDescription>
+            Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos
+            (Fase 3.4 — revisado automáticamente todos los días).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {data.metricAlerts.length === 0 && (
+            <p className="text-muted-foreground text-sm">Sin caídas detectadas por ahora.</p>
+          )}
+          {data.metricAlerts.map((alert) => (
+            <div
+              key={alert.id}
+              className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <TrendingDown className="text-destructive size-4 shrink-0" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{alert.client_name}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {METRIC_LABELS[alert.metric_type] ?? alert.metric_type} · {formatDate(alert.metric_date)}
+                  </p>
+                </div>
+              </div>
+              <Badge variant="destructive">-{Math.round(alert.drop_pct * 100)}%</Badge>
+            </div>
+          ))}
+          <Button asChild variant="ghost" size="sm" className="mt-1 w-full justify-between">
+            <Link href="/admin/redes">
+              Ver redes sociales <ArrowUpRight className="size-3.5" />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

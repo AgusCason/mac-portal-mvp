@@ -4,7 +4,16 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Check, MessageSquareWarning, Loader2 } from "lucide-react";
+import { ArrowRight, Check, MessageSquareWarning, Loader2, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+  type DragEndEvent,
+} from "@dnd-kit/core";
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
 import type { ContentStatus, UserRole } from "@/types/database";
@@ -29,7 +38,14 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { formatDate } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn, formatDate } from "@/lib/utils";
 
 const COLUMN_ORDER: ContentStatus[] = [
   "borrador",
@@ -132,6 +148,15 @@ function ContentCard({
   const [isPending, startTransition] = useTransition();
   const network = NETWORK_META[item.network];
   const NetworkIcon = network.icon;
+  const draggable = role === "admin" || role === "editor";
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: item.id,
+    data: { status: item.status },
+    disabled: !draggable,
+  });
+  const style = transform
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
+    : undefined;
 
   function advance() {
     const next = NEXT_STATUS[item.status];
@@ -160,10 +185,25 @@ function ContentCard({
   }
 
   return (
-    <Card className="gap-3 py-4">
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={cn("gap-3 py-4", isDragging && "z-50 opacity-60 shadow-lg")}
+    >
       <CardHeader className="px-4">
         <CardTitle className="flex items-start justify-between gap-2 text-sm font-medium">
           <span className="line-clamp-2">{item.title}</span>
+          {draggable && (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground shrink-0 cursor-grab touch-none active:cursor-grabbing"
+              aria-label="Arrastrar para cambiar de estado"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="size-4" />
+            </button>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 px-4">
@@ -209,10 +249,50 @@ function ContentCard({
   );
 }
 
+function BoardColumn({
+  status,
+  items,
+  role,
+}: {
+  status: ContentStatus;
+  items: ContentItemWithClient[];
+  role: UserRole;
+}) {
+  const meta = STATUS_META[status];
+  const draggable = role === "admin" || role === "editor";
+  const { setNodeRef, isOver } = useDroppable({ id: status, disabled: !draggable });
+
+  return (
+    <div className="min-w-0 lg:w-64">
+      <div className="mb-2 flex items-center justify-between px-1">
+        <Badge variant={meta.variant}>
+          <meta.icon /> {meta.label}
+        </Badge>
+        <span className="text-muted-foreground tabular-nums text-xs">{items.length}</span>
+      </div>
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "min-h-16 space-y-2 rounded-lg transition-colors duration-150",
+          isOver && "bg-accent/60 ring-1 ring-inset ring-border"
+        )}
+      >
+        {items.length === 0 && <p className="text-muted-foreground px-1 text-xs">Sin piezas</p>}
+        {items.map((item) => (
+          <ContentCard key={item.id} item={item} role={role} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /**
  * Tablero Kanban del calendario editorial. La misma pieza sirve para las
  * tres rutas (/admin/calendario, /editor/calendario, /client/calendario):
  * lo que cambia es qué acciones puede tomar cada rol sobre cada tarjeta.
+ * Admin/editor además pueden arrastrar tarjetas entre columnas (Fase 2.3) —
+ * excepto hacia "Por Aprobar", que sigue exigiendo el modal de Entrega para
+ * garantizar que la pieza aprobable siempre tenga un archivo real adjunto.
  */
 export function ContentBoard({
   items,
@@ -221,39 +301,109 @@ export function ContentBoard({
   items: ContentItemWithClient[];
   role: UserRole;
 }) {
+  const router = useRouter();
+  const [, startTransition] = useTransition();
+  const [clientFilter, setClientFilter] = React.useState("all");
+  const [networkFilter, setNetworkFilter] = React.useState("all");
+
+  const clientOptions = React.useMemo(() => {
+    const map = new Map<string, string>();
+    for (const item of items) map.set(item.client_id, item.client_name);
+    return Array.from(map, ([id, name]) => ({ id, name }));
+  }, [items]);
+
+  const networkOptions = React.useMemo(() => {
+    const set = new Set<string>();
+    for (const item of items) set.add(item.network);
+    return Array.from(set) as (typeof items)[number]["network"][];
+  }, [items]);
+
+  const filteredItems = React.useMemo(() => {
+    return items.filter(
+      (item) =>
+        (clientFilter === "all" || item.client_id === clientFilter) &&
+        (networkFilter === "all" || item.network === networkFilter)
+    );
+  }, [items, clientFilter, networkFilter]);
+
   const grouped = React.useMemo(() => {
     const map = new Map<ContentStatus, ContentItemWithClient[]>();
     for (const status of COLUMN_ORDER) map.set(status, []);
-    for (const item of items) map.get(item.status)?.push(item);
+    for (const item of filteredItems) map.get(item.status)?.push(item);
     return map;
-  }, [items]);
+  }, [filteredItems]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over) return;
+    const targetStatus = over.id as ContentStatus;
+    const currentStatus = active.data.current?.status as ContentStatus | undefined;
+    if (!currentStatus || targetStatus === currentStatus) return;
+
+    if (targetStatus === "por_aprobar") {
+      toast.error('Para pasar a "Por Aprobar" usá el botón Entregar de la pieza (sube el archivo).');
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await updateContentStatusAction(active.id as string, targetStatus);
+      if (res.ok) {
+        toast.success(`Movido a "${STATUS_META[targetStatus].label}"`);
+        router.refresh();
+      } else {
+        toast.error(res.error);
+      }
+    });
+  }
 
   return (
-    <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-flow-col lg:auto-cols-[16rem]">
-      {COLUMN_ORDER.map((status) => {
-        const columnItems = grouped.get(status) ?? [];
-        const meta = STATUS_META[status];
-        return (
-          <div key={status} className="min-w-0 lg:w-64">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <Badge variant={meta.variant}>
-                <meta.icon /> {meta.label}
-              </Badge>
-              <span className="text-muted-foreground tabular-nums text-xs">
-                {columnItems.length}
-              </span>
-            </div>
-            <div className="space-y-2">
-              {columnItems.length === 0 && (
-                <p className="text-muted-foreground px-1 text-xs">Sin piezas</p>
-              )}
-              {columnItems.map((item) => (
-                <ContentCard key={item.id} item={item} role={role} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
+    <div className="space-y-3">
+      {(clientOptions.length > 1 || networkOptions.length > 1) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {clientOptions.length > 1 && (
+            <Select value={clientFilter} onValueChange={setClientFilter}>
+              <SelectTrigger size="sm" className="w-44">
+                <SelectValue placeholder="Cliente" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los clientes</SelectItem>
+                {clientOptions.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {networkOptions.length > 1 && (
+            <Select value={networkFilter} onValueChange={setNetworkFilter}>
+              <SelectTrigger size="sm" className="w-44">
+                <SelectValue placeholder="Red" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las redes</SelectItem>
+                {networkOptions.map((n) => (
+                  <SelectItem key={n} value={n}>
+                    {NETWORK_META[n].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      )}
+
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-flow-col lg:auto-cols-[16rem]">
+          {COLUMN_ORDER.map((status) => (
+            <BoardColumn key={status} status={status} items={grouped.get(status) ?? []} role={role} />
+          ))}
+        </div>
+      </DndContext>
     </div>
   );
 }

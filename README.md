@@ -164,6 +164,8 @@ Corre, en orden, y se detiene en el primer error:
    - `supabase/migrations/0002_seed.sql` (3 planes de ejemplo — opcional)
    - `supabase/migrations/0003_contract_signing.sql` (firma de contratos)
    - `supabase/migrations/0004_ai_assistant.sql` (Asistente IA — tablas + RLS, ver sección 10)
+   - `supabase/migrations/0005_platform_v2.sql` a `0008_reports_storage.sql` (redes sociales, facturación, reportes)
+   - `supabase/migrations/0009_activity_notifications.sql` a `0014_metric_alerts.sql` (adaptación "estilo MB Suite": actividad/notificaciones, filtros de reportes, branding, CRM, bóveda de credenciales cifradas, alertas de métricas — ver sección 11)
 3. `Project Settings > API`: copiá `Project URL`, `anon public key` y `service_role key`.
 4. Creá tu primer usuario admin: `Authentication > Users > Add user`, y luego en `Table Editor > profiles` editá su fila para poner `role = admin` (el trigger lo crea con `role = client` por default si no mandaste metadata).
 
@@ -219,6 +221,11 @@ Corre, en orden, y se detiene en el primer error:
 - **Un cliente = una fila en `client_members`, pero el schema soporta N usuarios por cliente** (por si mañana un mismo cliente quiere loguear a dos personas de su equipo).
 - **Subida de archivos a Drive:** `createResumableUploadSession()` en `lib/google-drive.ts` deja el punto de entrada para subida con barra de progreso desde el navegador; falta cablear el componente de upload en `/client/drive`.
 - **Tipos de Supabase:** `src/types/database.ts` está escrito a mano para que el proyecto compile sin necesitar la CLI de Supabase. Una vez que tengas el proyecto real, es más prolijo regenerarlos con `npx supabase gen types typescript --project-id <id> > src/types/database.ts`.
+- **Branding (Fase 3.1):** hoy se aplican de verdad nombre, logos, favicon, color primario/acento y forma de los botones. Tipografía (`font_heading`/`font_body`) y estilo de botón (relleno/contorno) quedan guardados en `agency_branding` para más adelante, pero no wireados — cargar fuentes dinámicamente rompería el self-hosting deliberado de Inter (ver `src/app/layout.tsx`), y el estilo de botón requeriría reescribir el `variant` de cada `<Button>` del código a mano.
+- **Bóveda de credenciales (Fase 3.3):** el secreto se cifra con pgcrypto y la passphrase (`VAULT_ENCRYPTION_KEY`) nunca se guarda en la base — pero si esa env var se filtra junto con un dump de la base, sí se puede descifrar todo. Es el mismo modelo de amenaza que cualquier secreto de aplicación (como `SUPABASE_SERVICE_ROLE_KEY`); no reemplaza un secret manager dedicado (Vault, AWS Secrets Manager) si en algún momento lo necesitás.
+- **CRM (Fase 3.2):** pipeline de prospectos comerciales, sin relación automática con `clients` — cuando ganás un prospecto, el alta como Cliente real sigue siendo un paso manual en `/admin/clientes` (por diseño: son dos conceptos distintos, cliente contratado vs. prospecto).
+- **Alertas de métricas (Fase 3.4):** el cron (`notify-metric-drops.ts`) compara la última lectura de `social_metrics` contra el promedio de hasta 7 lecturas previas; necesita al menos 4 días de historial por cuenta para empezar a alertar, así que una cuenta recién conectada no genera alertas hasta acumular datos.
+- **White-label multi-tenant real** (subdominio o dominio propio por cliente/agencia) no está incluido — `agency_branding` es una única fila (singleton) para toda la instalación, pensado para una agencia usando su propio despliegue, no para que MAC Portal aloje múltiples agencias con marcas distintas en la misma base. Eso requeriría infraestructura de DNS/hosting adicional que esta sesión no controla.
 
 ## 10. Asistente IA (Claude dentro de la plataforma)
 
@@ -231,3 +238,27 @@ Corre, en orden, y se detiene en el primer error:
 **3) Minimización de datos + auditoría completa.** Cada tool de lectura hace `select()` explícito de columnas puntuales — nunca `select("*")` sobre algo que pueda traer tokens, contraseñas o claves de Drive/Meta/WhatsApp — y trunca listados (ver comentarios en `src/lib/ai/tools.ts`). Todo lo que el asistente propone queda en `ai_audit_log` con su `diff` (antes/después) y su resultado final (`executed`, `rejected` o `failed`), visible en la pestaña "Auditoría" de `/admin/asistente` (`AuditLogTable`).
 
 En resumen: Claude puede *ver* (con el mismo límite que el admin que lo está usando) y puede *proponer*, pero jamás *ejecuta* — ese último paso es siempre, sin excepción, un clic humano.
+
+## 11. Adaptación "estilo MB Suite" (Fase 1-3)
+
+Sobre la base del Entregable original, se sumó una adaptación visual y funcional inspirada en MB Suite, en 3 fases — cada una verificada con `npm run verify` + `npm run build` antes de pasar a la siguiente.
+
+**Fase 1 — Identidad y navegación.**
+- Sidebar en acordeón (grupos "Comercial" y "Configuración" colapsables) — `src/lib/nav-config.ts` + `AppShell`.
+- Paneles deslizantes de Actividad y Notificaciones, alimentados por triggers de Postgres (nunca por código de aplicación que se pueda olvidar de llamarlos) — `0009_activity_notifications.sql`.
+- Selector de tema (claro/oscuro/sistema) en un panel propio, reemplazando el toggle simple.
+- Identidad de los agentes de IA: **Nova** (reportes, `src/lib/ai/agents.ts`) y **Max** (asistente conversacional) — atribución visible donde generan contenido.
+
+**Fase 2 — Reportes, mini-workspace y kanban.**
+- Filtros de reportes por cliente/estado/período, sincronizados a la URL (`report-filters.tsx`).
+- Ficha de cliente reorganizada en tabs (Resumen/Contenido/Reportes/Contratos/Facturación) — `/admin/clientes/[id]`.
+- Drag-and-drop real en el calendario editorial (`@dnd-kit/core`), preservando la regla de que solo el flujo de Entrega (con archivo subido a Drive) puede mover una pieza a "Por Aprobar".
+- Catálogo de módulos (`/admin/configuracion/modulos`) — índice informativo de todo lo que tiene la plataforma; no gatea nada todavía (ver limitación más abajo si en algún momento se quiere activar/desactivar módulos de verdad).
+
+**Fase 3 — Comercial y plataforma.**
+- **Branding white-label** (`/admin/configuracion/marca`, `0011_branding.sql`): nombre, logos, favicon, color primario/acento y forma de botones, aplicados vía CSS custom properties inyectadas en `src/app/layout.tsx`.
+- **CRM liviano** (`/admin/crm`, `0012_crm.sql`): pipeline de prospectos con kanban drag-and-drop (Nuevo → Contactado → Calificado → Propuesta → Ganado/Perdido).
+- **Bóveda de credenciales** (`/admin/configuracion/boveda`, `0013_vault.sql`): secretos cifrados con pgcrypto, descifrado solo bajo demanda — requiere la variable de entorno `VAULT_ENCRYPTION_KEY` (ver `.env.example`).
+- **Alertas de métricas** (`0014_metric_alerts.sql` + `netlify/functions/notify-metric-drops.ts`): cron diario que detecta caídas de 30%+ en alcance/seguidores vs. el promedio de los días previos, genera una notificación interna y un resumen en el dashboard de admin.
+
+Ver la sección 9 (arriba) para el detalle de qué quedó deliberadamente fuera de alcance de esta adaptación y por qué.

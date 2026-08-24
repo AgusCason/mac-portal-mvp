@@ -27,6 +27,13 @@ export interface AdminDashboardData {
   contentByStatus: Record<ContentStatus, number>;
   pendingApprovals: { id: string; title: string; client_name: string }[];
   recentClients: { id: string; name: string; status: string; created_at: string }[];
+  metricAlerts: {
+    id: string;
+    client_name: string;
+    metric_type: string;
+    drop_pct: number;
+    metric_date: string;
+  }[];
 }
 
 /** Datos agregados para el dashboard del Super Administrador. */
@@ -41,6 +48,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     { data: pendingRows },
     { data: recentClients },
     { data: planRows },
+    { data: metricAlertRows },
   ] = await Promise.all([
     supabase.from("clients").select("id", { count: "exact", head: true }),
     supabase
@@ -66,6 +74,11 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       .from("client_plans")
       .select("price_override, plans(price_monthly)")
       .eq("status", "active"),
+    supabase
+      .from("metric_alerts")
+      .select("id, metric_type, drop_pct, metric_date, clients(name)")
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
 
   const contentByStatus = emptyStatusMap();
@@ -93,6 +106,13 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
         ((r.clients as unknown as { name: string } | null)?.name) ?? "—",
     })),
     recentClients: (recentClients ?? []) as AdminDashboardData["recentClients"],
+    metricAlerts: (metricAlertRows ?? []).map((row) => ({
+      id: row.id,
+      client_name: (row.clients as unknown as { name: string } | null)?.name ?? "—",
+      metric_type: row.metric_type,
+      drop_pct: row.drop_pct,
+      metric_date: row.metric_date,
+    })),
   };
 }
 

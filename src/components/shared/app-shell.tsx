@@ -6,8 +6,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, ChevronDown } from "lucide-react";
 
-import { NAV_CONFIG, ROLE_LABELS } from "@/lib/nav-config";
-import type { Profile } from "@/types/database";
+import { NAV_CONFIG, ROLE_LABELS, type NavItem } from "@/lib/nav-config";
+import type { Profile, AgencyBranding } from "@/types/database";
 import { cn, getInitials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +20,122 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ModeToggle } from "@/components/shared/mode-toggle";
 import { LogoutMenuItem } from "@/components/shared/logout-button";
+import { ActivityPanel } from "@/components/shared/activity-panel";
+import { NotificationsPanel } from "@/components/shared/notifications-panel";
+import { SettingsPanel } from "@/components/shared/settings-panel";
+import type { ActivityEventWithClient } from "@/lib/queries/activity";
+import type { AppNotification } from "@/types/database";
 
 interface AppShellProps {
   profile: Profile;
   children: React.ReactNode;
+  activity: ActivityEventWithClient[];
+  notifications: AppNotification[];
+  unreadCount: number;
+  branding: AgencyBranding;
+}
+
+function isItemActive(pathname: string, href: string, role: string) {
+  return pathname === href || (href !== `/${role}` && pathname.startsWith(`${href}/`));
+}
+
+/**
+ * Un ítem simple (link directo). Se usa tanto para los ítems raíz sin
+ * children como para los sub-ítems dentro de un grupo expandido.
+ */
+function NavLink({
+  href,
+  label,
+  icon: Icon,
+  active,
+  indented,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIconType;
+  active: boolean;
+  indented?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
+        indented && "py-1.5 pl-9 text-[13px]",
+        active
+          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      )}
+    >
+      <Icon className={cn("shrink-0", indented ? "size-3.5" : "size-4")} strokeWidth={1.75} />
+      {label}
+    </Link>
+  );
+}
+
+type LucideIconType = NavItem["icon"];
+
+/**
+ * Grupo colapsable estilo "acordeón" de MB Suite: el header del grupo alterna
+ * expandido/colapsado (no navega), y sus hijos se muestran indentados debajo.
+ * Se auto-expande si la ruta activa pertenece a alguno de sus hijos.
+ */
+function NavGroup({
+  item,
+  pathname,
+  role,
+}: {
+  item: NavItem & { children: NonNullable<NavItem["children"]> };
+  pathname: string;
+  role: string;
+}) {
+  const hasActiveChild = item.children.some((child) =>
+    isItemActive(pathname, child.href, role)
+  );
+  // `null` = el usuario todavía no tocó el toggle en esta sesión de render:
+  // el grupo se auto-expande mientras la ruta activa caiga adentro. En
+  // cuanto el usuario lo abre/cierra a mano, ese gesto manda.
+  const [manualOpen, setManualOpen] = React.useState<boolean | null>(null);
+  const open = manualOpen ?? hasActiveChild;
+
+  const Icon = item.icon;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setManualOpen(!open)}
+        aria-expanded={open}
+        className={cn(
+          "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
+          hasActiveChild
+            ? "text-foreground"
+            : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+        )}
+      >
+        <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+        <span className="flex-1 text-left">{item.label}</span>
+        <ChevronDown
+          className={cn("size-3.5 shrink-0 transition-transform duration-150", open && "rotate-180")}
+        />
+      </button>
+      {open && (
+        <div className="mt-0.5 flex flex-col gap-0.5">
+          {item.children.map((child) => (
+            <NavLink
+              key={child.href}
+              href={child.href}
+              label={child.label}
+              icon={child.icon}
+              active={isItemActive(pathname, child.href, role)}
+              indented
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function SidebarNav({ profile }: { profile: Profile }) {
@@ -34,42 +144,50 @@ function SidebarNav({ profile }: { profile: Profile }) {
 
   return (
     <nav className="flex flex-col gap-1 p-3">
-      {items.map((item) => {
-        const active =
-          pathname === item.href ||
-          (item.href !== `/${profile.role}` && pathname.startsWith(item.href));
-        const Icon = item.icon;
-        return (
-          <Link
+      {items.map((item) =>
+        item.children ? (
+          <NavGroup
+            key={item.label}
+            item={item as NavItem & { children: NonNullable<NavItem["children"]> }}
+            pathname={pathname}
+            role={profile.role}
+          />
+        ) : (
+          <NavLink
             key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
-              active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            )}
-          >
-            <Icon className="size-4 shrink-0" strokeWidth={1.75} />
-            {item.label}
-          </Link>
-        );
-      })}
+            href={item.href!}
+            label={item.label}
+            icon={item.icon}
+            active={isItemActive(pathname, item.href!, profile.role)}
+          />
+        )
+      )}
     </nav>
   );
 }
 
-function BrandHeader() {
+function BrandHeader({ branding }: { branding: AgencyBranding }) {
   return (
     <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-      <Image
-        src="/logo.png"
-        alt="MAC"
-        width={28}
-        height={28}
-        className="rounded-md"
-      />
-      <span className="text-sm font-semibold tracking-tight">MAC Portal</span>
+      {branding.logo_light_url || branding.logo_dark_url ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- URL de logo arbitraria configurada por el admin, no se puede allowlistar en next.config en runtime. */}
+          <img
+            src={branding.logo_light_url ?? branding.logo_dark_url ?? undefined}
+            alt={branding.app_name}
+            className="block size-7 rounded-md object-contain dark:hidden"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={branding.logo_dark_url ?? branding.logo_light_url ?? undefined}
+            alt={branding.app_name}
+            className="hidden size-7 rounded-md object-contain dark:block"
+          />
+        </>
+      ) : (
+        <Image src="/logo.png" alt={branding.app_name} width={28} height={28} className="rounded-md" />
+      )}
+      <span className="truncate text-sm font-semibold tracking-tight">{branding.app_name}</span>
     </div>
   );
 }
@@ -79,13 +197,20 @@ function BrandHeader() {
  * (adaptada según `profile.role` vía NAV_CONFIG), topbar con toggle de tema
  * y menú de usuario. Este es el "cascarón" dentro del que vive cada Dashboard.
  */
-export function AppShell({ profile, children }: AppShellProps) {
+export function AppShell({
+  profile,
+  children,
+  activity,
+  notifications,
+  unreadCount,
+  branding,
+}: AppShellProps) {
   return (
     <div className="bg-sidebar min-h-dvh">
       <div className="flex">
         {/* Sidebar desktop */}
         <aside className="border-sidebar-border bg-sidebar hidden w-60 shrink-0 flex-col border-r md:flex">
-          <BrandHeader />
+          <BrandHeader branding={branding} />
           <SidebarNav profile={profile} />
         </aside>
 
@@ -102,7 +227,7 @@ export function AppShell({ profile, children }: AppShellProps) {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 p-0">
                   <SheetTitle className="sr-only">Menú</SheetTitle>
-                  <BrandHeader />
+                  <BrandHeader branding={branding} />
                   <SidebarNav profile={profile} />
                 </SheetContent>
               </Sheet>
@@ -111,8 +236,10 @@ export function AppShell({ profile, children }: AppShellProps) {
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2">
-              <ModeToggle />
+            <div className="flex items-center gap-1">
+              <ActivityPanel events={activity} />
+              <NotificationsPanel notifications={notifications} unreadCount={unreadCount} />
+              <SettingsPanel />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors duration-150 hover:bg-accent">

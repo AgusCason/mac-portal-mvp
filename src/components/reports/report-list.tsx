@@ -6,6 +6,7 @@ import { FileText, Download, CheckCircle2, Clock, Loader2 } from "lucide-react";
 
 import type { ReportWithClient } from "@/lib/queries/reports";
 import { getReportDownloadUrlAction, publishReportAction } from "@/app/actions/reports";
+import { NOVA_AGENT } from "@/lib/ai/agents";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,10 +77,28 @@ export function ReportList({
             {role === "admin" && (
               <p className="text-muted-foreground truncate text-xs">{report.client_name}</p>
             )}
+            {(report.period_label || report.platforms.length > 0) && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {report.period_label && (
+                  <Badge variant="outline" className="text-[11px]">
+                    {report.period_label}
+                  </Badge>
+                )}
+                {report.platforms.map((platform) => (
+                  <Badge key={platform} variant="secondary" className="text-[11px] capitalize">
+                    {platform}
+                  </Badge>
+                ))}
+              </div>
+            )}
             <p className="text-muted-foreground text-xs">
               {report.status === "published" && report.published_at
                 ? `Publicado el ${formatDate(report.published_at)}`
                 : `Generado el ${formatDate(report.created_at)}`}
+            </p>
+            <p className="text-muted-foreground text-xs">
+              Redactado por <span className="font-medium">{NOVA_AGENT.name}</span> ·{" "}
+              {NOVA_AGENT.role}
             </p>
             <div className="flex gap-2">
               <Button

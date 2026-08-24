@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Send, Loader2, Sparkles, User } from "lucide-react";
 
 import { sendAiMessageAction } from "@/app/actions/ai-assistant";
+import { MAX_AGENT } from "@/lib/ai/agents";
 import type { AiMessage } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,7 +65,7 @@ export function AiChatPanel({
         <div className="flex flex-col gap-4">
           {messages.length === 0 && !pendingText && (
             <p className="text-muted-foreground text-sm">
-              Preguntale al asistente por el estado de un cliente, pedile que revise
+              Preguntale a {MAX_AGENT.name} por el estado de un cliente, pedile que revise
               errores comunes, o que te proponga un arreglo — vos siempre confirmás
               antes de que se aplique.
             </p>
@@ -73,7 +74,7 @@ export function AiChatPanel({
             <div key={m.id} className={cn("flex flex-col gap-2", m.role === "user" ? "items-end" : "items-start")}>
               <div className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
                 {m.role === "user" ? <User className="size-3" /> : <Sparkles className="size-3" />}
-                {m.role === "user" ? "Vos" : "Asistente"} ·{" "}
+                {m.role === "user" ? "Vos" : MAX_AGENT.name} ·{" "}
                 {new Date(m.created_at).toLocaleTimeString("es-AR", {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -96,7 +97,7 @@ export function AiChatPanel({
                 {pendingText}
               </div>
               <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <Loader2 className="size-3 animate-spin" /> El asistente está pensando…
+                <Loader2 className="size-3 animate-spin" /> {MAX_AGENT.name} está pensando…
               </div>
             </div>
           )}

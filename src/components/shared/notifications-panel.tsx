@@ -1,0 +1,135 @@
+"use client";
+
+import * as React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { Bell, CheckCheck } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { es } from "date-fns/locale";
+
+import type { AppNotification } from "@/types/database";
+import {
+  markNotificationReadAction,
+  markAllNotificationsReadAction,
+} from "@/app/actions/notifications";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+  SheetFooter,
+} from "@/components/ui/sheet";
+
+function NotificationRow({ notification }: { notification: AppNotification }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const unread = !notification.read_at;
+
+  function open() {
+    if (unread) {
+      startTransition(async () => {
+        await markNotificationReadAction(notification.id);
+        router.refresh();
+      });
+    }
+  }
+
+  const content = (
+    <div
+      className={cn(
+        "rounded-lg border px-3 py-2.5 text-sm transition-colors duration-150",
+        unread ? "border-primary/30 bg-primary/5" : "border-border"
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="font-medium">{notification.title}</p>
+        {unread && <span className="bg-primary mt-1 size-1.5 shrink-0 rounded-full" />}
+      </div>
+      {notification.body && (
+        <p className="text-muted-foreground mt-0.5 text-xs">{notification.body}</p>
+      )}
+      <p className="text-muted-foreground mt-1 text-[11px]">
+        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: es })}
+      </p>
+    </div>
+  );
+
+  if (notification.link) {
+    return (
+      <Link href={notification.link} onClick={open} className="block" aria-disabled={isPending}>
+        {content}
+      </Link>
+    );
+  }
+  return (
+    <button type="button" onClick={open} className="block w-full text-left" disabled={isPending}>
+      {content}
+    </button>
+  );
+}
+
+/**
+ * Panel deslizante "Notificaciones" — menciones/eventos relevantes para el
+ * usuario logueado (campana del navbar, equivalente al de MB Suite).
+ */
+export function NotificationsPanel({
+  notifications,
+  unreadCount,
+}: {
+  notifications: AppNotification[];
+  unreadCount: number;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  function markAll() {
+    startTransition(async () => {
+      await markAllNotificationsReadAction();
+      router.refresh();
+    });
+  }
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative">
+          <Bell />
+          {unreadCount > 0 && (
+            <span className="bg-destructive text-destructive-foreground absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-medium">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:max-w-sm">
+        <SheetHeader>
+          <SheetTitle>Notificaciones</SheetTitle>
+          <SheetDescription>Menciones, aprobaciones y avisos importantes.</SheetDescription>
+        </SheetHeader>
+        <ScrollArea className="h-[calc(100dvh-10rem)] px-4">
+          <div className="flex flex-col gap-2 pb-6">
+            {notifications.length === 0 && (
+              <p className="text-muted-foreground text-sm">No tenés notificaciones.</p>
+            )}
+            {notifications.map((n) => (
+              <NotificationRow key={n.id} notification={n} />
+            ))}
+          </div>
+        </ScrollArea>
+        {unreadCount > 0 && (
+          <SheetFooter>
+            <Button variant="outline" size="sm" onClick={markAll} disabled={isPending}>
+              <CheckCheck /> Marcar todas como leídas
+            </Button>
+          </SheetFooter>
+        )}
+      </SheetContent>
+    </Sheet>
+  );
+}

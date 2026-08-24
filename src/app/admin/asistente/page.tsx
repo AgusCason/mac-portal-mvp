@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { MAX_AGENT } from "@/lib/ai/agents";
 
 /**
  * Asistente IA — SOLO Admin (ver proxy.ts + requireRole acá abajo, más las
@@ -40,10 +41,11 @@ export default async function AiAssistantPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Asistente IA</h1>
+        <h1 className="text-xl font-semibold tracking-tight">
+          Asistente IA · <span className="text-primary">{MAX_AGENT.name}</span>
+        </h1>
         <p className="text-muted-foreground text-sm">
-          Lee datos de la agencia con tu propio acceso y puede proponer arreglos —
-          nunca aplica nada sin que lo confirmes vos.
+          {MAX_AGENT.role} — {MAX_AGENT.tagline}
         </p>
       </div>
 

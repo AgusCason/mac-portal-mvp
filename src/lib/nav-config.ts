@@ -12,13 +12,24 @@ import {
   Settings,
   Sparkles,
   FileText,
+  Handshake,
+  Palette,
+  Puzzle,
+  KeyRound,
 } from "lucide-react";
 import type { UserRole } from "@/types/database";
 
 export interface NavItem {
   label: string;
-  href: string;
+  /** Ausente cuando el ítem es solo un grupo colapsable (ver `children`). */
+  href?: string;
   icon: LucideIcon;
+  /**
+   * Sub-ítems del acordeón. Si están presentes, el ítem se renderiza como un
+   * grupo colapsable (estilo MB Suite) en vez de un link directo — ver
+   * `SidebarNav` en components/shared/app-shell.tsx.
+   */
+  children?: { label: string; href: string; icon: LucideIcon }[];
 }
 
 /** Ítems de navegación por rol. El layout de cada rol arma el sidebar desde acá. */
@@ -31,10 +42,26 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Contratos", href: "/admin/contratos", icon: FileSignature },
     { label: "Redes sociales", href: "/admin/redes", icon: Share2 },
     { label: "Chat", href: "/admin/chat", icon: Inbox },
-    { label: "Planes y facturación", href: "/admin/planes", icon: Wallet },
+    {
+      label: "Comercial",
+      icon: Wallet,
+      children: [
+        { label: "Planes y facturación", href: "/admin/planes", icon: Wallet },
+        { label: "CRM", href: "/admin/crm", icon: Handshake },
+      ],
+    },
     { label: "Reportes con IA", href: "/admin/reportes", icon: FileText },
     { label: "Asistente IA", href: "/admin/asistente", icon: Sparkles },
-    { label: "Configuración", href: "/admin/configuracion", icon: Settings },
+    {
+      label: "Configuración",
+      icon: Settings,
+      children: [
+        { label: "General", href: "/admin/configuracion", icon: Settings },
+        { label: "Módulos", href: "/admin/configuracion/modulos", icon: Puzzle },
+        { label: "Marca", href: "/admin/configuracion/marca", icon: Palette },
+        { label: "Bóveda", href: "/admin/configuracion/boveda", icon: KeyRound },
+      ],
+    },
   ],
   editor: [
     { label: "Dashboard", href: "/editor", icon: LayoutDashboard },

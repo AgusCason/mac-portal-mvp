@@ -38,6 +38,13 @@ export type PaymentMethod =
   | "crypto"
   | "otro";
 export type ReportStatus = "draft" | "published";
+export type CrmLeadStage =
+  | "nuevo"
+  | "contactado"
+  | "calificado"
+  | "propuesta"
+  | "ganado"
+  | "perdido";
 
 export interface Profile {
   id: string;
@@ -207,8 +214,91 @@ export interface PerformanceReport {
   pdf_path: string | null;
   status: ReportStatus;
   generated_by: string | null;
+  period_label: string | null;
+  platforms: SocialPlatform[];
   created_at: string;
   published_at: string | null;
+}
+
+export interface CrmLead {
+  id: string;
+  name: string;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  source: string | null;
+  estimated_value: number | null;
+  stage: CrmLeadStage;
+  notes: string | null;
+  linked_client_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Fila de la bóveda TAL COMO se lee del cliente: nunca incluye el secreto en
+ * texto plano (`secret_encrypted` es un bytea cifrado, se omite en el SELECT
+ * de listado) — el valor real solo sale vía `vault_reveal_credential`. */
+export interface VaultCredential {
+  id: string;
+  client_id: string | null;
+  label: string;
+  username: string | null;
+  url: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MetricAlert {
+  id: string;
+  social_account_id: string;
+  client_id: string;
+  metric_date: string;
+  metric_type: string;
+  previous_avg: number;
+  current_value: number;
+  drop_pct: number;
+  created_at: string;
+}
+
+export type ButtonShape = "square" | "rounded" | "pill";
+export type ButtonStyle = "filled" | "outline";
+
+export interface AgencyBranding {
+  id: boolean;
+  app_name: string;
+  logo_light_url: string | null;
+  logo_dark_url: string | null;
+  favicon_url: string | null;
+  primary_color: string;
+  accent_color: string;
+  font_heading: string;
+  font_body: string;
+  button_shape: ButtonShape;
+  button_style: ButtonStyle;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface ActivityEvent {
+  id: string;
+  client_id: string | null;
+  actor_id: string | null;
+  event_type: string;
+  summary: string;
+  created_at: string;
+}
+
+export interface AppNotification {
+  id: string;
+  profile_id: string;
+  title: string;
+  body: string;
+  link: string | null;
+  read_at: string | null;
+  created_at: string;
 }
 
 export interface AiConversation {
@@ -468,6 +558,8 @@ export interface Database {
             | "pdf_path"
             | "status"
             | "generated_by"
+            | "period_label"
+            | "platforms"
             | "created_at"
             | "published_at"
           >
@@ -548,6 +640,122 @@ export interface Database {
           },
         ];
       };
+      agency_branding: {
+        Row: Flatten<AgencyBranding>;
+        Insert: Flatten<
+          Optional<
+            AgencyBranding,
+            | "app_name"
+            | "logo_light_url"
+            | "logo_dark_url"
+            | "favicon_url"
+            | "primary_color"
+            | "accent_color"
+            | "font_heading"
+            | "font_body"
+            | "button_shape"
+            | "button_style"
+            | "updated_at"
+            | "updated_by"
+          >
+        >;
+        Update: Flatten<Partial<AgencyBranding>>;
+        Relationships: [];
+      };
+      activity_events: {
+        Row: Flatten<ActivityEvent>;
+        Insert: Flatten<Optional<ActivityEvent, "id" | "client_id" | "actor_id" | "created_at">>;
+        Update: Flatten<Partial<ActivityEvent>>;
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notifications: {
+        Row: Flatten<AppNotification>;
+        Insert: Flatten<
+          Optional<AppNotification, "id" | "body" | "link" | "read_at" | "created_at">
+        >;
+        Update: Flatten<Partial<AppNotification>>;
+        Relationships: [];
+      };
+      crm_leads: {
+        Row: Flatten<CrmLead>;
+        Insert: Flatten<
+          Optional<
+            CrmLead,
+            | "id"
+            | "contact_name"
+            | "contact_email"
+            | "contact_phone"
+            | "source"
+            | "estimated_value"
+            | "stage"
+            | "notes"
+            | "linked_client_id"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<CrmLead>>;
+        Relationships: [];
+      };
+      vault_credentials: {
+        Row: Flatten<VaultCredential & { secret_encrypted: string }>;
+        // El insert/update reales pasan por las funciones vault_add_credential /
+        // vault_update_credential (necesitan cifrar) — esto solo tipa la tabla
+        // para el SELECT de listado y el DELETE directo.
+        Insert: Flatten<
+          Optional<
+            VaultCredential & { secret_encrypted: string },
+            | "id"
+            | "client_id"
+            | "username"
+            | "url"
+            | "notes"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<VaultCredential & { secret_encrypted: string }>>;
+        Relationships: [
+          {
+            foreignKeyName: "vault_credentials_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      metric_alerts: {
+        Row: Flatten<MetricAlert>;
+        Insert: Flatten<Optional<MetricAlert, "id" | "created_at">>;
+        Update: Flatten<Partial<MetricAlert>>;
+        Relationships: [
+          {
+            foreignKeyName: "metric_alerts_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "metric_alerts_social_account_id_fkey";
+            columns: ["social_account_id"];
+            isOneToOne: false;
+            referencedRelation: "social_accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ai_audit_log: {
         Row: Flatten<AiAuditLog>;
         Insert: Flatten<
@@ -572,6 +780,19 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      notify_admins: {
+        Args: Flatten<{ p_title: string; p_body: string; p_link?: string | null }>;
+        Returns: null;
+      };
+      notify_client_members: {
+        Args: Flatten<{
+          p_client_id: string;
+          p_title: string;
+          p_body: string;
+          p_link?: string | null;
+        }>;
+        Returns: null;
+      };
       set_content_approval: {
         Args: Flatten<{
           target_content_id: string;
@@ -583,6 +804,35 @@ export interface Database {
       sign_contract: {
         Args: Flatten<{ target_contract_id: string; client_ip?: string | null }>;
         Returns: Flatten<Contract>;
+      };
+      vault_add_credential: {
+        Args: Flatten<{
+          p_label: string;
+          p_username?: string | null;
+          p_secret: string;
+          p_url?: string | null;
+          p_notes?: string | null;
+          p_client_id?: string | null;
+          p_passphrase: string;
+        }>;
+        Returns: string;
+      };
+      vault_update_credential: {
+        Args: Flatten<{
+          p_id: string;
+          p_label: string;
+          p_username?: string | null;
+          p_new_secret?: string | null;
+          p_url?: string | null;
+          p_notes?: string | null;
+          p_client_id?: string | null;
+          p_passphrase: string;
+        }>;
+        Returns: null;
+      };
+      vault_reveal_credential: {
+        Args: Flatten<{ p_id: string; p_passphrase: string }>;
+        Returns: string | null;
       };
     };
   };

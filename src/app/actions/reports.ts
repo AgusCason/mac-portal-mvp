@@ -13,6 +13,8 @@ const REPORTS_BUCKET = "reports";
 const generateReportSchema = z.object({
   clientId: z.string().uuid(),
   title: z.string().min(2, "El título es obligatorio"),
+  periodLabel: z.string().optional(),
+  platforms: z.array(z.enum(["instagram", "tiktok", "youtube"])).default([]),
 });
 
 export type GenerateReportResult =
@@ -38,6 +40,8 @@ export async function generateReportAction(formData: FormData): Promise<Generate
   const parsed = generateReportSchema.safeParse({
     clientId: formData.get("clientId"),
     title: formData.get("title"),
+    periodLabel: formData.get("periodLabel") || undefined,
+    platforms: formData.getAll("platforms"),
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
@@ -122,6 +126,8 @@ export async function generateReportAction(formData: FormData): Promise<Generate
       summary,
       pdf_path: pdfPath,
       generated_by: admin.id,
+      period_label: parsed.data.periodLabel || `Últimos ${REPORT_PERIOD_DAYS} días`,
+      platforms: parsed.data.platforms,
     })
     .select("id")
     .single();

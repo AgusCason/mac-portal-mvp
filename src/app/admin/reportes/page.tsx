@@ -3,10 +3,22 @@ import { getReports } from "@/lib/queries/reports";
 import { getSelectableClients } from "@/lib/queries/content";
 import { ReportList } from "@/components/reports/report-list";
 import { NewReportDialog } from "@/components/reports/new-report-dialog";
+import { ReportFilters } from "@/components/reports/report-filters";
+import type { ReportStatus } from "@/types/database";
 
-export default async function AdminReportesPage() {
+export default async function AdminReportesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ cliente?: string; estado?: string; periodo?: string }>;
+}) {
   await requireRole(["admin"]);
-  const [reports, clients] = await Promise.all([getReports(), getSelectableClients()]);
+  const { cliente, estado, periodo } = await searchParams;
+  const clients = await getSelectableClients();
+  const reports = await getReports({
+    clientId: cliente,
+    status: estado as ReportStatus | undefined,
+    period: periodo,
+  });
 
   return (
     <div className="space-y-4">
@@ -20,6 +32,7 @@ export default async function AdminReportesPage() {
         </div>
         <NewReportDialog clients={clients} />
       </div>
+      <ReportFilters clients={clients} />
       <ReportList reports={reports} role="admin" />
     </div>
   );

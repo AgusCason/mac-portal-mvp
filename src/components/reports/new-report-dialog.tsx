@@ -7,9 +7,11 @@ import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
 
 import { generateReportAction } from "@/app/actions/reports";
+import { NOVA_AGENT } from "@/lib/ai/agents";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -57,9 +59,10 @@ export function NewReportDialog({ clients }: { clients: { id: string; name: stri
           <DialogHeader>
             <DialogTitle>Generar reporte con IA</DialogTitle>
             <DialogDescription>
-              Junta las piezas publicadas y las métricas de redes de los últimos 30 días,
-              y le pide a Claude el resumen ejecutivo. Queda como borrador — vos lo revisás
-              y recién ahí lo publicás para que el cliente lo vea.
+              <span className="text-foreground font-medium">{NOVA_AGENT.name}</span> ·{" "}
+              {NOVA_AGENT.role} junta las piezas publicadas y las métricas de redes de los
+              últimos 30 días, y redacta el resumen ejecutivo. Queda como borrador — vos lo
+              revisás y recién ahí lo publicás para que el cliente lo vea.
             </DialogDescription>
           </DialogHeader>
 
@@ -82,6 +85,34 @@ export function NewReportDialog({ clients }: { clients: { id: string; name: stri
           <div className="space-y-1.5">
             <Label htmlFor="title">Título</Label>
             <Input id="title" name="title" required placeholder="Ej: Reporte mensual — Agosto 2026" />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="periodLabel">Período</Label>
+            <Input
+              id="periodLabel"
+              name="periodLabel"
+              placeholder="Ej: Agosto 2026 (por defecto: Últimos 30 días)"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Plataformas que cubre</Label>
+            <div className="flex flex-wrap gap-4">
+              {[
+                { value: "instagram", label: "Instagram" },
+                { value: "tiktok", label: "TikTok" },
+                { value: "youtube", label: "YouTube" },
+              ].map((platform) => (
+                <label
+                  key={platform.value}
+                  className="flex items-center gap-2 text-sm font-normal"
+                >
+                  <Checkbox name="platforms" value={platform.value} />
+                  {platform.label}
+                </label>
+              ))}
+            </div>
           </div>
 
           <DialogFooter>
