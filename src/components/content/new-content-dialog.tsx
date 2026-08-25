@@ -8,6 +8,7 @@ import { Plus, Loader2 } from "lucide-react";
 
 import { createContentItemAction } from "@/app/actions/content";
 import { NETWORK_META } from "@/lib/network-meta";
+import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/content-category-meta";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -97,6 +98,23 @@ export function NewContentDialog({
                 {Object.entries(NETWORK_META).map(([value, meta]) => (
                   <SelectItem key={value} value={value}>
                     {meta.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="category">Categoría (opcional)</Label>
+            <Select name="category" defaultValue="none">
+              <SelectTrigger className="w-full" id="category">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Sin categoría</SelectItem>
+                {CATEGORY_ORDER.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {CATEGORY_META[value].label}
                   </SelectItem>
                 ))}
               </SelectContent>

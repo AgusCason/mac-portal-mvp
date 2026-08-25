@@ -6,8 +6,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, ChevronDown, UserCircle } from "lucide-react";
 
-import { NAV_CONFIG, ROLE_LABELS, type NavItem } from "@/lib/nav-config";
-import type { Profile, AgencyBranding } from "@/types/database";
+import { NAV_CONFIG, ROLE_LABELS, filterNavItems, type NavItem } from "@/lib/nav-config";
+import type { Profile, AgencyBranding, ModuleFlag } from "@/types/database";
 import { cn, getInitials } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,7 @@ interface AppShellProps {
   notifications: AppNotification[];
   unreadCount: number;
   branding: AgencyBranding;
+  moduleFlags: Record<string, ModuleFlag>;
 }
 
 function isItemActive(pathname: string, href: string, role: string) {
@@ -140,9 +141,15 @@ function NavGroup({
   );
 }
 
-function SidebarNav({ profile }: { profile: Profile }) {
+function SidebarNav({
+  profile,
+  moduleFlags,
+}: {
+  profile: Profile;
+  moduleFlags: Record<string, ModuleFlag>;
+}) {
   const pathname = usePathname();
-  const items = NAV_CONFIG[profile.role];
+  const items = filterNavItems(NAV_CONFIG[profile.role], profile.role, moduleFlags);
 
   return (
     <nav className="flex flex-col gap-1 p-3">
@@ -206,6 +213,7 @@ export function AppShell({
   notifications,
   unreadCount,
   branding,
+  moduleFlags,
 }: AppShellProps) {
   const [profileOpen, setProfileOpen] = React.useState(false);
 
@@ -215,7 +223,7 @@ export function AppShell({
         {/* Sidebar desktop */}
         <aside className="border-sidebar-border bg-sidebar hidden w-60 shrink-0 flex-col border-r md:flex">
           <BrandHeader branding={branding} />
-          <SidebarNav profile={profile} />
+          <SidebarNav profile={profile} moduleFlags={moduleFlags} />
         </aside>
 
         <div className="bg-background flex min-h-dvh flex-1 flex-col md:rounded-tl-xl md:border-l md:border-t md:border-border">
@@ -232,7 +240,7 @@ export function AppShell({
                 <SheetContent side="left" className="w-64 p-0">
                   <SheetTitle className="sr-only">Menú</SheetTitle>
                   <BrandHeader branding={branding} />
-                  <SidebarNav profile={profile} />
+                  <SidebarNav profile={profile} moduleFlags={moduleFlags} />
                 </SheetContent>
               </Sheet>
               <Badge variant="secondary" className="hidden sm:inline-flex">

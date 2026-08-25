@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { sendWhatsAppMessage } from "@/lib/whatsapp";
-import type { ContentNetwork, ContentStatus } from "@/types/database";
+import type { ContentCategory, ContentNetwork, ContentStatus } from "@/types/database";
 
 const deliverContentSchema = z.object({
   contentId: z.string().uuid(),
@@ -18,6 +18,7 @@ const createContentSchema = z.object({
   title: z.string().min(2),
   description: z.string().optional(),
   network: z.string(),
+  category: z.string().optional(),
   scheduledAt: z.string().optional(),
 });
 
@@ -27,11 +28,16 @@ const createContentSchema = z.object({
  */
 export async function createContentItemAction(formData: FormData) {
   const profile = await requireRole(["admin", "editor"]);
+  const rawCategory = formData.get("category");
   const parsed = createContentSchema.safeParse({
     clientId: formData.get("clientId"),
     title: formData.get("title"),
     description: formData.get("description") ?? undefined,
     network: formData.get("network"),
+    // El Select de categoría usa "none" como placeholder de "sin categoría" —
+    // hay que traducirlo a "" antes de que llegue a zod (ver AGENTS.md /
+    // convención ya aplicada en contacts.ts, tasks.ts, competitors.ts).
+    category: rawCategory === "none" ? "" : (rawCategory ?? undefined),
     scheduledAt: formData.get("scheduledAt") ?? undefined,
   });
 
@@ -39,7 +45,7 @@ export async function createContentItemAction(formData: FormData) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const { clientId, title, description, network, scheduledAt } = parsed.data;
+  const { clientId, title, description, network, category, scheduledAt } = parsed.data;
   const supabase = await createSupabaseServerClient();
 
   const { error } = await supabase.from("content_items").insert({
@@ -47,6 +53,7 @@ export async function createContentItemAction(formData: FormData) {
     title,
     description: description || null,
     network: network as ContentNetwork,
+    category: (category || null) as ContentCategory | null,
     scheduled_at: scheduledAt || null,
     created_by: profile.id,
     assigned_editor_id: profile.role === "editor" ? profile.id : null,
@@ -56,6 +63,7 @@ export async function createContentItemAction(formData: FormData) {
   revalidatePath("/admin/calendario");
   revalidatePath("/editor/calendario");
   revalidatePath("/client/calendario");
+  revalidatePath("/admin/social-media/planner");
   return { ok: true };
 }
 
@@ -80,6 +88,7 @@ export async function updateContentStatusAction(
   revalidatePath("/admin/calendario");
   revalidatePath("/editor/calendario");
   revalidatePath("/client/calendario");
+  revalidatePath("/admin/social-media/planner");
   return { ok: true };
 }
 
@@ -146,6 +155,7 @@ export async function deliverContentAction(formData: FormData) {
   revalidatePath("/admin/calendario");
   revalidatePath("/editor/calendario");
   revalidatePath("/client/calendario");
+  revalidatePath("/admin/social-media/planner");
   return { ok: true };
 }
 

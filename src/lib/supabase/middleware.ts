@@ -45,5 +45,5 @@ export async function updateSession(request: NextRequest) {
     role = profile?.role ?? null;
   }
 
-  return { supabaseResponse, user, role };
+  return { supabaseResponse, user, role, supabase };
 }

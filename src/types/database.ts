@@ -23,6 +23,12 @@ export type ContentStatus =
   | "aprobado"
   | "programado"
   | "publicado";
+export type ContentCategory =
+  | "comunidad"
+  | "producto"
+  | "educativo"
+  | "promocion"
+  | "caso_exito";
 export type ContractStatus = "pendiente" | "firmado";
 export type MessageDirection = "inbound" | "outbound";
 export type SocialPlatform = "instagram" | "tiktok" | "youtube";
@@ -152,6 +158,7 @@ export interface ContentItem {
   description: string | null;
   network: ContentNetwork;
   status: ContentStatus;
+  category: ContentCategory | null;
   scheduled_at: string | null;
   drive_file_id: string | null;
   thumbnail_url: string | null;
@@ -466,6 +473,15 @@ export interface AgencyBranding {
   font_body: string;
   button_shape: ButtonShape;
   button_style: ButtonStyle;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface ModuleFlag {
+  key: string;
+  enabled: boolean;
+  visible_to_editor: boolean;
+  visible_to_client: boolean;
   updated_at: string;
   updated_by: string | null;
 }
@@ -871,6 +887,17 @@ export interface Database {
           >
         >;
         Update: Flatten<Partial<AgencyBranding>>;
+        Relationships: [];
+      };
+      module_flags: {
+        Row: Flatten<ModuleFlag>;
+        Insert: Flatten<
+          Optional<
+            ModuleFlag,
+            "enabled" | "visible_to_editor" | "visible_to_client" | "updated_at" | "updated_by"
+          >
+        >;
+        Update: Flatten<Partial<ModuleFlag>>;
         Relationships: [];
       };
       activity_events: {

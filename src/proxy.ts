@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-import type { UserRole } from "@/types/database";
+import type { ModuleFlag, UserRole } from "@/types/database";
+import { findModuleKeyForPath } from "@/lib/module-route-map";
+import { isModuleVisible } from "@/lib/module-visibility";
 
 /** Prefijo de ruta -> roles que pueden entrar. */
 const ROLE_ROUTES: Record<string, UserRole[]> = {
@@ -15,7 +17,7 @@ const PUBLIC_ROUTES = ["/login", "/auth", "/api/webhooks", "/f"];
 // la función debe llamarse `proxy` — ver AGENTS.md de este repo).
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const { supabaseResponse, user, role } = await updateSession(request);
+  const { supabaseResponse, user, role, supabase } = await updateSession(request);
 
   const isPublic = PUBLIC_ROUTES.some((p) => pathname.startsWith(p));
   if (isPublic) return supabaseResponse;
@@ -45,6 +47,37 @@ export async function proxy(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/no-autorizado";
       return NextResponse.redirect(url);
+    }
+  }
+
+  // Fase F2: bloqueo por URL de módulos apagados/no-visibles para el rol
+  // (ver Configuración > Módulos). "portal-clientes" es especial: gatea todo
+  // el prefijo /client, no una sub-ruta puntual.
+  if (role) {
+    const keysToCheck = new Set<string>();
+    const routeKey = findModuleKeyForPath(pathname);
+    // Nunca se bloquea el propio panel de Módulos al admin: si no, apagarlo
+    // por error dejaría a todos sin forma de volver a prenderlo.
+    if (routeKey && !(role === "admin" && routeKey === "config-modulos")) {
+      keysToCheck.add(routeKey);
+    }
+    if (pathname.startsWith("/client")) keysToCheck.add("portal-clientes");
+
+    if (keysToCheck.size > 0) {
+      const { data: flagRows } = await supabase
+        .from("module_flags")
+        .select("*")
+        .in("key", Array.from(keysToCheck));
+      const flags = new Map((flagRows ?? []).map((f) => [f.key, f as ModuleFlag]));
+
+      const blocked = Array.from(keysToCheck).some(
+        (key) => !isModuleVisible(flags.get(key), role as UserRole)
+      );
+      if (blocked) {
+        const url = request.nextUrl.clone();
+        url.pathname = `/${role}`;
+        return NextResponse.redirect(url);
+      }
     }
   }
 

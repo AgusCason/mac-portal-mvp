@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/select";
 import { cn, formatDate } from "@/lib/utils";
 
-const COLUMN_ORDER: ContentStatus[] = [
+export const COLUMN_ORDER: ContentStatus[] = [
   "borrador",
   "en_edicion",
   "por_aprobar",
@@ -62,7 +62,7 @@ const COLUMN_ORDER: ContentStatus[] = [
 // de entrega (`DeliverContentDialog`), que sube el render a Drive y recién
 // ahí transiciona a "por_aprobar" — así nunca queda una pieza "aprobable"
 // sin archivo real entregado.
-const NEXT_STATUS: Partial<Record<ContentStatus, ContentStatus>> = {
+export const NEXT_STATUS: Partial<Record<ContentStatus, ContentStatus>> = {
   borrador: "en_edicion",
   requiere_cambios: "en_edicion",
   aprobado: "programado",

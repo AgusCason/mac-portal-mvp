@@ -33,7 +33,9 @@ import {
   Swords,
   LayoutGrid,
 } from "lucide-react";
-import type { UserRole } from "@/types/database";
+import type { ModuleFlag, UserRole } from "@/types/database";
+import { findModuleKeyForPath } from "@/lib/module-route-map";
+import { isModuleVisible } from "@/lib/module-visibility";
 
 export interface NavItem {
   label: string;
@@ -132,6 +134,44 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Chat", href: "/client/chat", icon: Inbox },
   ],
 };
+
+/**
+ * Filtra NAV_CONFIG según module_flags — usado por SidebarNav (app-shell.tsx).
+ * Un ítem con children se oculta entero si TODOS sus hijos quedan ocultos.
+ * Lo que no matchea ningún módulo del catálogo (ej. Dashboard) siempre queda.
+ */
+export function filterNavItems(
+  items: NavItem[],
+  role: UserRole,
+  flags: Record<string, ModuleFlag>
+): NavItem[] {
+  // El propio panel de Módulos nunca se oculta al admin: si no, apagarlo por
+  // error también borraría la única forma de volver a encontrarlo y prenderlo.
+  const isModulesPanelForAdmin = (href: string) =>
+    role === "admin" && findModuleKeyForPath(href) === "config-modulos";
+
+  const result: NavItem[] = [];
+  for (const item of items) {
+    if (item.children) {
+      const children = item.children.filter(
+        (child) =>
+          isModulesPanelForAdmin(child.href) ||
+          isModuleVisible(flags[findModuleKeyForPath(child.href) ?? ""], role)
+      );
+      if (children.length > 0) result.push({ ...item, children });
+      continue;
+    }
+    if (
+      item.href &&
+      !isModulesPanelForAdmin(item.href) &&
+      !isModuleVisible(flags[findModuleKeyForPath(item.href) ?? ""], role)
+    ) {
+      continue;
+    }
+    result.push(item);
+  }
+  return result;
+}
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Administrador",

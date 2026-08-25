@@ -25,6 +25,16 @@ export function formatDate(value: string | Date) {
   }).format(date);
 }
 
+/** Formatea solo la hora: 14:00 */
+export function formatTime(value: string | Date) {
+  const date = typeof value === "string" ? new Date(value) : value;
+  return new Intl.DateTimeFormat("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
 /** Iniciales para avatares de fallback (ej: "Juan Pérez" -> "JP") */
 export function getInitials(name: string) {
   return name
