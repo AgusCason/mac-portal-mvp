@@ -20,12 +20,16 @@ export interface ReportFilters {
  * los suyos con status='published' (ver policy
  * `performance_reports_member_select` en la migración 0005).
  */
-export async function getReports(filters: ReportFilters = {}): Promise<ReportWithClient[]> {
+export async function getReports(
+  filters: ReportFilters = {},
+  limit = 300
+): Promise<ReportWithClient[]> {
   const supabase = await createClient();
   let query = supabase
     .from("performance_reports")
     .select("*, clients(name)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (filters.clientId) query = query.eq("client_id", filters.clientId);
   if (filters.status) query = query.eq("status", filters.status);

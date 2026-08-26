@@ -7,12 +7,13 @@ export interface WebFormWithCount extends WebForm {
 }
 
 /** Management > Web Forms — listado admin con conteo de respuestas. */
-export async function getWebForms(): Promise<WebFormWithCount[]> {
+export async function getWebForms(limit = 300): Promise<WebFormWithCount[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("web_forms")
     .select("*, form_submissions(id)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("[getWebForms]", error.message);
@@ -26,13 +27,14 @@ export async function getWebForms(): Promise<WebFormWithCount[]> {
   });
 }
 
-export async function getWebFormSubmissions(formId: string): Promise<FormSubmission[]> {
+export async function getWebFormSubmissions(formId: string, limit = 500): Promise<FormSubmission[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("form_submissions")
     .select("*")
     .eq("form_id", formId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("[getWebFormSubmissions]", error.message);

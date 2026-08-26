@@ -2,11 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import type { TaskPriority, TaskStatus } from "@/types/database";
 
 const TASKS_PATH = "/admin/tareas";
+const EDITOR_TASKS_PATH = "/editor/tareas";
 
 const taskSchema = z.object({
   title: z.string().min(2, "El título es obligatorio"),
@@ -90,6 +91,38 @@ export async function updateTaskStatusAction(taskId: string, status: TaskStatus)
 
   if (error) return { ok: false, error: error.message };
   revalidatePath(TASKS_PATH);
+  return { ok: true };
+}
+
+/**
+ * Cambia el estado de UNA de sus propias tareas — versión para /editor/tareas.
+ * La policy "tasks_editor_update_own" (0023_editor_tasks_rls.sql) ya lo exige
+ * a nivel de base, pero se valida también acá — defensa en profundidad, y
+ * además así el mensaje de error es explícito en vez de un 0 rows afectadas
+ * silencioso si algún día cambia el `.eq` de abajo.
+ */
+export async function updateMyTaskStatusAction(taskId: string, status: TaskStatus) {
+  const editor = await requireRole(["editor"]);
+  const supabase = await createSupabaseServerClient();
+
+  const { data: task } = await supabase
+    .from("tasks")
+    .select("id, assigned_to")
+    .eq("id", taskId)
+    .maybeSingle();
+
+  if (!task || task.assigned_to !== editor.id) {
+    return { ok: false, error: "No tenés permiso para modificar esta tarea." };
+  }
+
+  const { error } = await supabase
+    .from("tasks")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", taskId)
+    .eq("assigned_to", editor.id);
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath(EDITOR_TASKS_PATH);
   return { ok: true };
 }
 

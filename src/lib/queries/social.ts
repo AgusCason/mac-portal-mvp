@@ -12,12 +12,15 @@ export interface SocialAccountWithLatestMetric extends SocialAccount {
  * complete la integración real con Meta Graph API / TikTok / YouTube
  * (ver README § Módulo D — Fase Avanzada).
  */
-export async function getSocialAccountsOverview(): Promise<SocialAccountWithLatestMetric[]> {
+export async function getSocialAccountsOverview(
+  limit = 300
+): Promise<SocialAccountWithLatestMetric[]> {
   const supabase = await createClient();
   const { data: accounts, error } = await supabase
     .from("social_accounts")
     .select("*, clients(name)")
-    .order("connected_at", { ascending: false });
+    .order("connected_at", { ascending: false })
+    .limit(limit);
 
   if (error || !accounts) return [];
 

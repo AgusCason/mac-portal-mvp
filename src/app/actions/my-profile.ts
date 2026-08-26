@@ -73,6 +73,16 @@ export async function updateMyPreferencesAction(formData: FormData) {
   return { ok: true };
 }
 
+/** Selector rápido de idioma en el panel de Settings — no exige reenviar todas las Preferencias. */
+export async function updateMyLanguageAction(language: "es" | "en" | "pt") {
+  const me = await requireRole();
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("profiles").update({ language }).eq("id", me.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
 /** "Notificaciones" — Alertas de Seguridad es obligatorio, nunca se guarda como false. */
 export async function updateMyNotificationsAction(marketing: boolean, productUpdates: boolean) {
   const me = await requireRole();

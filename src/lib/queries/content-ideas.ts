@@ -7,12 +7,13 @@ export interface ContentIdeaWithClient extends ContentIdea {
 }
 
 /** Social Media > Content Studio — banco de ideas/guiones, todos los tipos. */
-export async function getContentIdeas(): Promise<ContentIdeaWithClient[]> {
+export async function getContentIdeas(limit = 300): Promise<ContentIdeaWithClient[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("content_ideas")
     .select("*, clients(name)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("[getContentIdeas]", error.message);

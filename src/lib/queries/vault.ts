@@ -11,12 +11,13 @@ export interface VaultCredentialWithClient extends VaultCredential {
  * a la UI de listado, el valor real solo sale bajo demanda vía
  * `revealVaultCredentialAction` (que exige la passphrase del server).
  */
-export async function getVaultCredentials(): Promise<VaultCredentialWithClient[]> {
+export async function getVaultCredentials(limit = 300): Promise<VaultCredentialWithClient[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("vault_credentials")
     .select("id, client_id, label, username, url, notes, created_by, created_at, updated_at, clients(name)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("[getVaultCredentials]", error.message);

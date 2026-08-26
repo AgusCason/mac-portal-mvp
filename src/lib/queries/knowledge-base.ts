@@ -7,14 +7,15 @@ export interface KbArticleWithFavorite extends KbArticle {
 }
 
 /** Management > Knowledge Base — artículos internos, fijados primero. */
-export async function getKbArticles(profileId: string): Promise<KbArticleWithFavorite[]> {
+export async function getKbArticles(profileId: string, limit = 300): Promise<KbArticleWithFavorite[]> {
   const supabase = await createClient();
   const [{ data: articles, error }, { data: favorites }] = await Promise.all([
     supabase
       .from("kb_articles")
       .select("*")
       .order("is_pinned", { ascending: false })
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(limit),
     supabase.from("kb_article_favorites").select("article_id").eq("profile_id", profileId),
   ]);
 

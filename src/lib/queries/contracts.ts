@@ -7,12 +7,13 @@ export interface ContractWithClient extends Contract {
 }
 
 /** Lista contratos. RLS acota a admin (todos) o al cliente dueño (los suyos). */
-export async function getContracts(clientId?: string): Promise<ContractWithClient[]> {
+export async function getContracts(clientId?: string, limit = 500): Promise<ContractWithClient[]> {
   const supabase = await createClient();
   let query = supabase
     .from("contracts")
     .select("*, clients(name)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (clientId) query = query.eq("client_id", clientId);
 

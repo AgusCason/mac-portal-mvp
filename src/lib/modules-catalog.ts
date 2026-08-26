@@ -40,6 +40,49 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         description: "Cuentas conectadas y métricas clave por cliente (Meta, TikTok, YouTube).",
         status: "incluido",
       },
+      {
+        key: "redes-insights",
+        label: "Redes — Insights",
+        description: "Panel de insights de redes sociales dentro de Social Media (cuentas y métricas clave).",
+        status: "incluido",
+        dependsOn: "Redes sociales",
+      },
+    ],
+  },
+  {
+    area: "Marketing & Analytics",
+    category: "Analytics",
+    modules: [
+      {
+        key: "analytics-overview",
+        label: "Analytics Overview",
+        description: "Resumen general de métricas de campañas y contenido.",
+        status: "incluido",
+      },
+      {
+        key: "analytics-dashboards",
+        label: "Analytics Dashboards",
+        description: "Dashboards armables con los widgets de métricas de la agencia.",
+        status: "incluido",
+      },
+      {
+        key: "analytics-explorer",
+        label: "Analytics Explorer",
+        description: "Exploración libre de métricas y segmentos.",
+        status: "incluido",
+      },
+      {
+        key: "analytics-envios",
+        label: "Analytics Envíos",
+        description: "Envíos programados de reportes y dashboards por email.",
+        status: "incluido",
+      },
+      {
+        key: "analytics-utm-builder",
+        label: "UTM Builder",
+        description: "Generador de links con parámetros UTM para campañas.",
+        status: "incluido",
+      },
     ],
   },
   {
@@ -94,6 +137,48 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         key: "chat",
         label: "Chat",
         description: "Mensajería centralizada por cliente, integrada con WhatsApp.",
+        status: "incluido",
+      },
+    ],
+  },
+  {
+    area: "Gestión",
+    category: "Operación",
+    modules: [
+      {
+        key: "tareas",
+        label: "Tareas",
+        description: "Tareas del workspace, asignables a editores — panel del admin y \"Mis tareas\" del editor.",
+        status: "incluido",
+      },
+      {
+        key: "proyectos",
+        label: "Proyectos",
+        description: "Seguimiento de proyectos por cliente, con hitos y estado.",
+        status: "incluido",
+      },
+      {
+        key: "contactos",
+        label: "Contactos",
+        description: "Libreta de contactos de clientes y prospectos.",
+        status: "incluido",
+      },
+      {
+        key: "media-library",
+        label: "Media Library",
+        description: "Biblioteca de archivos multimedia reutilizables entre clientes.",
+        status: "incluido",
+      },
+      {
+        key: "knowledge-base",
+        label: "Knowledge Base",
+        description: "Artículos internos de referencia para el equipo.",
+        status: "incluido",
+      },
+      {
+        key: "web-forms",
+        label: "Web Forms",
+        description: "Formularios web embebibles y sus respuestas.",
         status: "incluido",
       },
     ],

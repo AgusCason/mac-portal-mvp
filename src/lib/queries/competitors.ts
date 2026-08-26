@@ -7,12 +7,13 @@ export interface CompetitorWithClient extends Competitor {
 }
 
 /** Social Media > Competidores — perfiles de la competencia, todas las cuentas. */
-export async function getCompetitors(): Promise<CompetitorWithClient[]> {
+export async function getCompetitors(limit = 300): Promise<CompetitorWithClient[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("competitors")
     .select("*, clients(name)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("[getCompetitors]", error.message);

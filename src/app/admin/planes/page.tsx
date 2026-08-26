@@ -10,9 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency } from "@/lib/utils";
 import type { Plan } from "@/types/database";
+import { getT } from "@/lib/i18n/dictionary";
 
 export default async function AdminPlanesPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const supabase = await createSupabaseServerClient();
   const [{ data: plans }, invoices, summary, clients] = await Promise.all([
     supabase.from("plans").select("*").order("price_monthly"),
@@ -31,21 +33,26 @@ export default async function AdminPlanesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Planes y facturación</h1>
+        <h1 className="text-xl font-semibold tracking-tight">
+          {t("billing.pageTitle", "Planes y facturación")}
+        </h1>
         <p className="text-muted-foreground text-sm">
-          Información financiera — visible solo para vos (RLS bloquea a editores).
+          {t(
+            "billing.pageDescription",
+            "Información financiera — visible solo para vos (RLS bloquea a editores)."
+          )}
         </p>
       </div>
 
       <Tabs defaultValue="dashboard">
         <TabsList>
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="facturacion">Facturación</TabsTrigger>
-          <TabsTrigger value="planes">Planes</TabsTrigger>
+          <TabsTrigger value="dashboard">{t("billing.tabDashboard", "Dashboard")}</TabsTrigger>
+          <TabsTrigger value="facturacion">{t("billing.tabFacturacion", "Facturación")}</TabsTrigger>
+          <TabsTrigger value="planes">{t("billing.tabPlanes", "Planes")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-4">
-          <BillingDashboard analytics={billingAnalytics} />
+          <BillingDashboard analytics={billingAnalytics} language={profile.language} />
         </TabsContent>
 
         <TabsContent value="facturacion" className="space-y-4">

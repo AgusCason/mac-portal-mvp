@@ -7,12 +7,13 @@ export interface ContactWithClient extends Contact {
 }
 
 /** Management > Contactos — directorio de personas del workspace. */
-export async function getContacts(): Promise<ContactWithClient[]> {
+export async function getContacts(limit = 500): Promise<ContactWithClient[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("contacts")
     .select("*, clients(name)")
-    .order("name", { ascending: true });
+    .order("name", { ascending: true })
+    .limit(limit);
 
   if (error) {
     console.error("[getContacts]", error.message);

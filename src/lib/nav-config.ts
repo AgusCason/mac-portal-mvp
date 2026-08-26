@@ -39,6 +39,13 @@ import { isModuleVisible } from "@/lib/module-visibility";
 
 export interface NavItem {
   label: string;
+  /**
+   * Clave de `src/lib/i18n/dictionary.ts` (ej. "nav.analytics.overview").
+   * `SidebarNav` la resuelve con `t(item.key, item.label)` — si falta la
+   * clave o la traducción, `label` (el literal en español) es el fallback,
+   * así un ítem nunca queda en blanco por una clave que todavía no se sumó.
+   */
+  key?: string;
   /** Ausente cuando el ítem es solo un grupo colapsable (ver `children`). */
   href?: string;
   icon: LucideIcon;
@@ -47,91 +54,105 @@ export interface NavItem {
    * grupo colapsable (estilo MB Suite) en vez de un link directo — ver
    * `SidebarNav` en components/shared/app-shell.tsx.
    */
-  children?: { label: string; href: string; icon: LucideIcon }[];
+  children?: { label: string; key?: string; href: string; icon: LucideIcon }[];
 }
 
-/** Ítems de navegación por rol. El layout de cada rol arma el sidebar desde acá. */
+/**
+ * Ítems de navegación por rol. El layout de cada rol arma el sidebar desde acá.
+ *
+ * Dos duplicados que había antes quedaron resueltos acá (ver el mapa del
+ * Admin que armamos): `/admin/redes` colgaba a la vez de Analytics
+ * ("Monitors") y Social Media ("Insights") — la página es "Redes sociales:
+ * cuentas conectadas y métricas clave" (`app/admin/redes/page.tsx`), así que
+ * es 100% Social Media y "Monitors" se sacó de Analytics. Y "Bóveda" colgaba
+ * a la vez de Management y Configuración — es config técnica (credenciales
+ * cifradas), así que se sacó de Management y queda solo en Configuración.
+ */
 export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
   admin: [
-    { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Cuentas", href: "/admin/clientes", icon: Briefcase },
+    { label: "Dashboard", key: "nav.dashboard", href: "/admin", icon: LayoutDashboard },
+    { label: "Cuentas", key: "nav.cuentas", href: "/admin/clientes", icon: Briefcase },
     {
       label: "Analytics",
+      key: "nav.analytics.group",
       icon: BarChart3,
       children: [
-        { label: "Overview", href: "/admin/analytics", icon: BarChart3 },
-        { label: "Monitors", href: "/admin/redes", icon: Radar },
-        { label: "Dashboards", href: "/admin/analytics/dashboards", icon: LayoutDashboard },
-        { label: "Explorer", href: "/admin/analytics/explorer", icon: Compass },
-        { label: "Reports", href: "/admin/reportes", icon: FileText },
-        { label: "Alertas", href: "/admin/analytics/alertas", icon: AlertTriangle },
-        { label: "Envíos", href: "/admin/analytics/envios", icon: Send },
-        { label: "UTM Builder", href: "/admin/analytics/utm-builder", icon: Link2 },
+        { label: "Overview", key: "nav.analytics.overview", href: "/admin/analytics", icon: BarChart3 },
+        { label: "Dashboards", key: "nav.analytics.dashboards", href: "/admin/analytics/dashboards", icon: LayoutDashboard },
+        { label: "Explorer", key: "nav.analytics.explorer", href: "/admin/analytics/explorer", icon: Compass },
+        { label: "Reports", key: "nav.analytics.reports", href: "/admin/reportes", icon: FileText },
+        { label: "Alertas", key: "nav.analytics.alertas", href: "/admin/analytics/alertas", icon: AlertTriangle },
+        { label: "Envíos", key: "nav.analytics.envios", href: "/admin/analytics/envios", icon: Send },
+        { label: "UTM Builder", key: "nav.analytics.utmBuilder", href: "/admin/analytics/utm-builder", icon: Link2 },
       ],
     },
     {
       label: "Management",
+      key: "nav.management.group",
       icon: ListChecks,
       children: [
-        { label: "Tareas", href: "/admin/tareas", icon: ListChecks },
-        { label: "Proyectos", href: "/admin/proyectos", icon: FolderKanban },
-        { label: "Contactos", href: "/admin/contactos", icon: Users },
-        { label: "Media Library", href: "/admin/media-library", icon: ImageIcon },
-        { label: "Knowledge Base", href: "/admin/knowledge-base", icon: BookOpen },
-        { label: "Web Forms", href: "/admin/web-forms", icon: ClipboardList },
-        { label: "Bóveda", href: "/admin/configuracion/boveda", icon: KeyRound },
-        { label: "Actividad", href: "/admin/actividad", icon: Activity },
+        { label: "Tareas", key: "nav.management.tareas", href: "/admin/tareas", icon: ListChecks },
+        { label: "Proyectos", key: "nav.management.proyectos", href: "/admin/proyectos", icon: FolderKanban },
+        { label: "Contactos", key: "nav.management.contactos", href: "/admin/contactos", icon: Users },
+        { label: "Media Library", key: "nav.management.mediaLibrary", href: "/admin/media-library", icon: ImageIcon },
+        { label: "Knowledge Base", key: "nav.management.knowledgeBase", href: "/admin/knowledge-base", icon: BookOpen },
+        { label: "Web Forms", key: "nav.management.webForms", href: "/admin/web-forms", icon: ClipboardList },
+        { label: "Actividad", key: "nav.management.actividad", href: "/admin/actividad", icon: Activity },
       ],
     },
     {
       label: "Social Media",
+      key: "nav.socialMedia.group",
       icon: Share2,
       children: [
-        { label: "Overview", href: "/admin/social-media", icon: Share2 },
-        { label: "Insights", href: "/admin/redes", icon: Radar },
-        { label: "Planner", href: "/admin/social-media/planner", icon: Compass },
-        { label: "Content Studio", href: "/admin/social-media/content-studio", icon: Sparkle },
-        { label: "Brand Voice", href: "/admin/social-media/brand-voice", icon: LayoutGrid },
-        { label: "Competidores", href: "/admin/social-media/competidores", icon: Swords },
+        { label: "Overview", key: "nav.socialMedia.overview", href: "/admin/social-media", icon: Share2 },
+        { label: "Insights", key: "nav.socialMedia.insights", href: "/admin/redes", icon: Radar },
+        { label: "Planner", key: "nav.socialMedia.planner", href: "/admin/social-media/planner", icon: Compass },
+        { label: "Content Studio", key: "nav.socialMedia.contentStudio", href: "/admin/social-media/content-studio", icon: Sparkle },
+        { label: "Brand Voice", key: "nav.socialMedia.brandVoice", href: "/admin/social-media/brand-voice", icon: LayoutGrid },
+        { label: "Competidores", key: "nav.socialMedia.competidores", href: "/admin/social-media/competidores", icon: Swords },
       ],
     },
-    { label: "Equipo", href: "/admin/equipo", icon: UserCog },
-    { label: "Calendario", href: "/admin/calendario", icon: CalendarDays },
-    { label: "Contratos", href: "/admin/contratos", icon: FileSignature },
-    { label: "Chat", href: "/admin/chat", icon: Inbox },
+    { label: "Equipo", key: "nav.equipo", href: "/admin/equipo", icon: UserCog },
+    { label: "Calendario", key: "nav.calendario", href: "/admin/calendario", icon: CalendarDays },
+    { label: "Contratos", key: "nav.contratos", href: "/admin/contratos", icon: FileSignature },
+    { label: "Chat", key: "nav.chat", href: "/admin/chat", icon: Inbox },
     {
       label: "Comercial",
+      key: "nav.comercial.group",
       icon: Wallet,
       children: [
-        { label: "Planes y facturación", href: "/admin/planes", icon: Wallet },
-        { label: "CRM", href: "/admin/crm", icon: Handshake },
+        { label: "Planes y facturación", key: "nav.comercial.planes", href: "/admin/planes", icon: Wallet },
+        { label: "CRM", key: "nav.comercial.crm", href: "/admin/crm", icon: Handshake },
       ],
     },
-    { label: "Asistente IA", href: "/admin/asistente", icon: Sparkles },
+    { label: "Asistente IA", key: "nav.asistenteIA", href: "/admin/asistente", icon: Sparkles },
     {
       label: "Configuración",
+      key: "nav.config.group",
       icon: Settings,
       children: [
-        { label: "General", href: "/admin/configuracion", icon: Settings },
-        { label: "Módulos", href: "/admin/configuracion/modulos", icon: Puzzle },
-        { label: "Marca", href: "/admin/configuracion/marca", icon: Palette },
-        { label: "Bóveda", href: "/admin/configuracion/boveda", icon: KeyRound },
+        { label: "General", key: "nav.config.general", href: "/admin/configuracion", icon: Settings },
+        { label: "Módulos", key: "nav.config.modulos", href: "/admin/configuracion/modulos", icon: Puzzle },
+        { label: "Marca", key: "nav.config.marca", href: "/admin/configuracion/marca", icon: Palette },
+        { label: "Bóveda", key: "nav.config.boveda", href: "/admin/configuracion/boveda", icon: KeyRound },
       ],
     },
   ],
   editor: [
-    { label: "Dashboard", href: "/editor", icon: LayoutDashboard },
-    { label: "Calendario", href: "/editor/calendario", icon: CalendarDays },
-    { label: "Drive de clientes", href: "/editor/drive", icon: FolderOpen },
-    { label: "Chat", href: "/editor/chat", icon: Inbox },
+    { label: "Dashboard", key: "nav.dashboard", href: "/editor", icon: LayoutDashboard },
+    { label: "Mis tareas", key: "nav.editor.misTareas", href: "/editor/tareas", icon: ListChecks },
+    { label: "Calendario", key: "nav.calendario", href: "/editor/calendario", icon: CalendarDays },
+    { label: "Drive de clientes", key: "nav.editor.driveClientes", href: "/editor/drive", icon: FolderOpen },
+    { label: "Chat", key: "nav.chat", href: "/editor/chat", icon: Inbox },
   ],
   client: [
-    { label: "Dashboard", href: "/client", icon: LayoutDashboard },
-    { label: "Calendario", href: "/client/calendario", icon: CalendarDays },
-    { label: "Archivos", href: "/client/drive", icon: FolderOpen },
-    { label: "Contratos", href: "/client/contratos", icon: FileSignature },
-    { label: "Reportes", href: "/client/reportes", icon: FileText },
-    { label: "Chat", href: "/client/chat", icon: Inbox },
+    { label: "Dashboard", key: "nav.dashboard", href: "/client", icon: LayoutDashboard },
+    { label: "Calendario", key: "nav.calendario", href: "/client/calendario", icon: CalendarDays },
+    { label: "Archivos", key: "nav.client.archivos", href: "/client/drive", icon: FolderOpen },
+    { label: "Contratos", key: "nav.contratos", href: "/client/contratos", icon: FileSignature },
+    { label: "Reportes", key: "nav.client.reportes", href: "/client/reportes", icon: FileText },
+    { label: "Chat", key: "nav.chat", href: "/client/chat", icon: Inbox },
   ],
 };
 

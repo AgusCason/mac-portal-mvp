@@ -9,6 +9,7 @@ import { Menu, ChevronDown, UserCircle } from "lucide-react";
 import { NAV_CONFIG, ROLE_LABELS, filterNavItems, type NavItem } from "@/lib/nav-config";
 import type { Profile, AgencyBranding, ModuleFlag } from "@/types/database";
 import { cn, getInitials } from "@/lib/utils";
+import { LocaleProvider, useLocale } from "@/lib/i18n/locale-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,16 +68,19 @@ function pickActiveChildHref(pathname: string, hrefs: string[]): string | null {
 function NavLink({
   href,
   label,
+  labelKey,
   icon: Icon,
   active,
   indented,
 }: {
   href: string;
   label: string;
+  labelKey?: string;
   icon: LucideIconType;
   active: boolean;
   indented?: boolean;
 }) {
+  const { t } = useLocale();
   return (
     <Link
       href={href}
@@ -89,7 +93,7 @@ function NavLink({
       )}
     >
       <Icon className={cn("shrink-0", indented ? "size-3.5" : "size-4")} strokeWidth={1.75} />
-      {label}
+      {labelKey ? t(labelKey, label) : label}
     </Link>
   );
 }
@@ -119,6 +123,7 @@ function NavGroup({
   const hasActiveChild = activeChildHref !== null;
 
   const Icon = item.icon;
+  const { t } = useLocale();
 
   return (
     <div>
@@ -134,7 +139,7 @@ function NavGroup({
         )}
       >
         <Icon className="size-4 shrink-0" strokeWidth={1.75} />
-        <span className="flex-1 text-left">{item.label}</span>
+        <span className="flex-1 text-left">{item.key ? t(item.key, item.label) : item.label}</span>
         <ChevronDown
           className={cn("size-3.5 shrink-0 transition-transform duration-150", open && "rotate-180")}
         />
@@ -146,6 +151,7 @@ function NavGroup({
               key={child.href}
               href={child.href}
               label={child.label}
+              labelKey={child.key}
               icon={child.icon}
               active={child.href === activeChildHref}
               indented
@@ -200,6 +206,7 @@ function SidebarNav({
             key={item.href}
             href={item.href!}
             label={item.label}
+            labelKey={item.key}
             icon={item.icon}
             active={isItemActive(pathname, item.href!, profile.role)}
           />
@@ -249,7 +256,33 @@ export function AppShell({
   branding,
   moduleFlags,
 }: AppShellProps) {
+  return (
+    <LocaleProvider initialLanguage={profile.language}>
+      <AppShellInner
+        profile={profile}
+        activity={activity}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        branding={branding}
+        moduleFlags={moduleFlags}
+      >
+        {children}
+      </AppShellInner>
+    </LocaleProvider>
+  );
+}
+
+function AppShellInner({
+  profile,
+  children,
+  activity,
+  notifications,
+  unreadCount,
+  branding,
+  moduleFlags,
+}: AppShellProps) {
   const [profileOpen, setProfileOpen] = React.useState(false);
+  const { t } = useLocale();
 
   return (
     <div className="bg-sidebar min-h-dvh">
@@ -318,7 +351,7 @@ export function AppShell({
                     }}
                   >
                     <UserCircle />
-                    Mi Perfil
+                    {t("common.myProfile", "Mi Perfil")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <LogoutMenuItem />

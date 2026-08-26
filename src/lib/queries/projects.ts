@@ -8,12 +8,13 @@ export interface ProjectWithRelations extends Project {
 }
 
 /** Management > Proyectos — lista de proyectos con cuenta y cantidad de items. */
-export async function getProjects(): Promise<ProjectWithRelations[]> {
+export async function getProjects(limit = 300): Promise<ProjectWithRelations[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("projects")
     .select("*, clients(name), project_items(id)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error("[getProjects]", error.message);

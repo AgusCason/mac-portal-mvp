@@ -8,13 +8,18 @@ import { BillingKpiRow } from "@/components/billing/billing-kpi-row";
 import { MonthlyBillingChart } from "@/components/billing/monthly-billing-chart";
 import { PaymentMethodChart } from "@/components/billing/payment-method-chart";
 import { cn } from "@/lib/utils";
+import { getT } from "@/lib/i18n/dictionary";
+import type { ProfileLanguage } from "@/types/database";
 
 export function BillingDashboard({
   analytics,
+  language,
 }: {
   /** Una entrada por moneda con facturas (ver page.tsx). Siempre >= 1. */
   analytics: BillingAnalytics[];
+  language: ProfileLanguage;
 }) {
+  const t = getT(language);
   const [currency, setCurrency] = React.useState(analytics[0].currency);
   const current = analytics.find((a) => a.currency === currency) ?? analytics[0];
 
@@ -48,11 +53,11 @@ export function BillingDashboard({
         </Card>
       ) : (
         <>
-          <BillingKpiRow kpis={current.kpis} currency={current.currency} />
+          <BillingKpiRow kpis={current.kpis} currency={current.currency} language={language} />
 
           <Card>
             <CardHeader>
-              <CardTitle>Facturación mensual</CardTitle>
+              <CardTitle>{t("billing.monthlyChartTitle", "Facturación mensual")}</CardTitle>
               <CardDescription>
                 Monto emitido por mes, últimos {current.monthly.length} meses — apilado por estado.
               </CardDescription>
@@ -64,7 +69,7 @@ export function BillingDashboard({
 
           <Card>
             <CardHeader>
-              <CardTitle>Método de pago</CardTitle>
+              <CardTitle>{t("billing.methodChartTitle", "Método de pago")}</CardTitle>
               <CardDescription>Monto total facturado por método, histórico.</CardDescription>
             </CardHeader>
             <CardContent>

@@ -3,6 +3,8 @@ import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 import type { BillingKpis } from "@/lib/queries/billing";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, formatCurrency } from "@/lib/utils";
+import { getT } from "@/lib/i18n/dictionary";
+import type { ProfileLanguage } from "@/types/database";
 
 /** 12 puntos como máximo (spec de stat-tile); acá van hasta 6 meses. */
 function Sparkline({ values }: { values: number[] }) {
@@ -78,12 +80,23 @@ function CollectionMeter({ pct }: { pct: number | null }) {
   );
 }
 
-export function BillingKpiRow({ kpis, currency }: { kpis: BillingKpis; currency: string }) {
+export function BillingKpiRow({
+  kpis,
+  currency,
+  language,
+}: {
+  kpis: BillingKpis;
+  currency: string;
+  language: ProfileLanguage;
+}) {
+  const t = getT(language);
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-muted-foreground text-xs font-medium">Facturado este mes</CardTitle>
+          <CardTitle className="text-muted-foreground text-xs font-medium">
+            {t("billing.kpiCurrentMonth", "Facturado este mes")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xl font-semibold tabular-nums">
@@ -96,7 +109,9 @@ export function BillingKpiRow({ kpis, currency }: { kpis: BillingKpis; currency:
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-muted-foreground text-xs font-medium">Tasa de cobro del mes</CardTitle>
+          <CardTitle className="text-muted-foreground text-xs font-medium">
+            {t("billing.kpiCollectionRate", "Tasa de cobro del mes")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xl font-semibold tabular-nums">
@@ -108,7 +123,9 @@ export function BillingKpiRow({ kpis, currency }: { kpis: BillingKpis; currency:
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-muted-foreground text-xs font-medium">Monto pendiente</CardTitle>
+          <CardTitle className="text-muted-foreground text-xs font-medium">
+            {t("billing.kpiPending", "Monto pendiente")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xl font-semibold tabular-nums">{formatCurrency(kpis.pendingTotal, currency)}</p>
@@ -118,7 +135,9 @@ export function BillingKpiRow({ kpis, currency }: { kpis: BillingKpis; currency:
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-muted-foreground text-xs font-medium">Monto atrasado</CardTitle>
+          <CardTitle className="text-muted-foreground text-xs font-medium">
+            {t("billing.kpiOverdue", "Monto atrasado")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-destructive text-xl font-semibold tabular-nums">

@@ -3,12 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import type { Client, ClientStatus } from "@/types/database";
 
 /** Lista de clientes visible para el usuario actual (RLS-aware). */
-export async function getClients(): Promise<Client[]> {
+export async function getClients(limit = 500): Promise<Client[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("clients")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
   if (error) {
     console.error("[getClients]", error.message);
     return [];
@@ -49,7 +50,10 @@ export interface AccountCardData {
  * logo, plan activo, equipo asignado, plataformas conectadas y favorito
  * personal del admin que está mirando.
  */
-export async function getAccountsOverview(profileId: string): Promise<AccountCardData[]> {
+export async function getAccountsOverview(
+  profileId: string,
+  limit = 500
+): Promise<AccountCardData[]> {
   const supabase = await createClient();
 
   const [{ data: clients, error }, { data: favorites }] = await Promise.all([
@@ -61,7 +65,8 @@ export async function getAccountsOverview(profileId: string): Promise<AccountCar
          client_plans(status, plans(name)),
          editor_client_assignments(profiles(id, full_name, avatar_url))`
       )
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(limit),
     supabase.from("client_favorites").select("client_id").eq("profile_id", profileId),
   ]);
 

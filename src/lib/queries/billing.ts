@@ -26,12 +26,13 @@ function computeDaysOverdue(dueDate: string, status: InvoiceStatus): number {
 }
 
 /** Lista facturas. RLS acota a admin (todas) o al cliente dueño (las suyas). */
-export async function getInvoices(clientId?: string): Promise<InvoiceWithRelations[]> {
+export async function getInvoices(clientId?: string, limit = 500): Promise<InvoiceWithRelations[]> {
   const supabase = await createClient();
   let query = supabase
     .from("billing_invoices")
     .select("*, clients(name), plans(name)")
-    .order("due_date", { ascending: false });
+    .order("due_date", { ascending: false })
+    .limit(limit);
 
   if (clientId) query = query.eq("client_id", clientId);
 

@@ -11,12 +11,16 @@ export interface ContentItemWithClient extends ContentItem {
  * (admin: todas: editor: solo clientes asignados; cliente: solo lo suyo) —
  * por eso esta única query sirve para las tres vistas del calendario.
  */
-export async function getContentItems(clientId?: string): Promise<ContentItemWithClient[]> {
+export async function getContentItems(
+  clientId?: string,
+  limit = 500
+): Promise<ContentItemWithClient[]> {
   const supabase = await createClient();
   let query = supabase
     .from("content_items")
     .select("*, clients(name)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (clientId) query = query.eq("client_id", clientId);
 
@@ -33,8 +37,10 @@ export async function getContentItems(clientId?: string): Promise<ContentItemWit
 }
 
 /** Clientes que el usuario actual puede seleccionar al crear contenido (RLS-aware). */
-export async function getSelectableClients(): Promise<{ id: string; name: string }[]> {
+export async function getSelectableClients(
+  limit = 500
+): Promise<{ id: string; name: string }[]> {
   const supabase = await createClient();
-  const { data } = await supabase.from("clients").select("id, name").order("name");
+  const { data } = await supabase.from("clients").select("id, name").order("name").limit(limit);
   return data ?? [];
 }

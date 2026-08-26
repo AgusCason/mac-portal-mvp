@@ -11,12 +11,13 @@ export interface MediaAssetWithRelations extends MediaAsset {
 }
 
 /** Management > Media Library — carpetas con conteo de archivos. */
-export async function getMediaFolders(): Promise<MediaFolderWithCount[]> {
+export async function getMediaFolders(limit = 300): Promise<MediaFolderWithCount[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("media_folders")
     .select("*, media_assets(id)")
-    .order("name", { ascending: true });
+    .order("name", { ascending: true })
+    .limit(limit);
 
   if (error) {
     console.error("[getMediaFolders]", error.message);
@@ -31,12 +32,16 @@ export async function getMediaFolders(): Promise<MediaFolderWithCount[]> {
 }
 
 /** Archivos de una carpeta puntual, o todos si no se pasa folderId. */
-export async function getMediaAssets(folderId?: string): Promise<MediaAssetWithRelations[]> {
+export async function getMediaAssets(
+  folderId?: string,
+  limit = 300
+): Promise<MediaAssetWithRelations[]> {
   const supabase = await createClient();
   let query = supabase
     .from("media_assets")
     .select("*, clients(name)")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
   if (folderId) query = query.eq("folder_id", folderId);
 
