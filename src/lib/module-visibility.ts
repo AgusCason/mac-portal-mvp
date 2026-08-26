@@ -7,7 +7,9 @@ import type { ModuleFlag, UserRole } from "@/types/database";
  * flag cargado (no está en module_flags, ej. todavía no migrado) nunca
  * bloquea nada — el gating es 100% opt-out.
  */
-export function isModuleVisible(flag: ModuleFlag | undefined, role: UserRole): boolean {
+type FlagVisibility = Pick<ModuleFlag, "enabled" | "visible_to_editor" | "visible_to_client">;
+
+export function isModuleVisible(flag: FlagVisibility | undefined, role: UserRole): boolean {
   if (!flag) return true;
   if (!flag.enabled) return false;
   if (role === "editor") return flag.visible_to_editor;

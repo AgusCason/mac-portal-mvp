@@ -1,8 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { updateSession } from "@/lib/supabase/middleware";
-import type { ModuleFlag, UserRole } from "@/types/database";
+import type { Database, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
 import { isModuleVisible } from "@/lib/module-visibility";
+
+/** Solo lo que `isModuleVisible` necesita — la cookie de cache no carga
+ *  `updated_at`/`updated_by` de las 18 filas de `module_flags` de arriba. */
+interface FlagSlim {
+  enabled: boolean;
+  visible_to_editor: boolean;
+  visible_to_client: boolean;
+}
 
 /** Prefijo de ruta -> roles que pueden entrar. */
 const ROLE_ROUTES: Record<string, UserRole[]> = {
@@ -13,11 +22,77 @@ const ROLE_ROUTES: Record<string, UserRole[]> = {
 
 const PUBLIC_ROUTES = ["/login", "/auth", "/api/webhooks", "/f"];
 
+/**
+ * Cache de `role` + `module_flags` en una cookie httpOnly propia, para no
+ * pegarle a la base dos veces más (profile + module_flags) en cada
+ * navegación además del `getUser()` que ya hace `updateSession`. 30s de
+ * ventana: un toggle de módulo en Configuración tarda como mucho eso en
+ * propagarse a otras pestañas/usuarios — aceptable, porque esto es solo
+ * un atajo de UX (redirigir rápido), nunca la barrera de seguridad real:
+ * cada página vuelve a pedir `requireRole()` sin cache (ver lib/auth.ts) y
+ * RLS sigue siendo el piso real de acceso a los datos, tamperear esta
+ * cookie no da acceso a nada que RLS no daría igual.
+ */
+const CACHE_COOKIE = "mac_rc";
+const CACHE_TTL_MS = 30_000;
+
+interface RoleCache {
+  uid: string;
+  role: UserRole;
+  flags: Record<string, FlagSlim>;
+  ts: number;
+}
+
+async function resolveRoleAndFlags(
+  request: NextRequest,
+  supabaseResponse: NextResponse,
+  supabase: SupabaseClient<Database>,
+  userId: string
+): Promise<{ role: UserRole | null; flags: Record<string, FlagSlim> }> {
+  const raw = request.cookies.get(CACHE_COOKIE)?.value;
+  if (raw) {
+    try {
+      const cached = JSON.parse(raw) as RoleCache;
+      if (cached.uid === userId && Date.now() - cached.ts < CACHE_TTL_MS) {
+        return { role: cached.role, flags: cached.flags };
+      }
+    } catch {
+      // cookie corrupta/vieja -> recalculamos abajo
+    }
+  }
+
+  const [{ data: profile }, { data: flagRows }] = await Promise.all([
+    supabase.from("profiles").select("role").eq("id", userId).single(),
+    supabase.from("module_flags").select("key, enabled, visible_to_editor, visible_to_client"),
+  ]);
+
+  const role = (profile?.role as UserRole | undefined) ?? null;
+  const flags = Object.fromEntries(
+    (flagRows ?? []).map((f) => [
+      f.key,
+      { enabled: f.enabled, visible_to_editor: f.visible_to_editor, visible_to_client: f.visible_to_client },
+    ])
+  );
+
+  if (role) {
+    const cache: RoleCache = { uid: userId, role, flags, ts: Date.now() };
+    supabaseResponse.cookies.set(CACHE_COOKIE, JSON.stringify(cache), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60,
+    });
+  }
+
+  return { role, flags };
+}
+
 // Next.js 16 renombró `middleware.ts` a `proxy.ts` (misma funcionalidad,
 // la función debe llamarse `proxy` — ver AGENTS.md de este repo).
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const { supabaseResponse, user, role, supabase } = await updateSession(request);
+  const { supabaseResponse, user, supabase } = await updateSession(request);
 
   const isPublic = PUBLIC_ROUTES.some((p) => pathname.startsWith(p));
   if (isPublic) return supabaseResponse;
@@ -29,6 +104,8 @@ export async function proxy(request: NextRequest) {
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
+
+  const { role, flags } = await resolveRoleAndFlags(request, supabaseResponse, supabase, user.id);
 
   // Rutas raíz protegidas: /dashboard redirige según rol
   if (pathname === "/" || pathname === "/dashboard") {
@@ -43,7 +120,7 @@ export async function proxy(request: NextRequest) {
   );
   if (matchedPrefix) {
     const allowedRoles = ROLE_ROUTES[matchedPrefix];
-    if (!role || !allowedRoles.includes(role as UserRole)) {
+    if (!role || !allowedRoles.includes(role)) {
       const url = request.nextUrl.clone();
       url.pathname = "/no-autorizado";
       return NextResponse.redirect(url);
@@ -63,21 +140,13 @@ export async function proxy(request: NextRequest) {
     }
     if (pathname.startsWith("/client")) keysToCheck.add("portal-clientes");
 
-    if (keysToCheck.size > 0) {
-      const { data: flagRows } = await supabase
-        .from("module_flags")
-        .select("*")
-        .in("key", Array.from(keysToCheck));
-      const flags = new Map((flagRows ?? []).map((f) => [f.key, f as ModuleFlag]));
-
-      const blocked = Array.from(keysToCheck).some(
-        (key) => !isModuleVisible(flags.get(key), role as UserRole)
-      );
-      if (blocked) {
-        const url = request.nextUrl.clone();
-        url.pathname = `/${role}`;
-        return NextResponse.redirect(url);
-      }
+    const blocked = Array.from(keysToCheck).some(
+      (key) => !isModuleVisible(flags[key], role)
+    );
+    if (blocked) {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${role}`;
+      return NextResponse.redirect(url);
     }
   }
 
