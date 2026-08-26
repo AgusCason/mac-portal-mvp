@@ -44,6 +44,23 @@ function isItemActive(pathname: string, href: string, role: string) {
 }
 
 /**
+ * Entre los hijos de un mismo grupo, elige un único activo — el href más
+ * específico (más largo) que matchea. Sin esto, un hijo "índice" cuyo href
+ * es prefijo literal de sus hermanos (ej. "Overview" en `/admin/social-media`
+ * vs. "Planner" en `/admin/social-media/planner`) queda marcado activo al
+ * mismo tiempo que la sección en la que en realidad estás parado.
+ */
+function pickActiveChildHref(pathname: string, hrefs: string[]): string | null {
+  let best: string | null = null;
+  for (const href of hrefs) {
+    if (pathname === href || pathname.startsWith(`${href}/`)) {
+      if (!best || href.length > best.length) best = href;
+    }
+  }
+  return best;
+}
+
+/**
  * Un ítem simple (link directo). Se usa tanto para los ítems raíz sin
  * children como para los sub-ítems dentro de un grupo expandido.
  */
@@ -87,19 +104,19 @@ type LucideIconType = NavItem["icon"];
 function NavGroup({
   item,
   pathname,
-  role,
   open,
   onToggle,
 }: {
   item: NavItem & { children: NonNullable<NavItem["children"]> };
   pathname: string;
-  role: string;
   open: boolean;
   onToggle: () => void;
 }) {
-  const hasActiveChild = item.children.some((child) =>
-    isItemActive(pathname, child.href, role)
+  const activeChildHref = pickActiveChildHref(
+    pathname,
+    item.children.map((child) => child.href)
   );
+  const hasActiveChild = activeChildHref !== null;
 
   const Icon = item.icon;
 
@@ -130,7 +147,7 @@ function NavGroup({
               href={child.href}
               label={child.label}
               icon={child.icon}
-              active={isItemActive(pathname, child.href, role)}
+              active={child.href === activeChildHref}
               indented
             />
           ))}
@@ -173,7 +190,6 @@ function SidebarNav({
             key={item.label}
             item={item as NavItem & { children: NonNullable<NavItem["children"]> }}
             pathname={pathname}
-            role={profile.role}
             open={openGroup === item.label}
             onToggle={() =>
               setManualOpenGroup(openGroup === item.label ? null : item.label)
