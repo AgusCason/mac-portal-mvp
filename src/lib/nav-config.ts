@@ -32,6 +32,7 @@ import {
   Sparkle,
   Swords,
   LayoutGrid,
+  History,
 } from "lucide-react";
 import type { ModuleFlag, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
@@ -136,6 +137,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
         { label: "Módulos", key: "nav.config.modulos", href: "/admin/configuracion/modulos", icon: Puzzle },
         { label: "Marca", key: "nav.config.marca", href: "/admin/configuracion/marca", icon: Palette },
         { label: "Bóveda", key: "nav.config.boveda", href: "/admin/configuracion/boveda", icon: KeyRound },
+        { label: "Auditoría", key: "nav.config.auditoria", href: "/admin/configuracion/auditoria", icon: History },
       ],
     },
   ],
@@ -152,6 +154,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Archivos", key: "nav.client.archivos", href: "/client/drive", icon: FolderOpen },
     { label: "Contratos", key: "nav.contratos", href: "/client/contratos", icon: FileSignature },
     { label: "Reportes", key: "nav.client.reportes", href: "/client/reportes", icon: FileText },
+    { label: "Facturación", key: "nav.client.facturas", href: "/client/facturas", icon: Wallet },
     { label: "Chat", key: "nav.chat", href: "/client/chat", icon: Inbox },
   ],
 };

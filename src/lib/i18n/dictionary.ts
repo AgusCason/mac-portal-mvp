@@ -67,6 +67,7 @@ const es = {
       modulos: "Módulos",
       marca: "Marca",
       boveda: "Bóveda",
+      auditoria: "Auditoría",
     },
     editor: {
       driveClientes: "Drive de clientes",
@@ -75,6 +76,7 @@ const es = {
     client: {
       archivos: "Archivos",
       reportes: "Reportes",
+      facturas: "Facturación",
     },
   },
   common: {
@@ -107,12 +109,24 @@ const es = {
     tabDashboard: "Dashboard",
     tabFacturacion: "Facturación",
     tabPlanes: "Planes",
+    tabCobro: "Métodos de cobro",
     monthlyChartTitle: "Facturación mensual",
     methodChartTitle: "Método de pago",
     kpiCurrentMonth: "Facturado este mes",
     kpiCollectionRate: "Tasa de cobro del mes",
     kpiPending: "Monto pendiente",
     kpiOverdue: "Monto atrasado",
+    clientPageTitle: "Facturación",
+    clientPageDescription: "Tus facturas y cómo pagarlas.",
+    noInvoices: "Todavía no tenés facturas.",
+    payNow: "Pagar",
+    payDialogTitle: "Pagar factura",
+    payDialogDescription: "Elegí cómo pagar — el pago se acredita afuera de la plataforma.",
+    bankTransfer: "Transferencia bancaria",
+    copy: "Copiar",
+    copied: "Copiado",
+    iPaid: "Ya pagué / transferí",
+    iPaidSuccess: "Listo, le avisamos al admin.",
   },
   tasks: {
     adminPageTitle: "Tareas del Workspace",
@@ -125,6 +139,11 @@ const es = {
     statusEnCurso: "En curso",
     statusCompletada: "Completada",
     statusCancelada: "Cancelada",
+  },
+  audit: {
+    pageTitle: "Auditoría",
+    pageDescription:
+      "Registro de acciones financieras y sensibles — quién marcó qué como pagado, quién editó los métodos de cobro, quién tocó una credencial de la Bóveda.",
   },
 };
 
@@ -179,6 +198,7 @@ const en: typeof es = {
       modulos: "Modules",
       marca: "Branding",
       boveda: "Vault",
+      auditoria: "Audit Log",
     },
     editor: {
       driveClientes: "Client Drive",
@@ -187,6 +207,7 @@ const en: typeof es = {
     client: {
       archivos: "Files",
       reportes: "Reports",
+      facturas: "Billing",
     },
   },
   common: {
@@ -219,12 +240,24 @@ const en: typeof es = {
     tabDashboard: "Dashboard",
     tabFacturacion: "Billing",
     tabPlanes: "Plans",
+    tabCobro: "Payment Methods",
     monthlyChartTitle: "Monthly billing",
     methodChartTitle: "Payment method",
     kpiCurrentMonth: "Billed this month",
     kpiCollectionRate: "This month's collection rate",
     kpiPending: "Pending amount",
     kpiOverdue: "Overdue amount",
+    clientPageTitle: "Billing",
+    clientPageDescription: "Your invoices and how to pay them.",
+    noInvoices: "You don't have any invoices yet.",
+    payNow: "Pay",
+    payDialogTitle: "Pay invoice",
+    payDialogDescription: "Choose how to pay — payment settles outside the platform.",
+    bankTransfer: "Bank transfer",
+    copy: "Copy",
+    copied: "Copied",
+    iPaid: "I already paid / transferred",
+    iPaidSuccess: "Done, we let the admin know.",
   },
   tasks: {
     adminPageTitle: "Workspace Tasks",
@@ -237,6 +270,11 @@ const en: typeof es = {
     statusEnCurso: "In progress",
     statusCompletada: "Completed",
     statusCancelada: "Cancelled",
+  },
+  audit: {
+    pageTitle: "Audit Log",
+    pageDescription:
+      "Financial and sensitive actions — who marked what as paid, who edited payment methods, who touched a Vault credential.",
   },
 };
 

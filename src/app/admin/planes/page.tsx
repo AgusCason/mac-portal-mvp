@@ -2,10 +2,12 @@ import { requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { getInvoices, getBillingSummary, computeBillingAnalytics } from "@/lib/queries/billing";
 import { getSelectableClients } from "@/lib/queries/content";
+import { getPaymentMethods } from "@/lib/queries/payment-methods";
 import { NewPlanDialog } from "@/components/plans/new-plan-dialog";
 import { NewInvoiceDialog } from "@/components/billing/new-invoice-dialog";
 import { InvoiceList } from "@/components/billing/invoice-list";
 import { BillingDashboard } from "@/components/billing/billing-dashboard";
+import { PaymentMethodsPanel } from "@/components/billing/payment-methods-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency } from "@/lib/utils";
@@ -16,11 +18,12 @@ export default async function AdminPlanesPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
   const supabase = await createSupabaseServerClient();
-  const [{ data: plans }, invoices, summary, clients] = await Promise.all([
+  const [{ data: plans }, invoices, summary, clients, paymentMethods] = await Promise.all([
     supabase.from("plans").select("*").order("price_monthly"),
     getInvoices(),
     getBillingSummary(),
     getSelectableClients(),
+    getPaymentMethods(),
   ]);
 
   const planOptions = (plans as Plan[] ?? []).map((p) => ({ id: p.id, name: p.name }));
@@ -49,6 +52,7 @@ export default async function AdminPlanesPage() {
           <TabsTrigger value="dashboard">{t("billing.tabDashboard", "Dashboard")}</TabsTrigger>
           <TabsTrigger value="facturacion">{t("billing.tabFacturacion", "Facturación")}</TabsTrigger>
           <TabsTrigger value="planes">{t("billing.tabPlanes", "Planes")}</TabsTrigger>
+          <TabsTrigger value="cobro">{t("billing.tabCobro", "Métodos de cobro")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dashboard" className="space-y-4">
@@ -141,6 +145,10 @@ export default async function AdminPlanesPage() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="cobro" className="space-y-4">
+          <PaymentMethodsPanel methods={paymentMethods} />
         </TabsContent>
       </Tabs>
     </div>

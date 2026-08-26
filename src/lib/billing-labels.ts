@@ -13,3 +13,16 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   crypto: "Cripto",
   otro: "Otro",
 };
+
+/**
+ * Labels de `PaymentMethodKind` (config de cobro de la agencia — ver
+ * payment_methods / getPaymentMethods) — distinto de PAYMENT_METHOD_LABELS
+ * de arriba, que es el método elegido factura por factura.
+ */
+export const PAYMENT_METHOD_KIND_LABELS: Record<string, string> = {
+  paypal: "PayPal",
+  mercadopago: "Mercado Pago",
+  payoneer: "Payoneer",
+  transferencia_ars: "Transferencia (Argentina)",
+  transferencia_usd: "Transferencia internacional (USD)",
+};

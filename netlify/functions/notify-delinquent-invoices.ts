@@ -5,7 +5,12 @@ import { sendWhatsAppMessage } from "../../src/lib/whatsapp";
 /**
  * Cron Job (Netlify Scheduled Function) — corre una vez por día. Implementa
  * la "automatización de morosidad" del módulo de facturación:
- *  - Días 1-7 de atraso: recordatorio automático por WhatsApp al cliente.
+ *  - Día 7 de atraso: un único recordatorio por WhatsApp al cliente (antes
+ *    mandaba uno por día del 1 al 7 — a pedido del admin, se cambió a uno
+ *    solo para no resultar invasivo). Como es una igualdad exacta
+ *    (`daysOverdue === 7`), alcanza sola para no repetirse: pasado ese día
+ *    la condición ya no matchea, sin necesitar una columna de "ya se mandó"
+ *    como sí hace falta para la alerta de 15d+ de abajo.
  *  - Día 15+: alerta interna a la agencia sugiriendo evaluar un bloqueo —
  *    el bloqueo NUNCA es automático, siempre lo decide el admin a mano
  *    desde /admin/clientes (`updateClientStatusAction`).
@@ -42,7 +47,7 @@ const handler = async () => {
     );
     const client = invoice.clients as unknown as { name: string; contact_phone: string | null } | null;
 
-    if (daysOverdue >= 1 && daysOverdue <= 7 && client?.contact_phone) {
+    if (daysOverdue === 7 && client?.contact_phone) {
       const result = await sendWhatsAppMessage(
         client.contact_phone,
         `Hola${client.name ? ` ${client.name}` : ""}, te recordamos que tenés un pago pendiente de ${invoice.amount} ${invoice.currency} desde el ${invoice.due_date}. Cualquier consulta, respondé este mensaje.`

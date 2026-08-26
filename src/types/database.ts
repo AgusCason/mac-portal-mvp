@@ -43,6 +43,19 @@ export type PaymentMethod =
   | "payoneer"
   | "crypto"
   | "otro";
+/**
+ * Kind de `payment_methods` (config de cobro de la agencia, Configuración >
+ * Planes y facturación > Métodos de cobro) — independiente de `PaymentMethod`
+ * de arriba (que es el método elegido factura por factura). Transferencia se
+ * separa en ARS/USD porque los datos que hay que mostrarle al cliente son
+ * distintos (CBU/alias vs. cuenta + routing/SWIFT).
+ */
+export type PaymentMethodKind =
+  | "paypal"
+  | "mercadopago"
+  | "payoneer"
+  | "transferencia_ars"
+  | "transferencia_usd";
 export type ReportStatus = "draft" | "published";
 export type CrmLeadStage =
   | "nuevo"
@@ -486,6 +499,52 @@ export interface ModuleFlag {
   updated_by: string | null;
 }
 
+/**
+ * Una fila por método de cobro (siempre las 5 de `PaymentMethodKind`, sembradas
+ * por la migración) — agency-wide, no por cliente. Nivel 1 (link generado a
+ * mano en el dashboard de PayPal/Mercado Pago/Payoneer + transferencia con
+ * datos fijos de la agencia); las columnas `api_*_encrypted` quedan listas
+ * para un Nivel 2 futuro (checkout dinámico vía API + webhook) sin tener que
+ * migrar de nuevo.
+ */
+export interface PaymentMethodConfig {
+  kind: PaymentMethodKind;
+  enabled: boolean;
+  payment_link: string | null;
+  account_holder: string | null;
+  cuit: string | null;
+  cbu: string | null;
+  alias: string | null;
+  bank_name: string | null;
+  bank_address: string | null;
+  account_number: string | null;
+  routing_number: string | null;
+  swift_bic: string | null;
+  api_key_encrypted: string | null;
+  api_secret_encrypted: string | null;
+  notes: string | null;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+/**
+ * Registro de auditoría de acciones financieras/sensibles (Configuración >
+ * Auditoría) — solo admin (RLS), nunca visible para editor/cliente. Se
+ * llena solo, vía triggers y las funciones de la Bóveda (0026_audit_log.sql)
+ * — nada en la app inserta acá directamente.
+ */
+export interface AuditLogEntry {
+  id: string;
+  actor_id: string | null;
+  action_type: string;
+  target_table: string;
+  target_id: string | null;
+  client_id: string | null;
+  summary: string;
+  diff: Record<string, unknown>;
+  created_at: string;
+}
+
 export interface ActivityEvent {
   id: string;
   client_id: string | null;
@@ -900,6 +959,40 @@ export interface Database {
         Update: Flatten<Partial<ModuleFlag>>;
         Relationships: [];
       };
+      payment_methods: {
+        Row: Flatten<PaymentMethodConfig>;
+        Insert: Flatten<
+          Optional<
+            PaymentMethodConfig,
+            | "enabled"
+            | "payment_link"
+            | "account_holder"
+            | "cuit"
+            | "cbu"
+            | "alias"
+            | "bank_name"
+            | "bank_address"
+            | "account_number"
+            | "routing_number"
+            | "swift_bic"
+            | "api_key_encrypted"
+            | "api_secret_encrypted"
+            | "notes"
+            | "updated_at"
+            | "updated_by"
+          >
+        >;
+        Update: Flatten<Partial<PaymentMethodConfig>>;
+        Relationships: [];
+      };
+      audit_log: {
+        Row: Flatten<AuditLogEntry>;
+        Insert: Flatten<
+          Optional<AuditLogEntry, "id" | "actor_id" | "target_id" | "client_id" | "diff" | "created_at">
+        >;
+        Update: Flatten<Partial<AuditLogEntry>>;
+        Relationships: [];
+      };
       activity_events: {
         Row: Flatten<ActivityEvent>;
         Insert: Flatten<Optional<ActivityEvent, "id" | "client_id" | "actor_id" | "created_at">>;
@@ -1301,6 +1394,21 @@ export interface Database {
       vault_reveal_credential: {
         Args: Flatten<{ p_id: string; p_passphrase: string }>;
         Returns: string | null;
+      };
+      report_invoice_payment: {
+        Args: Flatten<{ target_invoice_id: string; p_method?: string | null }>;
+        Returns: boolean;
+      };
+      log_audit: {
+        Args: Flatten<{
+          p_action_type: string;
+          p_target_table: string;
+          p_target_id: string | null;
+          p_summary: string;
+          p_client_id?: string | null;
+          p_diff?: Record<string, unknown> | null;
+        }>;
+        Returns: null;
       };
     };
   };

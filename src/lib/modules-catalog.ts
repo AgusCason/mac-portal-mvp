@@ -242,6 +242,13 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         status: "incluido",
       },
       {
+        key: "config-auditoria",
+        label: "Auditoría",
+        description:
+          "Registro de quién marcó facturas como pagadas, editó métodos de cobro o tocó una credencial de la Bóveda.",
+        status: "incluido",
+      },
+      {
         key: "actividad-notificaciones",
         label: "Actividad y Notificaciones",
         description: "Bitácora del workspace y avisos personales, en paneles deslizantes desde cualquier pantalla.",

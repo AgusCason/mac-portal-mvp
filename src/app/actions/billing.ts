@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireAdmin } from "@/lib/auth";
+import { requireAdmin, requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 
 const createInvoiceSchema = z.object({
@@ -69,6 +69,34 @@ export async function markInvoicePaidAction(invoiceId: string) {
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/planes");
+  return { ok: true };
+}
+
+/**
+ * El cliente avisa "ya pagué/transferí" desde /client/facturas — Nivel 1 de
+ * pagos: no concilia sola, solo notifica al admin (vía la RPC
+ * `report_invoice_payment`, que valida que la factura sea suya y siga
+ * pendiente/atrasada) para que la marque pagada a mano una vez que se
+ * acredite. `method` es de qué botón vino el aviso (paypal/mercadopago/
+ * payoneer/transferencia), solo para el mensaje — no cambia el `method` de
+ * la factura.
+ */
+export async function reportInvoicePaymentAction(invoiceId: string, method?: string) {
+  await requireRole(["client"]);
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("report_invoice_payment", {
+    target_invoice_id: invoiceId,
+    p_method: method ?? null,
+  });
+
+  if (error) return { ok: false, error: error.message };
+  if (!data) {
+    return {
+      ok: false,
+      error: "No se pudo avisar el pago — la factura ya no está pendiente o no es tuya.",
+    };
+  }
+  revalidatePath("/client/facturas");
   return { ok: true };
 }
 

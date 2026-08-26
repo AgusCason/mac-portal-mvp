@@ -40,11 +40,13 @@ export const ROUTE_MODULE_MAP: { prefix: string; key: string }[] = [
   { prefix: "/editor/chat", key: "chat" },
   { prefix: "/client/chat", key: "chat" },
   { prefix: "/admin/planes", key: "planes-facturacion" },
+  { prefix: "/client/facturas", key: "planes-facturacion" },
   { prefix: "/admin/crm", key: "crm" },
   { prefix: "/admin/asistente", key: "asistente-ia" },
   { prefix: "/admin/configuracion/modulos", key: "config-modulos" },
   { prefix: "/admin/configuracion/marca", key: "config-marca" },
   { prefix: "/admin/configuracion/boveda", key: "config-boveda" },
+  { prefix: "/admin/configuracion/auditoria", key: "config-auditoria" },
   { prefix: "/admin/actividad", key: "actividad-notificaciones" },
   // Genérico: debe ir al final para no tapar los /admin/configuracion/* de arriba.
   { prefix: "/admin/configuracion", key: "config-general" },
