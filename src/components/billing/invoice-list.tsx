@@ -18,15 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
-
-const METHOD_LABELS: Record<string, string> = {
-  mercadopago: "Mercado Pago",
-  paypal: "PayPal",
-  transferencia: "Transferencia",
-  payoneer: "Payoneer",
-  crypto: "Cripto",
-  otro: "Otro",
-};
+import { PAYMENT_METHOD_LABELS as METHOD_LABELS } from "@/lib/billing-labels";
 
 function StatusBadge({ status, daysOverdue }: { status: string; daysOverdue: number }) {
   if (status === "paid") {

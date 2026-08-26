@@ -18,6 +18,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function NewPlanDialog() {
   const [open, setOpen] = React.useState(false);
@@ -57,9 +64,23 @@ export function NewPlanDialog() {
             <Label htmlFor="description">Descripción</Label>
             <Input id="description" name="description" />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="priceMonthly">Precio mensual (ARS)</Label>
-            <Input id="priceMonthly" name="priceMonthly" type="number" min={0} step={1000} required />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="priceMonthly">Precio mensual</Label>
+              <Input id="priceMonthly" name="priceMonthly" type="number" min={0} step={1000} required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="currency">Moneda</Label>
+              <Select name="currency" defaultValue="ARS">
+                <SelectTrigger id="currency" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ARS">Pesos (ARS)</SelectItem>
+                  <SelectItem value="USD">Dólares (USD)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="monthlyQuota">Videos incluidos por mes</Label>

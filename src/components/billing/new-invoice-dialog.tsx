@@ -116,7 +116,15 @@ export function NewInvoiceDialog({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="currency">Moneda</Label>
-              <Input id="currency" name="currency" defaultValue="ARS" required />
+              <Select name="currency" defaultValue="ARS" required>
+                <SelectTrigger id="currency" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ARS">Pesos (ARS)</SelectItem>
+                  <SelectItem value="USD">Dólares (USD)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

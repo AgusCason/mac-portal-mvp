@@ -88,19 +88,18 @@ function NavGroup({
   item,
   pathname,
   role,
+  open,
+  onToggle,
 }: {
   item: NavItem & { children: NonNullable<NavItem["children"]> };
   pathname: string;
   role: string;
+  open: boolean;
+  onToggle: () => void;
 }) {
   const hasActiveChild = item.children.some((child) =>
     isItemActive(pathname, child.href, role)
   );
-  // `null` = el usuario todavía no tocó el toggle en esta sesión de render:
-  // el grupo se auto-expande mientras la ruta activa caiga adentro. En
-  // cuanto el usuario lo abre/cierra a mano, ese gesto manda.
-  const [manualOpen, setManualOpen] = React.useState<boolean | null>(null);
-  const open = manualOpen ?? hasActiveChild;
 
   const Icon = item.icon;
 
@@ -108,7 +107,7 @@ function NavGroup({
     <div>
       <button
         type="button"
-        onClick={() => setManualOpen(!open)}
+        onClick={onToggle}
         aria-expanded={open}
         className={cn(
           "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
@@ -151,6 +150,21 @@ function SidebarNav({
   const pathname = usePathname();
   const items = filterNavItems(NAV_CONFIG[profile.role], profile.role, moduleFlags);
 
+  // Acordeón exclusivo: solo un grupo abierto a la vez. `undefined` = el
+  // usuario todavía no tocó ningún toggle => se auto-expande el grupo cuya
+  // ruta activa caiga adentro. En cuanto toca uno a mano, ese gesto manda
+  // (incluso para cerrar el que estaba auto-abierto).
+  const activeGroupLabel =
+    items.find(
+      (item) =>
+        item.children &&
+        item.children.some((child) => isItemActive(pathname, child.href, profile.role))
+    )?.label ?? null;
+  const [manualOpenGroup, setManualOpenGroup] = React.useState<string | null | undefined>(
+    undefined
+  );
+  const openGroup = manualOpenGroup === undefined ? activeGroupLabel : manualOpenGroup;
+
   return (
     <nav className="flex flex-col gap-1 p-3">
       {items.map((item) =>
@@ -160,6 +174,10 @@ function SidebarNav({
             item={item as NavItem & { children: NonNullable<NavItem["children"]> }}
             pathname={pathname}
             role={profile.role}
+            open={openGroup === item.label}
+            onToggle={() =>
+              setManualOpenGroup(openGroup === item.label ? null : item.label)
+            }
           />
         ) : (
           <NavLink

@@ -26,6 +26,16 @@ const createClientSchema = z.object({
   existingDriveFolderId: z.string().optional(),
 });
 
+/**
+ * Normaliza un handle de red social para que siempre quede guardado con un
+ * único "@" — el form no depende de JS para esto (el "@" que ve el admin en
+ * Instagram/TikTok es solo un prefijo visual, ver HandleInput).
+ */
+function withHandlePrefix(value: string | undefined): string | null {
+  const trimmed = (value ?? "").trim().replace(/^@+/, "");
+  return trimmed ? `@${trimmed}` : null;
+}
+
 export type CreateClientResult =
   | { ok: true; clientId: string; invitedEmail: string; alreadyExisted: boolean }
   | { ok: false; error: string };
@@ -107,8 +117,8 @@ export async function createClientAction(
       contact_email: contactEmail,
       contact_phone: contactPhone || null,
       country: country || null,
-      social_instagram: socialInstagram || null,
-      social_tiktok: socialTiktok || null,
+      social_instagram: withHandlePrefix(socialInstagram),
+      social_tiktok: withHandlePrefix(socialTiktok),
       social_facebook: socialFacebook || null,
       social_youtube: socialYoutube || null,
       social_website: socialWebsite || null,

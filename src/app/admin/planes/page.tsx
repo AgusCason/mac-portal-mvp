@@ -1,10 +1,11 @@
 import { requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
-import { getInvoices, getBillingSummary } from "@/lib/queries/billing";
+import { getInvoices, getBillingSummary, computeBillingAnalytics } from "@/lib/queries/billing";
 import { getSelectableClients } from "@/lib/queries/content";
 import { NewPlanDialog } from "@/components/plans/new-plan-dialog";
 import { NewInvoiceDialog } from "@/components/billing/new-invoice-dialog";
 import { InvoiceList } from "@/components/billing/invoice-list";
+import { BillingDashboard } from "@/components/billing/billing-dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency } from "@/lib/utils";
@@ -22,6 +23,11 @@ export default async function AdminPlanesPage() {
 
   const planOptions = (plans as Plan[] ?? []).map((p) => ({ id: p.id, name: p.name }));
 
+  const currenciesInUse = Array.from(new Set(invoices.map((i) => i.currency)));
+  const billingAnalytics = (currenciesInUse.length > 0 ? currenciesInUse : ["ARS"]).map((c) =>
+    computeBillingAnalytics(invoices, c)
+  );
+
   return (
     <div className="space-y-4">
       <div>
@@ -31,11 +37,16 @@ export default async function AdminPlanesPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="facturacion">
+      <Tabs defaultValue="dashboard">
         <TabsList>
+          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="facturacion">Facturación</TabsTrigger>
           <TabsTrigger value="planes">Planes</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="dashboard" className="space-y-4">
+          <BillingDashboard analytics={billingAnalytics} />
+        </TabsContent>
 
         <TabsContent value="facturacion" className="space-y-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

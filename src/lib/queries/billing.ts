@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { BillingInvoice, InvoiceStatus } from "@/types/database";
+import { PAYMENT_METHOD_LABELS } from "@/lib/billing-labels";
 
 export interface InvoiceWithRelations extends BillingInvoice {
   client_name: string;
@@ -70,5 +71,174 @@ export async function getBillingSummary(): Promise<BillingSummary> {
     overdueCount: open.filter((i) => i.daysOverdue > 0).length,
     delinquentCount: open.filter((i) => i.daysOverdue >= 15).length,
     pendingTotal: open.reduce((sum, i) => sum + Number(i.amount), 0),
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Dashboard de facturación — agregaciones puras (sin I/O).            */
+/*                                                                      */
+/* Reciben las facturas ya cargadas (RLS ya las acotó a admin) y        */
+/* calculan las series que alimentan el dashboard. Se calculan en el    */
+/* server component de la página y se pasan como datos planos al        */
+/* dashboard de cliente — sin refetch, sin duplicar la query.           */
+/* ------------------------------------------------------------------ */
+
+export interface MonthlyBillingPoint {
+  /** "2026-08" */
+  month: string;
+  /** "Ago" (o "Ago 25" si el rango cruza años) */
+  label: string;
+  paid: number;
+  pending: number;
+  overdue: number;
+  cancelled: number;
+  total: number;
+}
+
+export interface PaymentMethodPoint {
+  method: string;
+  label: string;
+  total: number;
+  count: number;
+}
+
+export interface BillingKpis {
+  currentMonthTotal: number;
+  previousMonthTotal: number;
+  /** null si no hay mes anterior con datos (evita dividir por cero) */
+  deltaPct: number | null;
+  collectedThisMonth: number;
+  /** cobrado / (cobrado + pendiente + atrasado) del mes actual, null si no hubo facturación */
+  collectionRatePct: number | null;
+  pendingTotal: number;
+  overdueTotal: number;
+  overdueCount: number;
+  /** últimos 6 meses, del más viejo al más nuevo — para el sparkline */
+  sparkline: number[];
+}
+
+export interface BillingAnalytics {
+  currency: string;
+  monthly: MonthlyBillingPoint[];
+  methods: PaymentMethodPoint[];
+  kpis: BillingKpis;
+  hasData: boolean;
+}
+
+function monthKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function monthLabel(d: Date, spansYears: boolean) {
+  const base = new Intl.DateTimeFormat("es-AR", { month: "short" }).format(d).replace(".", "");
+  const cap = base.charAt(0).toUpperCase() + base.slice(1);
+  return spansYears ? `${cap} ${String(d.getFullYear()).slice(2)}` : cap;
+}
+
+/**
+ * Arma las series del dashboard de facturación para una moneda dada.
+ *
+ * - "Facturado" de un mes = facturas cuyo `created_at` cae en ese mes
+ *   (fecha de emisión), sin importar cuándo vencen o se cobran.
+ * - El estado de cada factura para el gráfico apilado replica exactamente
+ *   la lógica que ya usa `InvoiceList`/`StatusBadge`: pagada/cancelada por
+ *   `status`, y "atrasada" por `daysOverdue > 0` (no por el enum `overdue`
+ *   crudo) — así el dashboard nunca contradice lo que el admin ve en la
+ *   tabla de facturas.
+ * - "Método de pago" se agrega sobre todo el historial disponible (no solo
+ *   la ventana de meses visible), excluyendo canceladas.
+ */
+export function computeBillingAnalytics(
+  invoices: InvoiceWithRelations[],
+  currency: string,
+  monthsBack = 12
+): BillingAnalytics {
+  const anchor = new Date();
+  anchor.setDate(1);
+  anchor.setHours(0, 0, 0, 0);
+
+  const months: Date[] = [];
+  for (let i = monthsBack - 1; i >= 0; i--) {
+    months.push(new Date(anchor.getFullYear(), anchor.getMonth() - i, 1));
+  }
+  const spansYears = months[0].getFullYear() !== months[months.length - 1].getFullYear();
+
+  const buckets = new Map<string, { paid: number; pending: number; overdue: number; cancelled: number }>(
+    months.map((d) => [monthKey(d), { paid: 0, pending: 0, overdue: 0, cancelled: 0 }])
+  );
+
+  const scoped = invoices.filter((i) => i.currency === currency);
+
+  for (const inv of scoped) {
+    const bucket = buckets.get(monthKey(new Date(inv.created_at)));
+    if (!bucket) continue; // fuera de la ventana visible
+    const amount = Number(inv.amount);
+    if (inv.status === "cancelled") bucket.cancelled += amount;
+    else if (inv.status === "paid") bucket.paid += amount;
+    else if (inv.daysOverdue > 0) bucket.overdue += amount;
+    else bucket.pending += amount;
+  }
+
+  const monthly: MonthlyBillingPoint[] = months.map((d) => {
+    const b = buckets.get(monthKey(d))!;
+    return {
+      month: monthKey(d),
+      label: monthLabel(d, spansYears),
+      ...b,
+      total: b.paid + b.pending + b.overdue + b.cancelled,
+    };
+  });
+
+  const methodTotals = new Map<string, { total: number; count: number }>();
+  for (const inv of scoped) {
+    if (inv.status === "cancelled") continue;
+    const cur = methodTotals.get(inv.method) ?? { total: 0, count: 0 };
+    cur.total += Number(inv.amount);
+    cur.count += 1;
+    methodTotals.set(inv.method, cur);
+  }
+  const methods: PaymentMethodPoint[] = Array.from(methodTotals.entries())
+    .map(([method, v]) => ({
+      method,
+      label: PAYMENT_METHOD_LABELS[method] ?? method,
+      total: v.total,
+      count: v.count,
+    }))
+    .sort((a, b) => b.total - a.total);
+
+  const current = monthly[monthly.length - 1];
+  const previous = monthly[monthly.length - 2];
+  const currentMonthTotal = current?.total ?? 0;
+  const previousMonthTotal = previous?.total ?? 0;
+  const deltaPct =
+    previousMonthTotal > 0 ? ((currentMonthTotal - previousMonthTotal) / previousMonthTotal) * 100 : null;
+
+  const collectedThisMonth = current?.paid ?? 0;
+  const billedDenominator = current ? current.paid + current.pending + current.overdue : 0;
+  const collectionRatePct = billedDenominator > 0 ? (collectedThisMonth / billedDenominator) * 100 : null;
+
+  const openInvoices = scoped.filter((i) => i.status !== "paid" && i.status !== "cancelled");
+  const pendingTotal = openInvoices
+    .filter((i) => i.daysOverdue === 0)
+    .reduce((sum, i) => sum + Number(i.amount), 0);
+  const overdueOpen = openInvoices.filter((i) => i.daysOverdue > 0);
+  const overdueTotal = overdueOpen.reduce((sum, i) => sum + Number(i.amount), 0);
+
+  return {
+    currency,
+    monthly,
+    methods,
+    kpis: {
+      currentMonthTotal,
+      previousMonthTotal,
+      deltaPct,
+      collectedThisMonth,
+      collectionRatePct,
+      pendingTotal,
+      overdueTotal,
+      overdueCount: overdueOpen.length,
+      sparkline: monthly.slice(-6).map((m) => m.total),
+    },
+    hasData: scoped.length > 0,
   };
 }

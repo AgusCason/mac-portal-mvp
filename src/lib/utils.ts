@@ -35,6 +35,30 @@ export function formatTime(value: string | Date) {
   }).format(date);
 }
 
+/** Formatea montos compactos para ejes/tooltips: $ 1,2 M / $ 850 K */
+export function formatCompactCurrency(value: number, currency: string = "ARS") {
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+/** Redondea un máximo hacia arriba a un número "lindo" (1/2/5 × 10^n) para ejes de gráficos. */
+export function niceScaleMax(value: number) {
+  if (value <= 0) return 1;
+  const exp = Math.floor(Math.log10(value));
+  const base = Math.pow(10, exp);
+  const fraction = value / base;
+  let niceFraction: number;
+  if (fraction <= 1) niceFraction = 1;
+  else if (fraction <= 2) niceFraction = 2;
+  else if (fraction <= 5) niceFraction = 5;
+  else niceFraction = 10;
+  return niceFraction * base;
+}
+
 /** Iniciales para avatares de fallback (ej: "Juan Pérez" -> "JP") */
 export function getInitials(name: string) {
   return name

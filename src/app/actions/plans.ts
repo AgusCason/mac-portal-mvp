@@ -9,6 +9,7 @@ const planSchema = z.object({
   name: z.string().min(2),
   description: z.string().optional(),
   priceMonthly: z.coerce.number().min(0),
+  currency: z.enum(["ARS", "USD"]).default("ARS"),
   monthlyQuota: z.coerce.number().int().min(0).optional().or(z.nan()),
 });
 
@@ -19,6 +20,7 @@ export async function createPlanAction(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description") ?? undefined,
     priceMonthly: formData.get("priceMonthly"),
+    currency: formData.get("currency") || undefined,
     monthlyQuota: formData.get("monthlyQuota") || undefined,
   });
 
@@ -31,6 +33,7 @@ export async function createPlanAction(formData: FormData) {
     name: parsed.data.name,
     description: parsed.data.description || null,
     price_monthly: parsed.data.priceMonthly,
+    currency: parsed.data.currency,
     monthly_quota: Number.isFinite(parsed.data.monthlyQuota) ? parsed.data.monthlyQuota : null,
   });
 

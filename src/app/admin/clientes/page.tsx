@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/auth";
 import { getAccountsOverview } from "@/lib/queries/clients";
+import { getContacts } from "@/lib/queries/contacts";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { NewClientDialog } from "@/components/clients/new-client-dialog";
 import { AccountsView } from "@/components/clients/accounts-view";
@@ -11,11 +12,17 @@ import { AccountsView } from "@/components/clients/accounts-view";
  * suscripción, equipo asignado y plataformas conectadas, con favoritos,
  * buscador y toggle grilla/tabla.
  */
-export default async function AdminClientesPage() {
+export default async function AdminClientesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ fromContact?: string }>;
+}) {
   const admin = await requireRole(["admin"]);
-  const [accounts, supabase] = await Promise.all([
+  const { fromContact } = await searchParams;
+  const [accounts, supabase, contacts] = await Promise.all([
     getAccountsOverview(admin.id),
     createSupabaseServerClient(),
+    getContacts(),
   ]);
   const { data: plans } = await supabase.from("plans").select("*").order("price_monthly");
 
@@ -33,7 +40,7 @@ export default async function AdminClientesPage() {
           </h1>
           <p className="text-muted-foreground text-sm">Gestiona tus clientes y proyectos.</p>
         </div>
-        <NewClientDialog plans={plans ?? []} />
+        <NewClientDialog plans={plans ?? []} contacts={contacts} initialContactId={fromContact} />
       </div>
 
       <AccountsView accounts={accounts} />

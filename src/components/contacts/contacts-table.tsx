@@ -4,7 +4,8 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Search, Pencil, Trash2, Loader2, Mail, Phone } from "lucide-react";
+import Link from "next/link";
+import { Search, Pencil, Trash2, Loader2, Mail, Phone, UserPlus } from "lucide-react";
 
 import { updateContactAction, deleteContactAction } from "@/app/actions/contacts";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -184,7 +185,17 @@ export function ContactsTable({
                   {contact.client_name ?? "Sin cuenta"}
                 </TableCell>
                 <TableCell>
-                  <EditContactDialog contact={contact} clients={clients} />
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/admin/clientes?fromContact=${contact.id}`}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label="Convertir en cliente"
+                      title="Convertir en cliente"
+                    >
+                      <UserPlus className="size-3.5" />
+                    </Link>
+                    <EditContactDialog contact={contact} clients={clients} />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
