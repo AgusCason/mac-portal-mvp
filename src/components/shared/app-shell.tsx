@@ -305,7 +305,7 @@ function AppShellInner({
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 p-0">
-                  <SheetTitle className="sr-only">Menú</SheetTitle>
+                  <SheetTitle className="sr-only">{t("components.appShell.mobileMenuTitle", "Menú")}</SheetTitle>
                   <BrandHeader branding={branding} />
                   <SidebarNav profile={profile} moduleFlags={moduleFlags} />
                 </SheetContent>
@@ -337,7 +337,7 @@ function AppShellInner({
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="font-normal">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {profile.full_name || "Sin nombre"}
+                      {profile.full_name || t("pages.equipo.noName", "Sin nombre")}
                     </p>
                     <p className="text-muted-foreground truncate text-xs">
                       {profile.email}

@@ -27,6 +27,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CompetitorFormFields } from "@/components/competitors/competitor-form-fields";
 import { NewCompetitorDialog } from "@/components/competitors/new-competitor-dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { CompetitorWithClient } from "@/lib/queries/competitors";
 
 const PLATFORM_LABEL: Record<string, string> = {
@@ -46,6 +47,7 @@ function EditCompetitorDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -53,7 +55,7 @@ function EditCompetitorDialog({
     startTransition(async () => {
       const res = await updateCompetitorAction(competitor.id, formData);
       if (res.ok) {
-        toast.success("Competidor actualizado");
+        toast.success(t("components.competitors.competitorUpdated", "Competidor actualizado"));
         onOpenChange(false);
         router.refresh();
       } else {
@@ -66,7 +68,7 @@ function EditCompetitorDialog({
     startTransition(async () => {
       const res = await deleteCompetitorAction(competitor.id);
       if (res.ok) {
-        toast.success("Competidor eliminado");
+        toast.success(t("components.competitors.competitorDeleted", "Competidor eliminado"));
         onOpenChange(false);
         router.refresh();
       } else {
@@ -80,7 +82,7 @@ function EditCompetitorDialog({
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Editar competidor</DialogTitle>
+            <DialogTitle>{t("components.competitors.editCompetitor", "Editar competidor")}</DialogTitle>
           </DialogHeader>
           <CompetitorFormFields competitor={competitor} clients={clients} />
           <DialogFooter className="sm:justify-between">
@@ -91,11 +93,11 @@ function EditCompetitorDialog({
               disabled={isPending}
               onClick={handleDelete}
             >
-              <Trash2 /> Eliminar
+              <Trash2 /> {t("common.delete", "Eliminar")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </DialogFooter>
         </form>
@@ -111,6 +113,7 @@ function ProfilesTable({
   competitors: CompetitorWithClient[];
   clients: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
   const [editing, setEditing] = React.useState<CompetitorWithClient | null>(null);
 
   return (
@@ -118,9 +121,9 @@ function ProfilesTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Competidor</TableHead>
-            <TableHead>Plataforma</TableHead>
-            <TableHead>Se compara con</TableHead>
+            <TableHead>{t("components.competitors.colCompetitor", "Competidor")}</TableHead>
+            <TableHead>{t("components.competitors.colPlatform", "Plataforma")}</TableHead>
+            <TableHead>{t("components.competitors.colComparedWith", "Se compara con")}</TableHead>
             <TableHead className="w-12" />
           </TableRow>
         </TableHeader>
@@ -134,13 +137,15 @@ function ProfilesTable({
               <TableCell>
                 <Badge variant="secondary">{PLATFORM_LABEL[c.platform] ?? c.platform}</Badge>
               </TableCell>
-              <TableCell className="text-muted-foreground text-sm">{c.client_name ?? "General"}</TableCell>
+              <TableCell className="text-muted-foreground text-sm">
+                {c.client_name ?? t("components.competitors.general", "General")}
+              </TableCell>
               <TableCell>
                 <button
                   type="button"
                   onClick={() => setEditing(c)}
                   className="text-muted-foreground hover:text-foreground"
-                  aria-label="Editar"
+                  aria-label={t("components.competitors.editAriaLabel", "Editar")}
                 >
                   <Pencil className="size-3.5" />
                 </button>
@@ -150,7 +155,7 @@ function ProfilesTable({
           {competitors.length === 0 && (
             <TableRow>
               <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
-                Todavía no cargaste competidores.
+                {t("components.competitors.noCompetitorsYet", "Todavía no cargaste competidores.")}
               </TableCell>
             </TableRow>
           )}
@@ -169,6 +174,7 @@ function ProfilesTable({
 }
 
 function BenchmarkTable({ competitors }: { competitors: CompetitorWithClient[] }) {
+  const { t } = useLocale();
   const sorted = [...competitors].sort((a, b) => (b.followers_count ?? 0) - (a.followers_count ?? 0));
 
   return (
@@ -176,10 +182,10 @@ function BenchmarkTable({ competitors }: { competitors: CompetitorWithClient[] }
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Competidor</TableHead>
-            <TableHead>Plataforma</TableHead>
-            <TableHead>Seguidores</TableHead>
-            <TableHead>Engagement</TableHead>
+            <TableHead>{t("components.competitors.colCompetitor", "Competidor")}</TableHead>
+            <TableHead>{t("components.competitors.colPlatform", "Plataforma")}</TableHead>
+            <TableHead>{t("components.competitors.colFollowers", "Seguidores")}</TableHead>
+            <TableHead>{t("components.competitors.colEngagement", "Engagement")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -200,7 +206,7 @@ function BenchmarkTable({ competitors }: { competitors: CompetitorWithClient[] }
           {sorted.length === 0 && (
             <TableRow>
               <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
-                Sin datos de benchmark todavía.
+                {t("components.competitors.noBenchmarkData", "Sin datos de benchmark todavía.")}
               </TableCell>
             </TableRow>
           )}
@@ -217,12 +223,14 @@ export function CompetitorsView({
   competitors: CompetitorWithClient[];
   clients: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
+
   return (
     <Tabs defaultValue="perfiles" className="w-full">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <TabsList>
-          <TabsTrigger value="perfiles">Perfiles</TabsTrigger>
-          <TabsTrigger value="benchmark">Benchmark</TabsTrigger>
+          <TabsTrigger value="perfiles">{t("components.competitors.tabProfiles", "Perfiles")}</TabsTrigger>
+          <TabsTrigger value="benchmark">{t("components.competitors.tabBenchmark", "Benchmark")}</TabsTrigger>
         </TabsList>
         <NewCompetitorDialog clients={clients} />
       </div>

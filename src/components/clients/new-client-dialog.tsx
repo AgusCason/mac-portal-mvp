@@ -30,6 +30,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CountrySelect } from "@/components/shared/country-select";
 import { HandleInput } from "@/components/shared/handle-input";
 import { COUNTRIES } from "@/lib/countries";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { Plan } from "@/types/database";
 import type { ContactWithClient } from "@/lib/queries/contacts";
 
@@ -57,6 +58,7 @@ export function NewClientDialog({
   contacts: ContactWithClient[];
   initialContactId?: string;
 }) {
+  const { t } = useLocale();
   const initialContact = React.useMemo(
     () => (initialContactId ? contacts.find((c) => c.id === initialContactId) : undefined),
     [contacts, initialContactId]
@@ -107,8 +109,14 @@ export function NewClientDialog({
       if (res.ok) {
         toast.success(
           res.alreadyExisted
-            ? "Cliente creado — ya existía una cuenta con ese email, se vinculó."
-            : "Cliente creado — le llegó el email de invitación y las carpetas de Drive en camino."
+            ? t(
+                "components.clients.alreadyExistedToast",
+                "Cliente creado — ya existía una cuenta con ese email, se vinculó."
+              )
+            : t(
+                "components.clients.createdToast",
+                "Cliente creado — le llegó el email de invitación y las carpetas de Drive en camino."
+              )
         );
         setOpen(false);
         resetForm();
@@ -123,17 +131,18 @@ export function NewClientDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nuevo cliente
+          <Plus /> {t("components.clients.newClient", "Nuevo cliente")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[85vh]">
         <form action={handleSubmit} className="flex max-h-[80vh] flex-col">
           <DialogHeader>
-            <DialogTitle>Nuevo cliente</DialogTitle>
+            <DialogTitle>{t("components.clients.newClient", "Nuevo cliente")}</DialogTitle>
             <DialogDescription>
-              Se le envía una invitación real por email para acceder a su portal, y se
-              crea su estructura de carpetas en Google Drive (Crudos, En Edición,
-              Entregables Finales) automáticamente.
+              {t(
+                "components.clients.newClientDesc",
+                "Se le envía una invitación real por email para acceder a su portal, y se crea su estructura de carpetas en Google Drive (Crudos, En Edición, Entregables Finales) automáticamente."
+              )}
             </DialogDescription>
           </DialogHeader>
 
@@ -141,13 +150,15 @@ export function NewClientDialog({
             <div className="space-y-4 py-2">
               {contacts.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="fromContact">Autocompletar desde un contacto (opcional)</Label>
+                  <Label htmlFor="fromContact">
+                    {t("components.clients.autofillFromContact", "Autocompletar desde un contacto (opcional)")}
+                  </Label>
                   <Select value={selectedContactId} onValueChange={handleContactSelect}>
                     <SelectTrigger id="fromContact" className="w-full">
-                      <SelectValue placeholder="Cargar datos manualmente" />
+                      <SelectValue placeholder={t("components.clients.manualEntry", "Cargar datos manualmente")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">Cargar datos manualmente</SelectItem>
+                      <SelectItem value="none">{t("components.clients.manualEntry", "Cargar datos manualmente")}</SelectItem>
                       {contacts.map((c) => (
                         <SelectItem key={c.id} value={c.id}>
                           {c.name}
@@ -160,17 +171,28 @@ export function NewClientDialog({
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="name">Nombre / razón social</Label>
-                <Input id="name" name="name" required placeholder="Ej: Estudio Fit SRL" />
+                <Label htmlFor="name">{t("components.clients.nameLabel", "Nombre / razón social")}</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  placeholder={t("components.clients.namePlaceholder", "Ej: Estudio Fit SRL")}
+                />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="brandName">Nombre de marca</Label>
-                <Input id="brandName" name="brandName" placeholder="Ej: Estudio Fit" />
+                <Label htmlFor="brandName">{t("components.clients.brandNameLabel", "Nombre de marca")}</Label>
+                <Input
+                  id="brandName"
+                  name="brandName"
+                  placeholder={t("components.clients.brandNamePlaceholder", "Ej: Estudio Fit")}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="contactFullName">Nombre y apellido del contacto</Label>
+                  <Label htmlFor="contactFullName">
+                    {t("components.clients.contactFullNameLabel", "Nombre y apellido del contacto")}
+                  </Label>
                   <Input
                     id="contactFullName"
                     name="contactFullName"
@@ -180,7 +202,7 @@ export function NewClientDialog({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="contactEmail">Email de contacto</Label>
+                  <Label htmlFor="contactEmail">{t("components.clients.contactEmailLabel", "Email de contacto")}</Label>
                   <Input
                     id="contactEmail"
                     name="contactEmail"
@@ -193,16 +215,16 @@ export function NewClientDialog({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="country">País</Label>
+                  <Label htmlFor="country">{t("components.clients.countryLabel", "País")}</Label>
                   <CountrySelect id="country" value={countryIso} onValueChange={handleCountryChange} />
                   <input type="hidden" name="country" value={selectedCountryName} />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="contactPhone">Teléfono</Label>
+                  <Label htmlFor="contactPhone">{t("components.clients.phoneLabel", "Teléfono")}</Label>
                   <Input
                     id="contactPhone"
                     name="contactPhone"
-                    placeholder="+549..."
+                    placeholder={t("components.clients.phonePlaceholder", "+549...")}
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
                   />
@@ -230,16 +252,16 @@ export function NewClientDialog({
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="socialWebsite">Sitio web</Label>
+                <Label htmlFor="socialWebsite">{t("components.clients.websiteLabel", "Sitio web")}</Label>
                 <Input id="socialWebsite" name="socialWebsite" placeholder="https://..." />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="planId">Plan (opcional)</Label>
+                  <Label htmlFor="planId">{t("components.clients.planLabel", "Plan (opcional)")}</Label>
                   <Select name="planId">
                     <SelectTrigger className="w-full" id="planId">
-                      <SelectValue placeholder="Sin plan asignado" />
+                      <SelectValue placeholder={t("components.clients.planPlaceholder", "Sin plan asignado")} />
                     </SelectTrigger>
                     <SelectContent>
                       {plans.map((p) => (
@@ -251,20 +273,22 @@ export function NewClientDialog({
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="billingCutoffDay">Día de corte de facturación</Label>
+                  <Label htmlFor="billingCutoffDay">
+                    {t("components.clients.billingCutoffDayLabel", "Día de corte de facturación")}
+                  </Label>
                   <Input
                     id="billingCutoffDay"
                     name="billingCutoffDay"
                     type="number"
                     min={1}
                     max={31}
-                    placeholder="Ej: 10"
+                    placeholder={t("components.clients.billingCutoffDayPlaceholder", "Ej: 10")}
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="driveMode">Carpeta de Google Drive</Label>
+                <Label htmlFor="driveMode">{t("components.clients.driveFolderLabel", "Carpeta de Google Drive")}</Label>
                 <Select
                   name="driveMode"
                   value={driveMode}
@@ -274,22 +298,33 @@ export function NewClientDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auto">Crear carpeta nueva automáticamente</SelectItem>
-                    <SelectItem value="linked">Vincular una carpeta ya existente</SelectItem>
+                    <SelectItem value="auto">
+                      {t("components.clients.driveModeAutoOption", "Crear carpeta nueva automáticamente")}
+                    </SelectItem>
+                    <SelectItem value="linked">
+                      {t("components.clients.driveModeLinkedOption", "Vincular una carpeta ya existente")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               {driveMode === "linked" && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="existingDriveFolderId">ID de la carpeta de Drive</Label>
+                  <Label htmlFor="existingDriveFolderId">
+                    {t("components.clients.driveFolderIdLabel", "ID de la carpeta de Drive")}
+                  </Label>
                   <Input
                     id="existingDriveFolderId"
                     name="existingDriveFolderId"
-                    placeholder="Se copia de la URL de la carpeta en Drive"
+                    placeholder={t(
+                      "components.clients.driveFolderIdPlaceholder",
+                      "Se copia de la URL de la carpeta en Drive"
+                    )}
                   />
                   <p className="text-muted-foreground text-xs">
-                    Tiene que estar compartida con el email de la cuenta de servicio de
-                    Google Drive.
+                    {t(
+                      "components.clients.driveFolderIdHelp",
+                      "Tiene que estar compartida con el email de la cuenta de servicio de Google Drive."
+                    )}
                   </p>
                 </div>
               )}
@@ -299,7 +334,7 @@ export function NewClientDialog({
           <DialogFooter className="pt-2">
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Crear cliente
+              {t("components.clients.createClient", "Crear cliente")}
             </Button>
           </DialogFooter>
         </form>

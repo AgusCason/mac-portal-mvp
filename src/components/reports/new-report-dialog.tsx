@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
 
 import { generateReportAction } from "@/app/actions/reports";
-import { NOVA_AGENT } from "@/lib/ai/agents";
+import { NOVA_AGENT, getAgentRole } from "@/lib/ai/agents";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,8 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewReportDialog({ clients }: { clients: { id: string; name: string }[] }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -38,7 +40,7 @@ export function NewReportDialog({ clients }: { clients: { id: string; name: stri
     startTransition(async () => {
       const res = await generateReportAction(formData);
       if (res.ok) {
-        toast.success("Reporte generado — revisalo antes de publicarlo");
+        toast.success(t("components.reports.reportGenerated", "Reporte generado — revisalo antes de publicarlo"));
         setOpen(false);
         router.refresh();
       } else {
@@ -51,26 +53,28 @@ export function NewReportDialog({ clients }: { clients: { id: string; name: stri
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Sparkles /> Generar reporte
+          <Sparkles /> {t("components.reports.generateReport", "Generar reporte")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Generar reporte con IA</DialogTitle>
+            <DialogTitle>{t("components.reports.generateReportAiTitle", "Generar reporte con IA")}</DialogTitle>
             <DialogDescription>
               <span className="text-foreground font-medium">{NOVA_AGENT.name}</span> ·{" "}
-              {NOVA_AGENT.role} junta las piezas publicadas y las métricas de redes de los
-              últimos 30 días, y redacta el resumen ejecutivo. Queda como borrador — vos lo
-              revisás y recién ahí lo publicás para que el cliente lo vea.
+              {getAgentRole(NOVA_AGENT, t)}{" "}
+              {t(
+                "components.reports.generateReportDescSuffix",
+                "junta las piezas publicadas y las métricas de redes de los últimos 30 días, y redacta el resumen ejecutivo. Queda como borrador — vos lo revisás y recién ahí lo publicás para que el cliente lo vea."
+              )}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5">
-            <Label htmlFor="clientId">Cliente</Label>
+            <Label htmlFor="clientId">{t("components.reports.clientLabel", "Cliente")}</Label>
             <Select name="clientId" required>
               <SelectTrigger className="w-full" id="clientId">
-                <SelectValue placeholder="Seleccioná un cliente" />
+                <SelectValue placeholder={t("components.reports.chooseClientPlaceholder", "Seleccioná un cliente")} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((c) => (
@@ -83,21 +87,21 @@ export function NewReportDialog({ clients }: { clients: { id: string; name: stri
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="title">Título</Label>
-            <Input id="title" name="title" required placeholder="Ej: Reporte mensual — Agosto 2026" />
+            <Label htmlFor="title">{t("components.reports.titleLabel", "Título")}</Label>
+            <Input id="title" name="title" required placeholder={t("components.reports.titlePlaceholder", "Ej: Reporte mensual — Agosto 2026")} />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="periodLabel">Período</Label>
+            <Label htmlFor="periodLabel">{t("components.reports.periodLabel", "Período")}</Label>
             <Input
               id="periodLabel"
               name="periodLabel"
-              placeholder="Ej: Agosto 2026 (por defecto: Últimos 30 días)"
+              placeholder={t("components.reports.periodInputPlaceholder", "Ej: Agosto 2026 (por defecto: Últimos 30 días)")}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label>Plataformas que cubre</Label>
+            <Label>{t("components.reports.platformsCoveredLabel", "Plataformas que cubre")}</Label>
             <div className="flex flex-wrap gap-4">
               {[
                 { value: "instagram", label: "Instagram" },
@@ -118,7 +122,7 @@ export function NewReportDialog({ clients }: { clients: { id: string; name: stri
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              {isPending ? "Generando…" : "Generar"}
+              {isPending ? t("components.reports.generating", "Generando…") : t("components.reports.generate", "Generar")}
             </Button>
           </DialogFooter>
         </form>

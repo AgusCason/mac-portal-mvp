@@ -33,7 +33,10 @@ export default async function AnalyticsAlertasPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("pages.analyticsAlertas.title", "Alertas de métricas")}</h1>
         <p className="text-muted-foreground text-sm">
-          Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos.
+          {t(
+            "pages.analyticsAlertas.description",
+            "Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos."
+          )}
         </p>
       </div>
 
@@ -43,7 +46,10 @@ export default async function AnalyticsAlertasPage() {
             <TrendingDown className="text-muted-foreground size-8" strokeWidth={1.5} />
             <p className="text-sm font-medium">{t("pages.analyticsAlertas.empty", "Sin caídas detectadas por ahora")}</p>
             <p className="text-muted-foreground max-w-sm text-sm">
-              El cron diario revisa todas las cuentas conectadas y va a avisar acá apenas detecte una.
+              {t(
+                "pages.analyticsAlertas.emptyHint",
+                "El cron diario revisa todas las cuentas conectadas y va a avisar acá apenas detecte una."
+              )}
             </p>
           </CardContent>
         </Card>
@@ -58,8 +64,8 @@ export default async function AnalyticsAlertasPage() {
                 <TableHead>{t("pages.analyticsAlertas.metric", "Métrica")}</TableHead>
                 <TableHead className="text-right">{t("pages.analyticsAlertas.previousAvg", "Promedio previo")}</TableHead>
                 <TableHead className="text-right">{t("pages.analyticsAlertas.value", "Valor")}</TableHead>
-                <TableHead className="text-right">Caída</TableHead>
-                <TableHead>Fecha</TableHead>
+                <TableHead className="text-right">{t("pages.analyticsAlertas.colDrop", "Caída")}</TableHead>
+                <TableHead>{t("pages.analyticsAlertas.colDate", "Fecha")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

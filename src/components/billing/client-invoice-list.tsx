@@ -15,23 +15,33 @@ import { downloadBase64File } from "@/lib/download-file";
 import type { InvoiceWithRelations } from "@/lib/queries/billing";
 import type { PaymentMethodConfig } from "@/types/database";
 
-function StatusBadge({ status, daysOverdue }: { status: string; daysOverdue: number }) {
+function StatusBadge({
+  status,
+  daysOverdue,
+  t,
+}: {
+  status: string;
+  daysOverdue: number;
+  t: (path: string, fallback?: string) => string;
+}) {
   if (status === "paid") {
     return (
       <Badge variant="success">
-        <CheckCircle2 /> Pagada
+        <CheckCircle2 /> {t("billing.statusPaid", "Pagada")}
       </Badge>
     );
   }
-  if (status === "cancelled") return <Badge variant="secondary">Cancelada</Badge>;
+  if (status === "cancelled") {
+    return <Badge variant="secondary">{t("billing.statusCancelled", "Cancelada")}</Badge>;
+  }
   if (daysOverdue >= 1) {
     return (
       <Badge variant="warning">
-        <AlertTriangle /> Atrasada · {daysOverdue}d
+        <AlertTriangle /> {t("billing.statusOverdue", "Atrasada")} · {daysOverdue}d
       </Badge>
     );
   }
-  return <Badge variant="info">Pendiente</Badge>;
+  return <Badge variant="info">{t("billing.statusPending", "Pendiente")}</Badge>;
 }
 
 /**
@@ -73,11 +83,11 @@ export function ClientInvoiceList({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Plan</TableHead>
-            <TableHead>Monto</TableHead>
-            <TableHead>Vencimiento</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead className="text-right">Pagar</TableHead>
+            <TableHead>{t("billing.colPlan", "Plan")}</TableHead>
+            <TableHead>{t("billing.colAmount", "Monto")}</TableHead>
+            <TableHead>{t("billing.colDueDate", "Vencimiento")}</TableHead>
+            <TableHead>{t("billing.colStatus", "Estado")}</TableHead>
+            <TableHead className="text-right">{t("billing.payNow", "Pagar")}</TableHead>
             <TableHead className="text-right"></TableHead>
           </TableRow>
         </TableHeader>
@@ -90,7 +100,7 @@ export function ClientInvoiceList({
               </TableCell>
               <TableCell className="text-muted-foreground">{formatDate(inv.due_date)}</TableCell>
               <TableCell>
-                <StatusBadge status={inv.status} daysOverdue={inv.daysOverdue} />
+                <StatusBadge status={inv.status} daysOverdue={inv.daysOverdue} t={t} />
               </TableCell>
               <TableCell className="text-right">
                 {(inv.status === "pending" || inv.status === "overdue") && (
@@ -103,7 +113,7 @@ export function ClientInvoiceList({
                   variant="ghost"
                   disabled={isPending}
                   onClick={() => downloadPdf(inv.id)}
-                  title="Descargar PDF"
+                  title={t("billing.downloadPdfTitle", "Descargar PDF")}
                 >
                   {isPending ? <Loader2 className="animate-spin" /> : <Download />}
                 </Button>

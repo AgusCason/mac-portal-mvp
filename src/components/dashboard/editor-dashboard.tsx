@@ -10,29 +10,32 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getT } from "@/lib/i18n/dictionary";
 import { formatDate } from "@/lib/utils";
 import type { EditorDashboardData } from "@/lib/queries/dashboard";
+import type { Profile } from "@/types/database";
 
 /** Vista del dashboard para el Editor: solo sus clientes asignados, sin datos financieros. */
-export function EditorDashboard({ data }: { data: EditorDashboardData }) {
+export function EditorDashboard({ data, profile }: { data: EditorDashboardData; profile: Profile }) {
+  const t = getT(profile.language);
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Mi trabajo</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("components.dashboard.editorTitle", "Mi trabajo")}</h1>
         <p className="text-muted-foreground text-sm">
-          Tareas pendientes, entregas próximas y clientes asignados.
+          {t("components.dashboard.editorDesc", "Tareas pendientes, entregas próximas y clientes asignados.")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard label="Clientes asignados" value={data.assignedClients.length} icon={Users} />
+        <KpiCard label={t("components.dashboard.kpiAssignedClients", "Clientes asignados")} value={data.assignedClients.length} icon={Users} />
         <KpiCard
-          label="Con cambios pedidos"
+          label={t("components.dashboard.kpiChangesRequested", "Con cambios pedidos")}
           value={data.myContentByStatus.requiere_cambios}
           icon={MessageCircleWarning}
         />
         <KpiCard
-          label="Próximas entregas"
+          label={t("components.dashboard.kpiUpcomingDeliveries", "Próximas entregas")}
           value={data.upcoming.length}
           icon={CalendarClock}
         />
@@ -41,12 +44,12 @@ export function EditorDashboard({ data }: { data: EditorDashboardData }) {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Requieren cambios</CardTitle>
-            <CardDescription>Feedback del cliente pendiente de resolver.</CardDescription>
+            <CardTitle>{t("components.dashboard.needsChangesTitle", "Requieren cambios")}</CardTitle>
+            <CardDescription>{t("components.dashboard.needsChangesDesc", "Feedback del cliente pendiente de resolver.")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.needsChanges.length === 0 && (
-              <p className="text-muted-foreground text-sm">Todo al día — sin cambios pendientes.</p>
+              <p className="text-muted-foreground text-sm">{t("components.dashboard.noChangesPending", "Todo al día — sin cambios pendientes.")}</p>
             )}
             {data.needsChanges.map((item) => (
               <div
@@ -57,7 +60,7 @@ export function EditorDashboard({ data }: { data: EditorDashboardData }) {
                   <p className="truncate font-medium">{item.title}</p>
                   <p className="text-muted-foreground text-xs">{item.client_name}</p>
                 </div>
-                <Badge variant="destructive">Revisar</Badge>
+                <Badge variant="destructive">{t("components.dashboard.review", "Revisar")}</Badge>
               </div>
             ))}
           </CardContent>
@@ -65,8 +68,8 @@ export function EditorDashboard({ data }: { data: EditorDashboardData }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Mis clientes</CardTitle>
-            <CardDescription>Con los permisos que te asignó el admin.</CardDescription>
+            <CardTitle>{t("components.dashboard.myClientsTitle", "Mis clientes")}</CardTitle>
+            <CardDescription>{t("components.dashboard.myClientsDesc", "Con los permisos que te asignó el admin.")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.assignedClients.map((c) => (
@@ -84,7 +87,7 @@ export function EditorDashboard({ data }: { data: EditorDashboardData }) {
               </div>
             ))}
             <Button asChild variant="ghost" size="sm" className="mt-1 w-full">
-              <Link href="/editor/drive">Ir al Drive de clientes</Link>
+              <Link href="/editor/drive">{t("components.dashboard.goToClientDrive", "Ir al Drive de clientes")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -92,11 +95,11 @@ export function EditorDashboard({ data }: { data: EditorDashboardData }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Próximas entregas</CardTitle>
+          <CardTitle>{t("components.dashboard.upcomingDeliveriesTitle", "Próximas entregas")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           {data.upcoming.length === 0 && (
-            <p className="text-muted-foreground text-sm">No hay entregas programadas todavía.</p>
+            <p className="text-muted-foreground text-sm">{t("components.dashboard.noUpcomingDeliveries", "No hay entregas programadas todavía.")}</p>
           )}
           {data.upcoming.map((item) => (
             <div key={item.id} className="flex items-center justify-between text-sm">

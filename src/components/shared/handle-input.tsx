@@ -1,4 +1,7 @@
+"use client";
+
 import { Input } from "@/components/ui/input";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
 /**
@@ -12,7 +15,7 @@ export function HandleInput({
   id,
   name,
   defaultValue,
-  placeholder = "usuario",
+  placeholder,
   className,
 }: {
   id: string;
@@ -21,6 +24,7 @@ export function HandleInput({
   placeholder?: string;
   className?: string;
 }) {
+  const { t } = useLocale();
   return (
     <div className="relative">
       <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm">
@@ -30,7 +34,7 @@ export function HandleInput({
         id={id}
         name={name}
         defaultValue={defaultValue}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("components.shared.usernamePlaceholder", "usuario")}
         className={cn("pl-6", className)}
       />
     </div>

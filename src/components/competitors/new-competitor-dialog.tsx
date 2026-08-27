@@ -17,8 +17,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CompetitorFormFields } from "@/components/competitors/competitor-form-fields";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewCompetitorDialog({ clients }: { clients: { id: string; name: string }[] }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -27,7 +29,7 @@ export function NewCompetitorDialog({ clients }: { clients: { id: string; name: 
     startTransition(async () => {
       const res = await createCompetitorAction(formData);
       if (res.ok) {
-        toast.success("Competidor agregado");
+        toast.success(t("components.competitors.competitorAdded", "Competidor agregado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -40,19 +42,19 @@ export function NewCompetitorDialog({ clients }: { clients: { id: string; name: 
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nuevo competidor
+          <Plus /> {t("components.competitors.newCompetitor", "Nuevo competidor")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nuevo competidor</DialogTitle>
+            <DialogTitle>{t("components.competitors.newCompetitor", "Nuevo competidor")}</DialogTitle>
           </DialogHeader>
           <CompetitorFormFields clients={clients} />
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Agregar
+              {t("common.add", "Agregar")}
             </Button>
           </DialogFooter>
         </form>

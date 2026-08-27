@@ -19,3 +19,29 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "security.blocked": "Bloqueo automático temporal",
   "security.alert": "Alerta de monitoreo de seguridad",
 };
+
+type TFunc = (path: string, fallback?: string) => string;
+
+/** Slug (camelCase) de cada `action_type` dentro de `audit.actions.*` del diccionario. */
+const AUDIT_ACTION_KEY: Record<string, string> = {
+  "invoice.created": "invoiceCreated",
+  "invoice.marked_paid": "invoiceMarkedPaid",
+  "invoice.cancelled": "invoiceCancelled",
+  "invoice.status_changed": "invoiceStatusChanged",
+  "invoice.amount_changed": "invoiceAmountChanged",
+  "invoice.payment_reported": "invoicePaymentReported",
+  "payment_method.updated": "paymentMethodUpdated",
+  "vault.credential_created": "vaultCredentialCreated",
+  "vault.credential_updated": "vaultCredentialUpdated",
+  "vault.credential_revealed": "vaultCredentialRevealed",
+  "vault.credential_deleted": "vaultCredentialDeleted",
+  "security.blocked": "securityBlocked",
+  "security.alert": "securityAlert",
+};
+
+/** Versión traducible de AUDIT_ACTION_LABELS — usar esta en componentes nuevos. */
+export function getAuditActionLabel(actionType: string, t?: TFunc): string {
+  const fallback = AUDIT_ACTION_LABELS[actionType] ?? actionType;
+  const slug = AUDIT_ACTION_KEY[actionType];
+  return slug && t ? t(`audit.actions.${slug}`, fallback) : fallback;
+}

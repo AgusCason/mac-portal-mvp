@@ -4,6 +4,7 @@ import { getContacts } from "@/lib/queries/contacts";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { NewClientDialog } from "@/components/clients/new-client-dialog";
 import { AccountsView } from "@/components/clients/accounts-view";
+import { getT } from "@/lib/i18n/dictionary";
 
 /**
  * Cuentas — Fase de la adaptación "estilo MB Suite" que transforma la vieja
@@ -18,6 +19,7 @@ export default async function AdminClientesPage({
   searchParams: Promise<{ fromContact?: string }>;
 }) {
   const admin = await requireRole(["admin"]);
+  const t = getT(admin.language);
   const { fromContact } = await searchParams;
   const [accounts, supabase, contacts] = await Promise.all([
     getAccountsOverview(admin.id),
@@ -33,12 +35,16 @@ export default async function AdminClientesPage({
       <div className="flex items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">
-            Cuentas
+            {t("pages.clientes.title", "Cuentas")}
             <span className="text-muted-foreground ml-2 text-sm font-normal align-middle">
-              · {activeCount} activa{activeCount === 1 ? "" : "s"} de {accounts.length}
+              · {activeCount}{" "}
+              {activeCount === 1
+                ? t("pages.clientes.activeSingular", "activa")
+                : t("pages.clientes.activePlural", "activas")}{" "}
+              {t("pages.clientes.ofTotal", "de")} {accounts.length}
             </span>
           </h1>
-          <p className="text-muted-foreground text-sm">Gestiona tus clientes y proyectos.</p>
+          <p className="text-muted-foreground text-sm">{t("pages.clientes.description", "Gestiona tus clientes y proyectos.")}</p>
         </div>
         <NewClientDialog plans={plans ?? []} contacts={contacts} initialContactId={fromContact} />
       </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,15 +10,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { ContentIdeaWithClient } from "@/lib/queries/content-ideas";
 
-export const IDEA_TYPE_LABEL: Record<string, string> = {
-  serie_social: "Serie Social",
-  sesion_fotos: "Sesión de Fotos",
-  video_script: "Video Script",
-  caption: "Caption",
-  content_bank: "Content Bank",
-};
+export const IDEA_TYPE_KEYS: { value: string; labelKey: string; fallback: string }[] = [
+  { value: "serie_social", labelKey: "components.contentStudio.typeSerieSocial", fallback: "Serie Social" },
+  { value: "sesion_fotos", labelKey: "components.contentStudio.typeSesionFotos", fallback: "Sesión de Fotos" },
+  { value: "video_script", labelKey: "components.contentStudio.typeVideoScript", fallback: "Video Script" },
+  { value: "caption", labelKey: "components.contentStudio.typeCaption", fallback: "Caption" },
+  { value: "content_bank", labelKey: "components.contentStudio.typeContentBank", fallback: "Content Bank" },
+];
 
 export function IdeaFormFields({
   idea,
@@ -27,39 +30,41 @@ export function IdeaFormFields({
   clients: { id: string; name: string }[];
   defaultType?: string;
 }) {
+  const { t } = useLocale();
+
   return (
     <>
       <div className="space-y-1.5">
-        <Label htmlFor="type">Tipo</Label>
+        <Label htmlFor="type">{t("components.contentStudio.typeLabel", "Tipo")}</Label>
         <Select name="type" defaultValue={idea?.type ?? defaultType ?? "content_bank"}>
           <SelectTrigger id="type" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(IDEA_TYPE_LABEL).map(([value, label]) => (
+            {IDEA_TYPE_KEYS.map(({ value, labelKey, fallback }) => (
               <SelectItem key={value} value={value}>
-                {label}
+                {t(labelKey, fallback)}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="title">Título</Label>
+        <Label htmlFor="title">{t("components.contentStudio.titleLabel", "Título")}</Label>
         <Input id="title" name="title" required defaultValue={idea?.title} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="body">Contenido</Label>
+        <Label htmlFor="body">{t("components.contentStudio.contentLabel", "Contenido")}</Label>
         <Textarea id="body" name="body" rows={6} defaultValue={idea?.body} />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="clientId">Cuenta (opcional)</Label>
+        <Label htmlFor="clientId">{t("components.contentStudio.accountOptionalLabel", "Cuenta (opcional)")}</Label>
         <Select name="clientId" defaultValue={idea?.client_id ?? "none"}>
           <SelectTrigger id="clientId" className="w-full">
-            <SelectValue placeholder="Sin cuenta" />
+            <SelectValue placeholder={t("components.contentStudio.noAccount", "Sin cuenta")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">Sin cuenta</SelectItem>
+            <SelectItem value="none">{t("components.contentStudio.noAccount", "Sin cuenta")}</SelectItem>
             {clients.map((c) => (
               <SelectItem key={c.id} value={c.id}>
                 {c.name}

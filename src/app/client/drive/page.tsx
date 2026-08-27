@@ -14,7 +14,7 @@ export default async function ClientDrivePage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("pages.clientDrive.title", "Tus archivos")}</h1>
         <p className="text-muted-foreground text-sm">
-          Subí tus clips sin editar y descargá los entregables finales.
+          {t("pages.clientDrive.description", "Subí tus clips sin editar y descargá los entregables finales.")}
         </p>
       </div>
       {clientId ? (
@@ -24,7 +24,7 @@ export default async function ClientDrivePage() {
         </>
       ) : (
         <p className="text-muted-foreground text-sm">
-          Tu cuenta todavía no está vinculada a ningún cliente.
+          {t("pages.client.noClientLinked", "Tu cuenta todavía no está vinculada a ningún cliente.")}
         </p>
       )}
     </div>

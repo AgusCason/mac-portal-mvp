@@ -23,7 +23,9 @@ export default async function AdminModulosPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.config.modulos", "Módulos")}</h1>
         <p className="text-muted-foreground text-sm">
-          {total} módulos · {incluidos} incluidos · {proximamente} próximamente
+          {total} {t("components.config.totalModulesSummary", "módulos")} · {incluidos}{" "}
+          {t("components.config.includedSummary", "incluidos")} · {proximamente}{" "}
+          {t("components.config.comingSoonSummary", "próximamente")}
         </p>
       </div>
 

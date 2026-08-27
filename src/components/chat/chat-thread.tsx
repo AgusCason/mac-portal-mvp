@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
+
+const DATE_LOCALE: Record<string, string> = { es: "es-AR", en: "en-US" };
 
 /**
  * Bandeja de chat tipo CRM (Módulo E). `outbound` = agencia -> cliente,
@@ -30,6 +33,7 @@ export function ChatThread({
   /** Prefillea el composer — ej: al venir de "Pedir Ajustes" en el calendario. */
   defaultMessage?: string;
 }) {
+  const { t, locale } = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [draft, setDraft] = React.useState(defaultMessage ?? "");
@@ -59,7 +63,7 @@ export function ChatThread({
         <div className="flex flex-col gap-3">
           {messages.length === 0 && (
             <p className="text-muted-foreground text-sm">
-              Todavía no hay mensajes en este hilo.
+              {t("components.chat.noMessages", "Todavía no hay mensajes en este hilo.")}
             </p>
           )}
           {messages.map((m) => {
@@ -80,8 +84,12 @@ export function ChatThread({
                   {m.body}
                 </div>
                 <span className="text-muted-foreground mt-1 text-[11px]">
-                  {m.sender_name ?? (m.direction === "inbound" ? "Cliente" : "Agencia")} ·{" "}
-                  {new Date(m.created_at).toLocaleTimeString("es-AR", {
+                  {m.sender_name ??
+                    (m.direction === "inbound"
+                      ? t("components.chat.senderClient", "Cliente")
+                      : t("components.chat.senderAgency", "Agencia"))}{" "}
+                  ·{" "}
+                  {new Date(m.created_at).toLocaleTimeString(DATE_LOCALE[locale] ?? "es-AR", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
@@ -100,7 +108,7 @@ export function ChatThread({
         <input type="hidden" name="clientId" value={clientId} />
         <Input
           name="body"
-          placeholder="Escribí un mensaje..."
+          placeholder={t("components.chat.messagePlaceholder", "Escribí un mensaje...")}
           required
           autoComplete="off"
           value={draft}

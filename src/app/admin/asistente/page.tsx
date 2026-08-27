@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { MAX_AGENT } from "@/lib/ai/agents";
+import { MAX_AGENT, getAgentRole, getAgentTagline } from "@/lib/ai/agents";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -44,10 +44,10 @@ export default async function AiAssistantPage({
     <div className="space-y-4">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">
-          Asistente IA · <span className="text-primary">{MAX_AGENT.name}</span>
+          {t("pages.asistente.titlePrefix", "Asistente IA ·")} <span className="text-primary">{MAX_AGENT.name}</span>
         </h1>
         <p className="text-muted-foreground text-sm">
-          {MAX_AGENT.role} — {MAX_AGENT.tagline}
+          {getAgentRole(MAX_AGENT, t)} — {getAgentTagline(MAX_AGENT, t)}
         </p>
       </div>
 
@@ -67,7 +67,7 @@ export default async function AiAssistantPage({
               )}
             >
               <Badge variant={activeConversationId ? "outline" : "secondary"}>
-                + Nueva conversación
+                {t("pages.asistente.newConversation", "+ Nueva conversación")}
               </Badge>
             </Link>
             {conversations.map((c) => (

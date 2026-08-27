@@ -15,7 +15,7 @@ export default async function ClientCalendarioPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("pages.clientCalendario.title", "Tu calendario editorial")}</h1>
         <p className="text-muted-foreground text-sm">
-          Previsualizá, aprobá con un clic o pedí cambios con feedback puntual.
+          {t("pages.clientCalendario.description", "Previsualizá, aprobá con un clic o pedí cambios con feedback puntual.")}
         </p>
       </div>
       <ContentBoard items={items} role="client" />

@@ -31,7 +31,7 @@ export default async function ClientFacturasPage() {
         <ClientInvoiceList invoices={invoices} enabledMethods={enabledMethods} />
       ) : (
         <p className="text-muted-foreground text-sm">
-          Tu cuenta todavía no está vinculada a ningún cliente.
+          {t("pages.client.noClientLinked", "Tu cuenta todavía no está vinculada a ningún cliente.")}
         </p>
       )}
     </div>

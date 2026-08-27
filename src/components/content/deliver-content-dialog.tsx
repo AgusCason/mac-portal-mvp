@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /**
  * Modal de entrega del editor. Sube el render final directo al navegador →
@@ -38,6 +39,7 @@ export function DeliverContentDialog({
   clientId: string;
   title: string;
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [file, setFile] = React.useState<File | null>(null);
   const [progress, setProgress] = React.useState(0);
@@ -66,7 +68,7 @@ export function DeliverContentDialog({
         formData.set("driveFileId", uploaded.id);
         const res = await deliverContentAction(formData);
         if (res.ok) {
-          toast.success('Entregado — pasó a "Por Aprobar"');
+          toast.success(t("components.content.deliveredToast", 'Entregado — pasó a "Por Aprobar"'));
           setOpen(false);
           setFile(null);
           router.refresh();
@@ -74,7 +76,9 @@ export function DeliverContentDialog({
           toast.error(res.error);
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "No se pudo subir el archivo.");
+        toast.error(
+          err instanceof Error ? err.message : t("components.content.uploadErrorGeneric", "No se pudo subir el archivo.")
+        );
       }
     });
   }
@@ -83,21 +87,24 @@ export function DeliverContentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <UploadCloud /> Entregar
+          <UploadCloud /> {t("components.content.deliverButton", "Entregar")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Entregar render</DialogTitle>
+          <DialogTitle>{t("components.content.deliverDialogTitle", "Entregar render")}</DialogTitle>
           <DialogDescription>
-            Subí el archivo final de “{title}” a la carpeta de Entregables Finales del
-            cliente en Drive. Al terminar, la pieza pasa automáticamente a “Por Aprobar”
-            y el cliente puede revisarla.
+            {t("components.content.deliverDialogDescPrefix", 'Subí el archivo final de "')}
+            {title}
+            {t(
+              "components.content.deliverDialogDescSuffix",
+              '" a la carpeta de Entregables Finales del cliente en Drive. Al terminar, la pieza pasa automáticamente a "Por Aprobar" y el cliente puede revisarla.'
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-1.5">
-          <Label htmlFor="file">Archivo</Label>
+          <Label htmlFor="file">{t("components.content.fileLabel", "Archivo")}</Label>
           <Input
             id="file"
             type="file"
@@ -118,7 +125,7 @@ export function DeliverContentDialog({
         <DialogFooter>
           <Button onClick={handleUpload} disabled={!file || isUploading}>
             {isUploading && <Loader2 className="animate-spin" />}
-            Subir y entregar
+            {t("components.content.uploadAndDeliver", "Subir y entregar")}
           </Button>
         </DialogFooter>
       </DialogContent>

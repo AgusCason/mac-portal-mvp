@@ -23,14 +23,24 @@ import type { PaymentMethodConfig } from "@/types/database";
 
 const LINK_KINDS = ["paypal", "mercadopago", "payoneer"] as const;
 
-function CopyField({ label, value, onCopy }: { label: string; value: string; onCopy: () => void }) {
+function CopyField({
+  label,
+  value,
+  onCopy,
+  t,
+}: {
+  label: string;
+  value: string;
+  onCopy: () => void;
+  t: (path: string, fallback?: string) => string;
+}) {
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(value);
-      toast.success("Copiado");
+      toast.success(t("billing.copied", "Copiado"));
       onCopy();
     } catch {
-      toast.error("No se pudo copiar");
+      toast.error(t("billing.copyError", "No se pudo copiar"));
     }
   }
 
@@ -107,7 +117,10 @@ export function PayInvoiceDialog({
         <div className="space-y-4">
           {!hasAnyMethod && (
             <p className="text-muted-foreground text-sm">
-              Todavía no hay métodos de cobro configurados — consultale al admin cómo pagar.
+              {t(
+                "billing.noMethodsConfigured",
+                "Todavía no hay métodos de cobro configurados — consultale al admin cómo pagar."
+              )}
             </p>
           )}
 
@@ -138,32 +151,36 @@ export function PayInvoiceDialog({
               <div className="space-y-1.5">
                 {transferMethod.account_holder && (
                   <CopyField
-                    label="Titular"
+                    label={t("billing.accountHolderLabel", "Titular de la cuenta")}
                     value={transferMethod.account_holder}
                     onCopy={() => setLastMethod(transferMethod.kind)}
+                    t={t}
                   />
                 )}
                 {transferMethod.kind === "transferencia_ars" ? (
                   <>
                     {transferMethod.cbu && (
                       <CopyField
-                        label="CBU"
+                        label={t("billing.cbuLabel", "CBU")}
                         value={transferMethod.cbu}
                         onCopy={() => setLastMethod(transferMethod.kind)}
+                        t={t}
                       />
                     )}
                     {transferMethod.alias && (
                       <CopyField
-                        label="Alias"
+                        label={t("billing.aliasLabel", "Alias")}
                         value={transferMethod.alias}
                         onCopy={() => setLastMethod(transferMethod.kind)}
+                        t={t}
                       />
                     )}
                     {transferMethod.cuit && (
                       <CopyField
-                        label="CUIT/CUIL"
+                        label={t("billing.cuitLabel", "CUIT/CUIL")}
                         value={transferMethod.cuit}
                         onCopy={() => setLastMethod(transferMethod.kind)}
+                        t={t}
                       />
                     )}
                   </>
@@ -171,30 +188,34 @@ export function PayInvoiceDialog({
                   <>
                     {transferMethod.bank_name && (
                       <CopyField
-                        label="Banco"
+                        label={t("billing.bankNameLabel", "Banco")}
                         value={transferMethod.bank_name}
                         onCopy={() => setLastMethod(transferMethod.kind)}
+                        t={t}
                       />
                     )}
                     {transferMethod.account_number && (
                       <CopyField
-                        label="Número de cuenta"
+                        label={t("billing.accountNumberLabel", "Número de cuenta")}
                         value={transferMethod.account_number}
                         onCopy={() => setLastMethod(transferMethod.kind)}
+                        t={t}
                       />
                     )}
                     {transferMethod.routing_number && (
                       <CopyField
-                        label="Routing number"
+                        label={t("billing.routingNumberLabel", "Routing number")}
                         value={transferMethod.routing_number}
                         onCopy={() => setLastMethod(transferMethod.kind)}
+                        t={t}
                       />
                     )}
                     {transferMethod.swift_bic && (
                       <CopyField
-                        label="SWIFT/BIC"
+                        label={t("billing.swiftBicLabel", "SWIFT/BIC")}
                         value={transferMethod.swift_bic}
                         onCopy={() => setLastMethod(transferMethod.kind)}
+                        t={t}
                       />
                     )}
                   </>

@@ -18,7 +18,9 @@ export default async function AdminCompetidoresPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.socialMedia.competidores", "Competidores")}</h1>
-        <p className="text-muted-foreground text-sm">Perfiles de la competencia y benchmark de métricas públicas.</p>
+        <p className="text-muted-foreground text-sm">
+          {t("pages.socialCompetidores.description", "Perfiles de la competencia y benchmark de métricas públicas.")}
+        </p>
       </div>
       <CompetitorsView competitors={competitors} clients={clients} />
     </div>

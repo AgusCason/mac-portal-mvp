@@ -11,64 +11,73 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getT } from "@/lib/i18n/dictionary";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { AdminDashboardData } from "@/lib/queries/dashboard";
-
-const METRIC_LABELS: Record<string, string> = {
-  reach: "Alcance",
-  followers: "Seguidores",
-};
+import type { Profile } from "@/types/database";
 
 /** Vista del dashboard para el Super Administrador (Agencia / Project Manager). */
-export function AdminDashboard({ data }: { data: AdminDashboardData }) {
+export function AdminDashboard({ data, profile }: { data: AdminDashboardData; profile: Profile }) {
+  const t = getT(profile.language);
   const inFlight =
     data.contentByStatus.en_edicion +
     data.contentByStatus.por_aprobar +
     data.contentByStatus.requiere_cambios;
 
+  const METRIC_LABELS: Record<string, string> = {
+    reach: t("pages.redes.reach", "Alcance"),
+    followers: t("pages.redes.followers", "Seguidores"),
+  };
+
+  const ACCOUNT_STATUS_LABEL: Record<string, string> = {
+    active: t("pages.clienteDetail.statusActive", "Activo"),
+    paused: t("pages.clienteDetail.statusPaused", "Pausado"),
+    churned: t("pages.clienteDetail.statusLost", "Perdido"),
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Panel general</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("components.dashboard.adminTitle", "Panel general")}</h1>
         <p className="text-muted-foreground text-sm">
-          Visibilidad total de cuentas, equipo, contenido en curso y facturación.
+          {t("components.dashboard.adminDesc", "Visibilidad total de cuentas, equipo, contenido en curso y facturación.")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          label="Cuentas activas"
+          label={t("components.dashboard.kpiActiveAccounts", "Cuentas activas")}
           value={`${data.activeClients}/${data.totalClients}`}
           icon={Users}
-          hint="Cuentas activas sobre el total"
+          hint={t("components.dashboard.kpiActiveAccountsHint", "Cuentas activas sobre el total")}
         />
-        <KpiCard label="Editores en equipo" value={data.totalEditors} icon={UserCog} />
+        <KpiCard label={t("components.dashboard.kpiTeamEditors", "Editores en equipo")} value={data.totalEditors} icon={UserCog} />
         <KpiCard
-          label="Facturación mensual"
+          label={t("components.dashboard.kpiMonthlyRevenue", "Facturación mensual")}
           value={formatCurrency(data.monthlyRevenue)}
           icon={Wallet}
-          hint="Suma de planes activos"
+          hint={t("components.dashboard.kpiMonthlyRevenueHint", "Suma de planes activos")}
         />
         <KpiCard
-          label="Contenido en curso"
+          label={t("components.dashboard.kpiContentInProgress", "Contenido en curso")}
           value={inFlight}
           icon={Clock}
-          hint="En edición + por aprobar + con cambios"
+          hint={t("components.dashboard.kpiContentInProgressHint", "En edición + por aprobar + con cambios")}
         />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Pendientes de aprobación del cliente</CardTitle>
+            <CardTitle>{t("components.dashboard.pendingClientApprovalTitle", "Pendientes de aprobación del cliente")}</CardTitle>
             <CardDescription>
-              Contenido esperando revisión — el cuello de botella típico del flujo editorial.
+              {t("components.dashboard.pendingClientApprovalDesc", "Contenido esperando revisión — el cuello de botella típico del flujo editorial.")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.pendingApprovals.length === 0 && (
               <p className="text-muted-foreground text-sm">
-                No hay piezas esperando aprobación ahora mismo.
+                {t("components.dashboard.noPendingApprovalNow", "No hay piezas esperando aprobación ahora mismo.")}
               </p>
             )}
             {data.pendingApprovals.map((item) => (
@@ -80,12 +89,12 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
                   <p className="truncate text-sm font-medium">{item.title}</p>
                   <p className="text-muted-foreground text-xs">{item.client_name}</p>
                 </div>
-                <ContentStatusBadge status="por_aprobar" />
+                <ContentStatusBadge status="por_aprobar" t={t} />
               </div>
             ))}
             <Button asChild variant="ghost" size="sm" className="mt-1 w-full justify-between">
               <Link href="/admin/calendario">
-                Ver calendario completo <ArrowUpRight className="size-3.5" />
+                {t("components.dashboard.viewFullCalendar", "Ver calendario completo")} <ArrowUpRight className="size-3.5" />
               </Link>
             </Button>
           </CardContent>
@@ -93,7 +102,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Cuentas recientes</CardTitle>
+            <CardTitle>{t("components.dashboard.recentAccountsTitle", "Cuentas recientes")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.recentClients.map((c) => (
@@ -101,17 +110,17 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
                 <div className="min-w-0">
                   <p className="truncate font-medium">{c.name}</p>
                   <p className="text-muted-foreground text-xs">
-                    Alta {formatDate(c.created_at)}
+                    {t("components.dashboard.signedUpOn", "Alta")} {formatDate(c.created_at)}
                   </p>
                 </div>
                 <Badge variant={c.status === "active" ? "success" : "secondary"}>
-                  {c.status === "active" ? "Activo" : c.status === "paused" ? "Pausado" : "Perdido"}
+                  {ACCOUNT_STATUS_LABEL[c.status] ?? c.status}
                 </Badge>
               </div>
             ))}
             <Button asChild variant="ghost" size="sm" className="mt-1 w-full justify-between">
               <Link href="/admin/clientes">
-                Gestionar cuentas <ArrowUpRight className="size-3.5" />
+                {t("components.dashboard.manageAccounts", "Gestionar cuentas")} <ArrowUpRight className="size-3.5" />
               </Link>
             </Button>
           </CardContent>
@@ -120,15 +129,17 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Alertas de métricas</CardTitle>
+          <CardTitle>{t("components.dashboard.metricAlertsTitle", "Alertas de métricas")}</CardTitle>
           <CardDescription>
-            Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos
-            (Fase 3.4 — revisado automáticamente todos los días).
+            {t(
+              "components.dashboard.metricAlertsDesc",
+              "Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos (Fase 3.4 — revisado automáticamente todos los días)."
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {data.metricAlerts.length === 0 && (
-            <p className="text-muted-foreground text-sm">Sin caídas detectadas por ahora.</p>
+            <p className="text-muted-foreground text-sm">{t("pages.analyticsAlertas.empty", "Sin caídas detectadas por ahora")}.</p>
           )}
           {data.metricAlerts.map((alert) => (
             <div
@@ -149,7 +160,7 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           ))}
           <Button asChild variant="ghost" size="sm" className="mt-1 w-full justify-between">
             <Link href="/admin/redes">
-              Ver redes sociales <ArrowUpRight className="size-3.5" />
+              {t("components.dashboard.viewSocialMedia", "Ver redes sociales")} <ArrowUpRight className="size-3.5" />
             </Link>
           </Button>
         </CardContent>

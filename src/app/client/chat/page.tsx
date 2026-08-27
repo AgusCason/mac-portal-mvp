@@ -20,7 +20,7 @@ export default async function ClientChatPage({
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("pages.clientChat.title", "Chat con la agencia")}</h1>
         <p className="text-muted-foreground text-sm">
-          Briefs y consultas rápidas, todo en un solo lugar.
+          {t("pages.clientChat.description", "Briefs y consultas rápidas, todo en un solo lugar.")}
         </p>
       </div>
       {clientId ? (
@@ -33,7 +33,7 @@ export default async function ClientChatPage({
         />
       ) : (
         <p className="text-muted-foreground text-sm">
-          Tu cuenta todavía no está vinculada a ningún cliente.
+          {t("pages.client.noClientLinked", "Tu cuenta todavía no está vinculada a ningún cliente.")}
         </p>
       )}
     </div>

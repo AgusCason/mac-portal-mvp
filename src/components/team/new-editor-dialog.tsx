@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /**
  * Alta de Editor — aprovisionamiento automático (ver `createEditorAction`):
@@ -26,6 +27,7 @@ import {
  * para que el admin lo asigne a clientes desde esta misma pantalla.
  */
 export function NewEditorDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -36,8 +38,8 @@ export function NewEditorDialog() {
       if (res.ok) {
         toast.success(
           res.alreadyExisted
-            ? "Ya existía una cuenta con ese email — se vinculó como editor."
-            : "Invitación enviada por email."
+            ? t("components.team.editorLinked", "Ya existía una cuenta con ese email — se vinculó como editor.")
+            : t("components.team.invitationSent", "Invitación enviada por email.")
         );
         setOpen(false);
         router.refresh();
@@ -51,32 +53,34 @@ export function NewEditorDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <UserPlus /> Invitar editor
+          <UserPlus /> {t("components.team.inviteEditor", "Invitar editor")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Invitar editor</DialogTitle>
+            <DialogTitle>{t("components.team.inviteEditor", "Invitar editor")}</DialogTitle>
             <DialogDescription>
-              Le llega un email para crear su contraseña. No va a ver ningún cliente
-              hasta que se lo asignes desde acá.
+              {t(
+                "components.team.inviteEditorDesc",
+                "Le llega un email para crear su contraseña. No va a ver ningún cliente hasta que se lo asignes desde acá."
+              )}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5">
-            <Label htmlFor="fullName">Nombre completo</Label>
+            <Label htmlFor="fullName">{t("components.team.fullNameLabel", "Nombre completo")}</Label>
             <Input id="fullName" name="fullName" required />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("components.team.emailLabel", "Email")}</Label>
             <Input id="email" name="email" type="email" required />
           </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Enviar invitación
+              {t("components.team.sendInvitation", "Enviar invitación")}
             </Button>
           </DialogFooter>
         </form>

@@ -1,9 +1,11 @@
 import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
 import { requireAdmin } from "@/lib/auth";
 import { getRecentActivity } from "@/lib/queries/activity";
 import { Badge } from "@/components/ui/badge";
-import { getT } from "@/lib/i18n/dictionary";
+import { getT, resolveLocale } from "@/lib/i18n/dictionary";
+
+const DATE_FNS_LOCALE = { es, en: enUS } as const;
 
 /**
  * Management > Actividad — bitácora completa del workspace (versión de
@@ -12,6 +14,7 @@ import { getT } from "@/lib/i18n/dictionary";
 export default async function AdminActividadPage() {
   const profile = await requireAdmin();
   const t = getT(profile.language);
+  const dateFnsLocale = DATE_FNS_LOCALE[resolveLocale(profile.language)];
   const events = await getRecentActivity(100);
 
   const EVENT_META: Record<string, string> = {
@@ -27,13 +30,15 @@ export default async function AdminActividadPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.actividad", "Actividad")}</h1>
-        <p className="text-muted-foreground text-sm">Bitácora completa de lo que pasó en el workspace.</p>
+        <p className="text-muted-foreground text-sm">
+          {t("pages.actividad.description", "Bitácora completa de lo que pasó en el workspace.")}
+        </p>
       </div>
 
       <div className="flex flex-col gap-2">
         {events.length === 0 && (
           <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-            Todavía no hay actividad registrada.
+            {t("pages.actividad.emptyState", "Todavía no hay actividad registrada.")}
           </p>
         )}
         {events.map((event) => (
@@ -48,7 +53,7 @@ export default async function AdminActividadPage() {
               <p className="mt-1.5 text-sm">{event.summary}</p>
             </div>
             <span className="text-muted-foreground shrink-0 text-xs whitespace-nowrap">
-              {formatDistanceToNow(new Date(event.created_at), { addSuffix: true, locale: es })}
+              {formatDistanceToNow(new Date(event.created_at), { addSuffix: true, locale: dateFnsLocale })}
             </span>
           </div>
         ))}

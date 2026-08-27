@@ -12,15 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { AvatarUploadDialog } from "@/components/shared/avatar-upload-dialog";
+import { getT } from "@/lib/i18n/dictionary";
 import type { ClientDashboardData } from "@/lib/queries/dashboard";
 import type { Profile } from "@/types/database";
 import { formatDate } from "@/lib/utils";
-
-const ACCOUNT_STATUS_META = {
-  active: { label: "Al día", variant: "success" as const },
-  paused: { label: "Pausada", variant: "warning" as const },
-  churned: { label: "Dada de baja", variant: "destructive" as const },
-};
 
 /** Vista del dashboard para el portal de Cliente (marca / creador). */
 export function ClientDashboard({
@@ -30,6 +25,14 @@ export function ClientDashboard({
   data: ClientDashboardData;
   profile: Profile;
 }) {
+  const t = getT(profile.language);
+
+  const ACCOUNT_STATUS_META = {
+    active: { label: t("components.dashboard.accountStatusActive", "Al día"), variant: "success" as const },
+    paused: { label: t("components.dashboard.accountStatusPaused", "Pausada"), variant: "warning" as const },
+    churned: { label: t("components.dashboard.accountStatusChurned", "Dada de baja"), variant: "destructive" as const },
+  };
+
   const publicado = data.contentByStatus.publicado;
   const aprobado = data.contentByStatus.aprobado;
   const accountStatus = data.client ? ACCOUNT_STATUS_META[data.client.status] : null;
@@ -50,15 +53,15 @@ export function ClientDashboard({
           />
           <div>
             <h1 className="text-xl font-semibold tracking-tight">
-              Hola, {data.client?.brand_name ?? data.client?.name ?? ""}
+              {t("components.dashboard.greeting", "Hola,")} {data.client?.brand_name ?? data.client?.name ?? ""}
             </h1>
             <p className="text-muted-foreground text-sm">
-              Así viene tu contenido este mes.
+              {t("components.dashboard.clientSummary", "Así viene tu contenido este mes.")}
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {data.planName && <Badge variant="info">Plan {data.planName}</Badge>}
+          {data.planName && <Badge variant="info">{t("components.dashboard.planPrefix", "Plan")} {data.planName}</Badge>}
           {accountStatus && <Badge variant={accountStatus.variant}>{accountStatus.label}</Badge>}
         </div>
       </div>
@@ -69,8 +72,8 @@ export function ClientDashboard({
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium">
                 {data.monthlyQuota
-                  ? `${data.deliveredThisMonth}/${data.monthlyQuota} videos entregados`
-                  : `${data.deliveredThisMonth} videos entregados este mes`}
+                  ? `${data.deliveredThisMonth}/${data.monthlyQuota} ${t("components.dashboard.videosDeliveredOf", "videos entregados")}`
+                  : `${data.deliveredThisMonth} ${t("components.dashboard.videosDeliveredThisMonth", "videos entregados este mes")}`}
               </span>
               {quotaPct != null && (
                 <span className="text-muted-foreground tabular-nums">{quotaPct}%</span>
@@ -80,7 +83,7 @@ export function ClientDashboard({
           </div>
           {data.nextCutoffDate && (
             <div className="text-muted-foreground shrink-0 text-xs sm:text-right">
-              Próximo corte de facturación
+              {t("components.dashboard.nextBillingCutoff", "Próximo corte de facturación")}
               <p className="text-foreground text-sm font-medium tabular-nums">
                 {formatDate(data.nextCutoffDate)}
               </p>
@@ -91,30 +94,30 @@ export function ClientDashboard({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
-          label="Esperando tu aprobación"
+          label={t("components.dashboard.kpiWaitingApproval", "Esperando tu aprobación")}
           value={data.pendingReview.length}
           icon={Eye}
         />
-        <KpiCard label="Aprobado / listo" value={aprobado} icon={Sparkles} />
+        <KpiCard label={t("components.dashboard.kpiApprovedReady", "Aprobado / listo")} value={aprobado} icon={Sparkles} />
         <KpiCard
-          label="Contratos pendientes"
+          label={t("components.dashboard.kpiPendingContracts", "Contratos pendientes")}
           value={data.pendingContracts}
           icon={FileSignature}
-          hint={data.pendingContracts > 0 ? "Requieren tu firma" : undefined}
+          hint={data.pendingContracts > 0 ? t("components.dashboard.kpiPendingContractsHint", "Requieren tu firma") : undefined}
         />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Contenido por aprobar</CardTitle>
+          <CardTitle>{t("components.dashboard.pendingReviewTitle", "Contenido por aprobar")}</CardTitle>
           <CardDescription>
-            Revisá y aprobá con un clic, o pedí cambios con feedback puntual.
+            {t("components.dashboard.pendingReviewDesc", "Revisá y aprobá con un clic, o pedí cambios con feedback puntual.")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           {data.pendingReview.length === 0 && (
             <p className="text-muted-foreground text-sm">
-              No tenés contenido esperando aprobación en este momento.
+              {t("components.dashboard.noPendingReview", "No tenés contenido esperando aprobación en este momento.")}
             </p>
           )}
           {data.pendingReview.map((item) => (
@@ -129,7 +132,7 @@ export function ClientDashboard({
                 </p>
               </div>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/client/calendario?item=${item.id}`}>Revisar</Link>
+                <Link href={`/client/calendario?item=${item.id}`}>{t("components.dashboard.review", "Revisar")}</Link>
               </Button>
             </div>
           ))}
@@ -137,7 +140,8 @@ export function ClientDashboard({
       </Card>
 
       <p className="text-muted-foreground text-xs">
-        Publicado hasta ahora: <span className="tabular-nums font-medium text-foreground">{publicado}</span> piezas
+        {t("components.dashboard.publishedSoFar", "Publicado hasta ahora:")}{" "}
+        <span className="tabular-nums font-medium text-foreground">{publicado}</span> {t("components.dashboard.pieces", "piezas")}
       </p>
     </div>
   );

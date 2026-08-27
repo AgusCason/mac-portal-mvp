@@ -40,7 +40,7 @@ export default async function AnalyticsEnviosPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.envios", "Envíos")}</h1>
         <p className="text-muted-foreground text-sm">
-          Reportes publicados y entregados a cada cliente, en orden cronológico.
+          {t("pages.analyticsEnvios.description", "Reportes publicados y entregados a cada cliente, en orden cronológico.")}
         </p>
       </div>
 
@@ -50,7 +50,10 @@ export default async function AnalyticsEnviosPage() {
             <Send className="text-muted-foreground size-8" strokeWidth={1.5} />
             <p className="text-sm font-medium">{t("pages.analyticsEnvios.empty", "Todavía no se publicó ningún reporte")}</p>
             <p className="text-muted-foreground max-w-sm text-sm">
-              Cuando publiques un reporte desde Analytics &gt; Reports, va a aparecer acá con su fecha de envío.
+              {t(
+                "pages.analyticsEnvios.emptyHint",
+                "Cuando publiques un reporte desde Analytics > Reports, va a aparecer acá con su fecha de envío."
+              )}
             </p>
           </CardContent>
         </Card>
@@ -65,7 +68,7 @@ export default async function AnalyticsEnviosPage() {
                 <TableHead>{t("pages.analyticsEnvios.report", "Reporte")}</TableHead>
                 <TableHead>{t("pages.analyticsEnvios.period", "Período")}</TableHead>
                 <TableHead>{t("pages.analyticsEnvios.platforms", "Plataformas")}</TableHead>
-                <TableHead>Enviado</TableHead>
+                <TableHead>{t("pages.analyticsEnvios.colSent", "Enviado")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

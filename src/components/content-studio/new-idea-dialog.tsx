@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { IdeaFormFields } from "@/components/content-studio/idea-form-fields";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewIdeaDialog({
   clients,
@@ -25,6 +26,7 @@ export function NewIdeaDialog({
   clients: { id: string; name: string }[];
   defaultType?: string;
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -33,7 +35,7 @@ export function NewIdeaDialog({
     startTransition(async () => {
       const res = await createContentIdeaAction(formData);
       if (res.ok) {
-        toast.success("Idea agregada");
+        toast.success(t("components.contentStudio.ideaAdded", "Idea agregada"));
         setOpen(false);
         router.refresh();
       } else {
@@ -46,19 +48,19 @@ export function NewIdeaDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nueva idea
+          <Plus /> {t("components.contentStudio.newIdea", "Nueva idea")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nueva idea</DialogTitle>
+            <DialogTitle>{t("components.contentStudio.newIdea", "Nueva idea")}</DialogTitle>
           </DialogHeader>
           <IdeaFormFields clients={clients} defaultType={defaultType} />
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Agregar
+              {t("common.add", "Agregar")}
             </Button>
           </DialogFooter>
         </form>

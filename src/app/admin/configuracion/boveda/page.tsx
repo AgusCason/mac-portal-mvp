@@ -15,15 +15,20 @@ export default async function BovedaPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.config.boveda", "Bóveda")}</h1>
         <p className="text-muted-foreground text-sm">
-          Credenciales y accesos técnicos cifrados (Meta, dominios, hosting), con vínculo opcional
-          a un cliente. Solo vos (admin) podés ver y usar esta pantalla.
+          {t(
+            "pages.boveda.description",
+            "Credenciales y accesos técnicos cifrados (Meta, dominios, hosting), con vínculo opcional a un cliente. Solo vos (admin) podés ver y usar esta pantalla."
+          )}
         </p>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Credenciales guardadas</CardTitle>
+          <CardTitle>{t("pages.boveda.savedCredentialsTitle", "Credenciales guardadas")}</CardTitle>
           <CardDescription>
-            El secreto se cifra con pgcrypto y solo se descifra bajo demanda con el botón del ojo.
+            {t(
+              "pages.boveda.savedCredentialsDesc",
+              "El secreto se cifra con pgcrypto y solo se descifra bajo demanda con el botón del ojo."
+            )}
           </CardDescription>
         </CardHeader>
         <CardContent>

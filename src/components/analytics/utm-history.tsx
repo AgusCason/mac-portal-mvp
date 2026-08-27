@@ -16,18 +16,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { UtmLink } from "@/types/database";
 
 export function UtmHistory({ links }: { links: (UtmLink & { clientName: string | null })[] }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
   async function copy(url: string) {
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copiado");
+      toast.success(t("components.analytics.linkCopied", "Link copiado"));
     } catch {
-      toast.error("No se pudo copiar");
+      toast.error(t("components.analytics.copyError", "No se pudo copiar"));
     }
   }
 
@@ -35,7 +37,7 @@ export function UtmHistory({ links }: { links: (UtmLink & { clientName: string |
     startTransition(async () => {
       const res = await deleteUtmLinkAction(id);
       if (res.ok) {
-        toast.success("Campaña eliminada");
+        toast.success(t("components.analytics.campaignDeleted", "Campaña eliminada"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -46,7 +48,7 @@ export function UtmHistory({ links }: { links: (UtmLink & { clientName: string |
   if (links.length === 0) {
     return (
       <p className="text-muted-foreground py-8 text-center text-sm">
-        Todavía no armaste ninguna campaña UTM.
+        {t("components.analytics.utmNoCampaigns", "Todavía no armaste ninguna campaña UTM.")}
       </p>
     );
   }
@@ -56,11 +58,11 @@ export function UtmHistory({ links }: { links: (UtmLink & { clientName: string |
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Campaña</TableHead>
-            <TableHead>Cuenta</TableHead>
-            <TableHead>Fuente / Medio</TableHead>
-            <TableHead>Fecha</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
+            <TableHead>{t("components.analytics.colCampaign", "Campaña")}</TableHead>
+            <TableHead>{t("components.analytics.colAccount", "Cuenta")}</TableHead>
+            <TableHead>{t("components.analytics.colSourceMedium", "Fuente / Medio")}</TableHead>
+            <TableHead>{t("components.analytics.colDate", "Fecha")}</TableHead>
+            <TableHead className="text-right">{t("components.analytics.colActions", "Acciones")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

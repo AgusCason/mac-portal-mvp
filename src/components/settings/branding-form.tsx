@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /** Selector de color: swatch nativo + input de texto, sincronizados. */
 function ColorField({
@@ -57,6 +58,7 @@ function ColorField({
 }
 
 export function BrandingForm({ branding }: { branding: AgencyBranding }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -64,7 +66,7 @@ export function BrandingForm({ branding }: { branding: AgencyBranding }) {
     startTransition(async () => {
       const res = await updateBrandingAction(formData);
       if (res.ok) {
-        toast.success("Branding actualizado");
+        toast.success(t("components.branding.brandingUpdated", "Branding actualizado"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -76,19 +78,19 @@ export function BrandingForm({ branding }: { branding: AgencyBranding }) {
     <form action={handleSubmit} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="appName">Nombre de la app</Label>
+          <Label htmlFor="appName">{t("components.branding.appNameLabel", "Nombre de la app")}</Label>
           <Input id="appName" name="appName" defaultValue={branding.app_name} required />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="buttonShape">Forma de botones</Label>
+          <Label htmlFor="buttonShape">{t("components.branding.buttonShapeLabel", "Forma de botones")}</Label>
           <Select name="buttonShape" defaultValue={branding.button_shape}>
             <SelectTrigger className="w-full" id="buttonShape">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="square">Cuadrada</SelectItem>
-              <SelectItem value="rounded">Redondeada</SelectItem>
-              <SelectItem value="pill">Píldora</SelectItem>
+              <SelectItem value="square">{t("components.branding.shapeSquare", "Cuadrada")}</SelectItem>
+              <SelectItem value="rounded">{t("components.branding.shapeRounded", "Redondeada")}</SelectItem>
+              <SelectItem value="pill">{t("components.branding.shapePill", "Píldora")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -98,20 +100,20 @@ export function BrandingForm({ branding }: { branding: AgencyBranding }) {
         <ColorField
           id="primaryColor"
           name="primaryColor"
-          label="Color primario"
+          label={t("components.branding.primaryColorLabel", "Color primario")}
           defaultValue={branding.primary_color}
         />
         <ColorField
           id="accentColor"
           name="accentColor"
-          label="Color de acento"
+          label={t("components.branding.accentColorLabel", "Color de acento")}
           defaultValue={branding.accent_color}
         />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="logoLightUrl">Logo (fondo claro)</Label>
+          <Label htmlFor="logoLightUrl">{t("components.branding.logoLightLabel", "Logo (fondo claro)")}</Label>
           <Input
             id="logoLightUrl"
             name="logoLightUrl"
@@ -121,7 +123,7 @@ export function BrandingForm({ branding }: { branding: AgencyBranding }) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="logoDarkUrl">Logo (fondo oscuro)</Label>
+          <Label htmlFor="logoDarkUrl">{t("components.branding.logoDarkLabel", "Logo (fondo oscuro)")}</Label>
           <Input
             id="logoDarkUrl"
             name="logoDarkUrl"
@@ -133,7 +135,7 @@ export function BrandingForm({ branding }: { branding: AgencyBranding }) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="faviconUrl">Favicon</Label>
+        <Label htmlFor="faviconUrl">{t("components.branding.faviconLabel", "Favicon")}</Label>
         <Input
           id="faviconUrl"
           name="faviconUrl"
@@ -144,14 +146,16 @@ export function BrandingForm({ branding }: { branding: AgencyBranding }) {
       </div>
 
       <p className="text-muted-foreground text-xs">
-        Tipografía y estilo de botón (relleno/contorno) quedan guardados para más adelante — hoy
-        solo se aplican de verdad el nombre, los logos, los colores y la forma de los botones.
+        {t(
+          "components.branding.typographyNote",
+          "Tipografía y estilo de botón (relleno/contorno) quedan guardados para más adelante — hoy solo se aplican de verdad el nombre, los logos, los colores y la forma de los botones."
+        )}
       </p>
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
           {isPending && <Loader2 className="animate-spin" />}
-          {isPending ? "Guardando…" : "Guardar cambios"}
+          {isPending ? t("components.branding.saving", "Guardando…") : t("components.branding.saveChanges", "Guardar cambios")}
         </Button>
       </div>
     </form>

@@ -18,21 +18,21 @@ export default async function AdminSocialMediaPage() {
   const overview = await getSocialMediaOverview();
 
   const SHORTCUTS = [
-    { label: "Insights", href: "/admin/redes", icon: Radar, description: t("pages.socialOverview.shortcutInsightsDesc", "Métricas y monitoreo por cuenta") },
-    { label: "Planner", href: "/admin/social-media/planner", icon: Compass, description: t("pages.socialOverview.shortcutPlannerDesc", "Calendario y kanban de piezas") },
+    { label: t("nav.socialMedia.insights", "Insights"), href: "/admin/redes", icon: Radar, description: t("pages.socialOverview.shortcutInsightsDesc", "Métricas y monitoreo por cuenta") },
+    { label: t("nav.socialMedia.planner", "Planner"), href: "/admin/social-media/planner", icon: Compass, description: t("pages.socialOverview.shortcutPlannerDesc", "Calendario y kanban de piezas") },
     {
-      label: "Content Studio",
+      label: t("nav.socialMedia.contentStudio", "Content Studio"),
       href: "/admin/social-media/content-studio",
       icon: Sparkles,
       description: t("pages.socialOverview.shortcutStudioDesc", "Banco de ideas, guiones y captions"),
     },
     {
-      label: "Brand Voice",
+      label: t("nav.socialMedia.brandVoice", "Brand Voice"),
       href: "/admin/social-media/brand-voice",
       icon: LayoutGrid,
       description: t("pages.socialOverview.shortcutBrandDesc", "Tono de marca por cuenta"),
     },
-    { label: "Competidores", href: "/admin/social-media/competidores", icon: Swords, description: t("pages.socialOverview.shortcutCompetDesc", "Benchmark de la competencia") },
+    { label: t("nav.socialMedia.competidores", "Competidores"), href: "/admin/social-media/competidores", icon: Swords, description: t("pages.socialOverview.shortcutCompetDesc", "Benchmark de la competencia") },
   ];
 
   return (

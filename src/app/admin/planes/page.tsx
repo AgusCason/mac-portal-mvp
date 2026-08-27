@@ -64,7 +64,7 @@ export default async function AdminPlanesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
-                  Facturas abiertas
+                  {t("billing.kpiOpenInvoices", "Facturas abiertas")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xl font-semibold tabular-nums">
@@ -74,7 +74,7 @@ export default async function AdminPlanesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
-                  Atrasadas
+                  {t("billing.kpiOverdueCount", "Atrasadas")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xl font-semibold tabular-nums">
@@ -84,7 +84,7 @@ export default async function AdminPlanesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
-                  Morosos (15d+)
+                  {t("billing.kpiDelinquentCount", "Morosos (15d+)")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xl font-semibold tabular-nums">
@@ -94,7 +94,7 @@ export default async function AdminPlanesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
-                  Monto pendiente
+                  {t("billing.kpiPending", "Monto pendiente")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xl font-semibold tabular-nums">
@@ -133,7 +133,7 @@ export default async function AdminPlanesPage() {
                   <p className="text-muted-foreground text-sm">{plan.description}</p>
                   {plan.monthly_quota != null && (
                     <p className="text-muted-foreground mt-1 text-xs">
-                      {plan.monthly_quota} videos por mes
+                      {plan.monthly_quota} {t("billing.videosPerMonthSuffix", "videos por mes")}
                     </p>
                   )}
                   <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-4 text-xs">

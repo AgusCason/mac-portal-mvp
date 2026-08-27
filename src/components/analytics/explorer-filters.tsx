@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /**
  * Barra de filtros de Analytics > Explorer — cliente/plataforma/ventana de
@@ -19,6 +20,7 @@ import {
  * pueden linkear acá con filtros ya aplicados.
  */
 export function ExplorerFilters({ clients }: { clients: { id: string; name: string }[] }) {
+  const { t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -40,10 +42,10 @@ export function ExplorerFilters({ clients }: { clients: { id: string; name: stri
     <div className="flex flex-wrap items-center gap-2">
       <Select value={currentClient} onValueChange={(v) => setParam("cliente", v)}>
         <SelectTrigger className="w-44" size="sm">
-          <SelectValue placeholder="Cliente" />
+          <SelectValue placeholder={t("components.analytics.clientFilterPlaceholder", "Cliente")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Todas las cuentas</SelectItem>
+          <SelectItem value="all">{t("components.analytics.allAccounts", "Todas las cuentas")}</SelectItem>
           {clients.map((c) => (
             <SelectItem key={c.id} value={c.id}>
               {c.name}
@@ -54,10 +56,10 @@ export function ExplorerFilters({ clients }: { clients: { id: string; name: stri
 
       <Select value={currentPlatform} onValueChange={(v) => setParam("plataforma", v)}>
         <SelectTrigger className="w-40" size="sm">
-          <SelectValue placeholder="Plataforma" />
+          <SelectValue placeholder={t("components.analytics.platformFilterPlaceholder", "Plataforma")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Todas las plataformas</SelectItem>
+          <SelectItem value="all">{t("components.analytics.allPlatforms", "Todas las plataformas")}</SelectItem>
           <SelectItem value="instagram">Instagram</SelectItem>
           <SelectItem value="tiktok">TikTok</SelectItem>
           <SelectItem value="youtube">YouTube</SelectItem>
@@ -66,18 +68,18 @@ export function ExplorerFilters({ clients }: { clients: { id: string; name: stri
 
       <Select value={currentDays} onValueChange={(v) => setParam("dias", v)}>
         <SelectTrigger className="w-36" size="sm">
-          <SelectValue placeholder="Ventana" />
+          <SelectValue placeholder={t("components.analytics.windowFilterPlaceholder", "Ventana")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="7">Últimos 7 días</SelectItem>
-          <SelectItem value="30">Últimos 30 días</SelectItem>
-          <SelectItem value="90">Últimos 90 días</SelectItem>
+          <SelectItem value="7">{t("components.analytics.last7Days", "Últimos 7 días")}</SelectItem>
+          <SelectItem value="30">{t("components.analytics.last30Days", "Últimos 30 días")}</SelectItem>
+          <SelectItem value="90">{t("components.analytics.last90Days", "Últimos 90 días")}</SelectItem>
         </SelectContent>
       </Select>
 
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={() => router.push(pathname)}>
-          <X /> Limpiar
+          <X /> {t("components.analytics.clearFilters", "Limpiar")}
         </Button>
       )}
     </div>

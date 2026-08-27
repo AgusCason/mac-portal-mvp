@@ -9,6 +9,7 @@ import { createUploadSessionAction } from "@/app/actions/drive";
 import { uploadToDriveSession } from "@/lib/drive-upload";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 interface UploadTask {
   id: string;
@@ -26,6 +27,7 @@ interface UploadTask {
  * navegador → Google, nunca pasa por nuestro servidor.
  */
 export function ClientUploadDropzone({ clientId }: { clientId: string }) {
+  const { t } = useLocale();
   const [isDragging, setIsDragging] = React.useState(false);
   const [tasks, setTasks] = React.useState<UploadTask[]>([]);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -57,7 +59,7 @@ export function ClientUploadDropzone({ clientId }: { clientId: string }) {
         setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: "done", progress: 100 } : t)));
         router.refresh();
       } catch (err) {
-        const message = err instanceof Error ? err.message : "No se pudo subir el archivo.";
+        const message = err instanceof Error ? err.message : t("components.drive.uploadErrorGeneric", "No se pudo subir el archivo.");
         setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: "error", error: message } : t)));
         toast.error(message);
       }
@@ -92,9 +94,9 @@ export function ClientUploadDropzone({ clientId }: { clientId: string }) {
         )}
       >
         <UploadCloud className="text-muted-foreground size-8" strokeWidth={1.5} />
-        <p className="text-sm font-medium">Arrastrá tus clips acá, o hacé clic para elegirlos</p>
+        <p className="text-sm font-medium">{t("components.drive.dropzoneTitle", "Arrastrá tus clips acá, o hacé clic para elegirlos")}</p>
         <p className="text-muted-foreground text-xs">
-          Se suben directo a tu carpeta de Crudos en Drive.
+          {t("components.drive.dropzoneDesc", "Se suben directo a tu carpeta de Crudos en Drive.")}
         </p>
         <input
           ref={inputRef}
@@ -110,16 +112,16 @@ export function ClientUploadDropzone({ clientId }: { clientId: string }) {
 
       {tasks.length > 0 && (
         <div className="space-y-2">
-          {tasks.map((t) => (
-            <div key={t.id} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm">
-              {t.status === "uploading" && <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" />}
-              {t.status === "done" && <CheckCircle2 className="size-4 shrink-0 text-success" />}
-              {t.status === "error" && <XCircle className="text-destructive size-4 shrink-0" />}
+          {tasks.map((task) => (
+            <div key={task.id} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm">
+              {task.status === "uploading" && <Loader2 className="text-muted-foreground size-4 shrink-0 animate-spin" />}
+              {task.status === "done" && <CheckCircle2 className="size-4 shrink-0 text-success" />}
+              {task.status === "error" && <XCircle className="text-destructive size-4 shrink-0" />}
               <div className="min-w-0 flex-1">
-                <p className="truncate">{t.name}</p>
-                {t.status === "uploading" && <Progress value={t.progress} className="mt-1" />}
-                {t.status === "error" && (
-                  <p className="text-destructive text-xs">{t.error}</p>
+                <p className="truncate">{task.name}</p>
+                {task.status === "uploading" && <Progress value={task.progress} className="mt-1" />}
+                {task.status === "error" && (
+                  <p className="text-destructive text-xs">{task.error}</p>
                 )}
               </div>
             </div>

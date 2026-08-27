@@ -10,6 +10,7 @@ import { toggleClientFavoriteAction } from "@/app/actions/clients";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn, getInitials } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { AccountCardData, AccountPlatform } from "@/lib/queries/clients";
 
 const PLATFORM_ICON: Record<AccountPlatform["key"], React.ElementType> = {
@@ -20,12 +21,6 @@ const PLATFORM_ICON: Record<AccountPlatform["key"], React.ElementType> = {
   website: Globe,
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  active: "Activa",
-  paused: "Pausada",
-  churned: "Perdida",
-};
-
 /**
  * Tarjeta de Cuenta estilo MB Suite (`/demo-agency/accounts`): logo, estado
  * de suscripción, equipo asignado (avatares superpuestos) y plataformas
@@ -33,8 +28,15 @@ const STATUS_LABEL: Record<string, string> = {
  * que tenía la vieja sección "Clientes".
  */
 export function AccountCard({ account }: { account: AccountCardData }) {
+  const { t } = useLocale();
   const [isFavorite, setIsFavorite] = React.useState(account.isFavorite);
   const [isPending, startTransition] = useTransition();
+
+  const STATUS_LABEL: Record<string, string> = {
+    active: t("components.clients.statusActive", "Activa"),
+    paused: t("components.clients.statusPaused", "Pausada"),
+    churned: t("components.clients.statusChurned", "Perdida"),
+  };
 
   function handleToggleFavorite(e: React.MouseEvent) {
     e.preventDefault();
@@ -69,7 +71,11 @@ export function AccountCard({ account }: { account: AccountCardData }) {
           type="button"
           onClick={handleToggleFavorite}
           disabled={isPending}
-          aria-label={isFavorite ? "Quitar de favoritos" : "Marcar como favorito"}
+          aria-label={
+            isFavorite
+              ? t("components.clients.removeFavorite", "Quitar de favoritos")
+              : t("components.clients.addFavorite", "Marcar como favorito")
+          }
           className="rounded-md p-1 text-muted-foreground/60 opacity-0 transition-opacity hover:text-warning group-hover:opacity-100 data-[active=true]:opacity-100 data-[active=true]:text-warning"
           data-active={isFavorite}
         >
@@ -84,7 +90,9 @@ export function AccountCard({ account }: { account: AccountCardData }) {
             {STATUS_LABEL[account.status]}
           </Badge>
           <Badge variant={account.planName ? "info" : "outline"} className="text-[10px]">
-            {account.planName ? `Con suscripción — ${account.planName}` : "Interna"}
+            {account.planName
+              ? `${t("components.clients.withSubscriptionPrefix", "Con suscripción —")} ${account.planName}`
+              : t("components.clients.internal", "Interna")}
           </Badge>
         </div>
       </div>
@@ -92,7 +100,9 @@ export function AccountCard({ account }: { account: AccountCardData }) {
       <div className="flex items-center justify-between border-t border-border pt-3">
         <div className="flex -space-x-2">
           {visibleTeam.length === 0 && (
-            <span className="text-xs text-muted-foreground">Sin equipo asignado</span>
+            <span className="text-xs text-muted-foreground">
+              {t("components.clients.noTeamAssigned", "Sin equipo asignado")}
+            </span>
           )}
           {visibleTeam.map((member) => (
             <Avatar key={member.id} className="size-6 border-2 border-card">
@@ -109,7 +119,9 @@ export function AccountCard({ account }: { account: AccountCardData }) {
 
         <div className="flex items-center gap-1.5 text-muted-foreground">
           {account.platforms.length === 0 && (
-            <span className="text-xs text-muted-foreground/70">Sin redes cargadas</span>
+            <span className="text-xs text-muted-foreground/70">
+              {t("components.clients.noSocialAccounts", "Sin redes cargadas")}
+            </span>
           )}
           {account.platforms.map((platform) => {
             const Icon = PLATFORM_ICON[platform.key];

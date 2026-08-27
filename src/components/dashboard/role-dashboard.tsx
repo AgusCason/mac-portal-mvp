@@ -6,6 +6,7 @@ import {
   getEditorDashboardData,
   getClientDashboardData,
 } from "@/lib/queries/dashboard";
+import { getT } from "@/lib/i18n/dictionary";
 import type { Profile } from "@/types/database";
 
 /**
@@ -33,20 +34,21 @@ export async function RoleDashboard({
   profile: Profile;
   clientId?: string;
 }) {
+  const t = getT(profile.language);
   switch (profile.role) {
     case "admin": {
       const data = await getAdminDashboardData();
-      return <AdminDashboard data={data} />;
+      return <AdminDashboard data={data} profile={profile} />;
     }
     case "editor": {
       const data = await getEditorDashboardData(profile.id);
-      return <EditorDashboard data={data} />;
+      return <EditorDashboard data={data} profile={profile} />;
     }
     case "client": {
       if (!clientId) {
         return (
           <p className="text-muted-foreground text-sm">
-            Tu usuario todavía no está vinculado a ningún cliente. Contactá a la agencia.
+            {t("components.dashboard.notLinkedToClient", "Tu usuario todavía no está vinculado a ningún cliente. Contactá a la agencia.")}
           </p>
         );
       }

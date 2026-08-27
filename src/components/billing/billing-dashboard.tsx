@@ -48,7 +48,7 @@ export function BillingDashboard({
       {!current.hasData ? (
         <Card>
           <CardContent className="text-muted-foreground py-10 text-center text-sm">
-            Todavía no hay facturas en {current.currency}.
+            {t("billing.noInvoicesInCurrencyPrefix", "Todavía no hay facturas en")} {current.currency}.
           </CardContent>
         </Card>
       ) : (
@@ -59,7 +59,8 @@ export function BillingDashboard({
             <CardHeader>
               <CardTitle>{t("billing.monthlyChartTitle", "Facturación mensual")}</CardTitle>
               <CardDescription>
-                Monto emitido por mes, últimos {current.monthly.length} meses — apilado por estado.
+                {t("billing.monthlyBreakdownPrefix", "Monto emitido por mes, últimos")} {current.monthly.length}{" "}
+                {t("billing.monthlyBreakdownSuffix", "meses — apilado por estado.")}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -70,7 +71,7 @@ export function BillingDashboard({
           <Card>
             <CardHeader>
               <CardTitle>{t("billing.methodChartTitle", "Método de pago")}</CardTitle>
-              <CardDescription>Monto total facturado por método, histórico.</CardDescription>
+              <CardDescription>{t("billing.methodChartDescription", "Monto total facturado por método, histórico.")}</CardDescription>
             </CardHeader>
             <CardContent>
               <PaymentMethodChart data={current.methods} currency={current.currency} />

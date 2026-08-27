@@ -22,7 +22,7 @@ import {
   deleteProjectItemAction,
 } from "@/app/actions/projects";
 import {
-  PROJECT_STATUS_LABEL,
+  getProjectStatusLabel,
   PROJECT_STATUS_VARIANT,
   PROJECT_STATUS_ORDER,
 } from "@/components/projects/project-status";
@@ -39,9 +39,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn, formatDate } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { ProjectStatus } from "@/types/database";
 
 function AddItemDialog({ projectId, status }: { projectId: string; status: ProjectStatus }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -50,7 +52,7 @@ function AddItemDialog({ projectId, status }: { projectId: string; status: Proje
     startTransition(async () => {
       const res = await createProjectItemAction(projectId, formData);
       if (res.ok) {
-        toast.success("Card agregada");
+        toast.success(t("components.projects.cardAdded", "Card agregada"));
         setOpen(false);
         router.refresh();
       } else {
@@ -66,20 +68,22 @@ function AddItemDialog({ projectId, status }: { projectId: string; status: Proje
           type="button"
           className="text-muted-foreground hover:text-foreground flex items-center gap-1 px-1 text-xs"
         >
-          <Plus className="size-3.5" /> Agregar card
+          <Plus className="size-3.5" /> {t("components.projects.addCard", "Agregar card")}
         </button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nueva card — {PROJECT_STATUS_LABEL[status]}</DialogTitle>
+            <DialogTitle>
+              {t("components.projects.newCardTitlePrefix", "Nueva card —")} {getProjectStatusLabel(status, t)}
+            </DialogTitle>
           </DialogHeader>
-          <Input name="title" required placeholder="Título de la card" autoFocus />
+          <Input name="title" required placeholder={t("components.projects.cardTitlePlaceholder", "Título de la card")} autoFocus />
           <Input name="dueDate" type="date" />
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Agregar
+              {t("common.add", "Agregar")}
             </Button>
           </DialogFooter>
         </form>
@@ -89,6 +93,7 @@ function AddItemDialog({ projectId, status }: { projectId: string; status: Proje
 }
 
 function ItemCard({ item, projectId }: { item: ProjectItemWithAssignee; projectId: string }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -121,14 +126,14 @@ function ItemCard({ item, projectId }: { item: ProjectItemWithAssignee; projectI
               onClick={handleDelete}
               disabled={isPending}
               className="text-muted-foreground hover:text-destructive"
-              aria-label="Eliminar card"
+              aria-label={t("components.projects.deleteCardAriaLabel", "Eliminar card")}
             >
               <Trash2 className="size-3.5" />
             </button>
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground cursor-grab touch-none active:cursor-grabbing"
-              aria-label="Arrastrar para cambiar de columna"
+              aria-label={t("components.projects.dragToChangeColumnAriaLabel", "Arrastrar para cambiar de columna")}
               {...attributes}
               {...listeners}
             >
@@ -154,12 +159,13 @@ function BoardColumn({
   items: ProjectItemWithAssignee[];
   projectId: string;
 }) {
+  const { t } = useLocale();
   const { setNodeRef, isOver } = useDroppable({ id: status });
 
   return (
     <div className="min-w-0 lg:w-64">
       <div className="mb-2 flex items-center justify-between px-1">
-        <Badge variant={PROJECT_STATUS_VARIANT[status]}>{PROJECT_STATUS_LABEL[status]}</Badge>
+        <Badge variant={PROJECT_STATUS_VARIANT[status]}>{getProjectStatusLabel(status, t)}</Badge>
         <span className="text-muted-foreground tabular-nums text-xs">{items.length}</span>
       </div>
       <div
@@ -188,6 +194,7 @@ export function ProjectBoard({
   projectId: string;
   items: ProjectItemWithAssignee[];
 }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -210,7 +217,7 @@ export function ProjectBoard({
     startTransition(async () => {
       const res = await updateProjectItemStatusAction(active.id as string, projectId, targetStatus);
       if (res.ok) {
-        toast.success(`Movido a "${PROJECT_STATUS_LABEL[targetStatus]}"`);
+        toast.success(`${t("common.movedTo", "Movido a")} "${getProjectStatusLabel(targetStatus, t)}"`);
         router.refresh();
       } else {
         toast.error(res.error);

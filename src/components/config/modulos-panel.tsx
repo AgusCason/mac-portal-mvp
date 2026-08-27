@@ -5,12 +5,20 @@ import { toast } from "sonner";
 import { Info } from "lucide-react";
 
 import { updateModuleFlagAction } from "@/app/actions/module-flags";
-import { MODULES_CATALOG } from "@/lib/modules-catalog";
+import {
+  MODULES_CATALOG,
+  findModuleByKey,
+  getModuleLabel,
+  getModuleDescription,
+  getModuleAreaLabel,
+  getModuleCategoryLabel,
+} from "@/lib/modules-catalog";
 import type { ModuleFlag } from "@/types/database";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 type Field = "enabled" | "visible_to_editor" | "visible_to_client";
 
@@ -72,6 +80,7 @@ function FlagSwitch({
 }
 
 function ModuleRow({ moduleKey, flag }: { moduleKey: string; flag: ModuleFlag | undefined }) {
+  const { t } = useLocale();
   const mod = MODULES_CATALOG.flatMap((c) => c.modules).find((m) => m.key === moduleKey);
   if (!mod) return null;
 
@@ -85,13 +94,19 @@ function ModuleRow({ moduleKey, flag }: { moduleKey: string; flag: ModuleFlag | 
     <div className="border-border flex flex-col gap-3 border-b py-3 last:border-b-0 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium">{mod.label}</p>
-          {isComingSoon && <Badge variant="secondary">Próximamente</Badge>}
-          {!enabled && !isComingSoon && <Badge variant="destructive">Apagado</Badge>}
+          <p className="text-sm font-medium">{getModuleLabel(mod, t)}</p>
+          {isComingSoon && <Badge variant="secondary">{t("components.config.comingSoon", "Próximamente")}</Badge>}
+          {!enabled && !isComingSoon && <Badge variant="destructive">{t("components.config.turnedOff", "Apagado")}</Badge>}
         </div>
-        <p className="text-muted-foreground max-w-md text-xs">{mod.description}</p>
+        <p className="text-muted-foreground max-w-md text-xs">{getModuleDescription(mod, t)}</p>
         {mod.dependsOn && (
-          <p className="text-muted-foreground mt-0.5 text-xs">Depende de: {mod.dependsOn}</p>
+          <p className="text-muted-foreground mt-0.5 text-xs">
+            {t("components.config.dependsOnPrefix", "Depende de:")}{" "}
+            {(() => {
+              const dep = findModuleByKey(mod.dependsOn);
+              return dep ? getModuleLabel(dep, t) : mod.dependsOn;
+            })()}
+          </p>
         )}
       </div>
       <div className="flex flex-wrap items-center gap-4 sm:shrink-0">
@@ -100,11 +115,14 @@ function ModuleRow({ moduleKey, flag }: { moduleKey: string; flag: ModuleFlag | 
           moduleKey={moduleKey}
           field="enabled"
           checked={enabled}
-          label="Activo"
+          label={t("components.config.activeLabel", "Activo")}
           disabled={isComingSoon || isModulesPanel}
           disabledReason={
             isModulesPanel
-              ? "Este panel no se puede apagar — quedarías sin forma de volver a prenderlo."
+              ? t(
+                  "components.config.modulesPanelDisabledReason",
+                  "Este panel no se puede apagar — quedarías sin forma de volver a prenderlo."
+                )
               : undefined
           }
         />
@@ -113,7 +131,7 @@ function ModuleRow({ moduleKey, flag }: { moduleKey: string; flag: ModuleFlag | 
           moduleKey={moduleKey}
           field="visible_to_editor"
           checked={visibleEditor}
-          label="Editor"
+          label={t("components.config.editorLabel", "Editor")}
           disabled={isComingSoon || !enabled}
         />
         <FlagSwitch
@@ -121,7 +139,7 @@ function ModuleRow({ moduleKey, flag }: { moduleKey: string; flag: ModuleFlag | 
           moduleKey={moduleKey}
           field="visible_to_client"
           checked={visibleClient}
-          label="Cliente"
+          label={t("components.config.clientLabel", "Cliente")}
           disabled={isComingSoon || !enabled}
         />
       </div>
@@ -136,6 +154,7 @@ function ModuleRow({ moduleKey, flag }: { moduleKey: string; flag: ModuleFlag | 
  * por URL — no aplican a admin, que ve todo lo que esté Activo.
  */
 export function ModulosPanel({ flags }: { flags: Record<string, ModuleFlag> }) {
+  const { t } = useLocale();
   const areas = Array.from(new Set(MODULES_CATALOG.map((c) => c.area)));
 
   return (
@@ -144,27 +163,29 @@ export function ModulosPanel({ flags }: { flags: Record<string, ModuleFlag> }) {
         <div className="text-muted-foreground flex items-start gap-2 rounded-lg border border-dashed p-3 text-xs">
           <Info className="mt-0.5 size-3.5 shrink-0" />
           <p>
-            &quot;Activo&quot; apaga el módulo para toda la plataforma (incluido vos). &quot;Editor&quot; y
-            &quot;Cliente&quot; solo ocultan el módulo para esos roles — lo sigue viendo el admin.
+            {t(
+              "components.config.flagsInfoText",
+              '"Activo" apaga el módulo para toda la plataforma (incluido vos). "Editor" y "Cliente" solo ocultan el módulo para esos roles — lo sigue viendo el admin.'
+            )}
           </p>
         </div>
 
         {areas.map((area) => (
           <Card key={area}>
             <CardHeader>
-              <CardTitle>{area}</CardTitle>
+              <CardTitle>{getModuleAreaLabel(area, t)}</CardTitle>
               <CardDescription>
                 {MODULES_CATALOG.filter((c) => c.area === area).reduce(
                   (sum, c) => sum + c.modules.length,
                   0
                 )}{" "}
-                módulos
+                {t("components.config.modulesCountSuffix", "módulos")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {MODULES_CATALOG.filter((c) => c.area === area).map((cat) => (
                 <div key={cat.category}>
-                  <p className="mb-1 text-sm font-medium">{cat.category}</p>
+                  <p className="mb-1 text-sm font-medium">{getModuleCategoryLabel(cat.category, t)}</p>
                   <div>
                     {cat.modules.map((m) => (
                       <ModuleRow key={m.key} moduleKey={m.key} flag={flags[m.key]} />

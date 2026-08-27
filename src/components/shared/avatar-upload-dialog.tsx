@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { getInitials } from "@/lib/utils";
 
 /**
@@ -39,6 +40,7 @@ export function AvatarUploadDialog({
   email: string;
   avatarUrl: string | null;
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [file, setFile] = React.useState<File | null>(null);
   const [preview, setPreview] = React.useState<string | null>(avatarUrl);
@@ -71,12 +73,12 @@ export function AvatarUploadDialog({
         .eq("id", profileId);
       if (updateError) throw updateError;
 
-      toast.success("Foto de perfil actualizada");
+      toast.success(t("components.shared.avatarUpdated", "Foto de perfil actualizada"));
       setOpen(false);
       setFile(null);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No se pudo subir la imagen.");
+      toast.error(err instanceof Error ? err.message : t("components.shared.avatarUploadError", "No se pudo subir la imagen."));
     } finally {
       setIsUploading(false);
     }
@@ -85,7 +87,7 @@ export function AvatarUploadDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button" className="group relative shrink-0" aria-label="Cambiar foto de perfil">
+        <button type="button" className="group relative shrink-0" aria-label={t("components.shared.changeAvatarAria", "Cambiar foto de perfil")}>
           <Avatar className="size-14">
             <AvatarImage src={avatarUrl ?? undefined} />
             <AvatarFallback className="text-base">{getInitials(fullName || email)}</AvatarFallback>
@@ -97,9 +99,9 @@ export function AvatarUploadDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Foto de perfil</DialogTitle>
+          <DialogTitle>{t("components.shared.photoTitle", "Foto de perfil")}</DialogTitle>
           <DialogDescription>
-            Se sube directo a tu cuenta — solo vos podés cambiarla.
+            {t("components.shared.photoDesc", "Se sube directo a tu cuenta — solo vos podés cambiarla.")}
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center gap-4">
@@ -112,7 +114,7 @@ export function AvatarUploadDialog({
         <DialogFooter>
           <Button onClick={handleSave} disabled={!file || isUploading}>
             {isUploading && <Loader2 className="animate-spin" />}
-            Guardar
+            {t("common.save", "Guardar")}
           </Button>
         </DialogFooter>
       </DialogContent>

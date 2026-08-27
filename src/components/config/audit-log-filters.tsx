@@ -6,10 +6,12 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AUDIT_ACTION_LABELS } from "@/lib/audit-labels";
+import { AUDIT_ACTION_LABELS, getAuditActionLabel } from "@/lib/audit-labels";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /** Filtros de Configuración > Auditoría: fecha desde/hasta + tipo de acción, como query params (misma idea que TaskFilters). */
 export function AuditLogFiltersBar() {
+  const { t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -34,7 +36,7 @@ export function AuditLogFiltersBar() {
         value={from}
         onChange={(e) => setParam("desde", e.target.value)}
         className="w-40"
-        aria-label="Desde"
+        aria-label={t("components.config.fromLabel", "Desde")}
       />
       <span className="text-muted-foreground text-sm">→</span>
       <Input
@@ -42,18 +44,18 @@ export function AuditLogFiltersBar() {
         value={to}
         onChange={(e) => setParam("hasta", e.target.value)}
         className="w-40"
-        aria-label="Hasta"
+        aria-label={t("components.config.toLabel", "Hasta")}
       />
 
       <Select value={action} onValueChange={(v) => setParam("accion", v)}>
         <SelectTrigger className="w-56" size="sm">
-          <SelectValue placeholder="Tipo de acción" />
+          <SelectValue placeholder={t("components.config.actionTypeFilterPlaceholder", "Tipo de acción")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Todos los tipos de acción</SelectItem>
-          {Object.entries(AUDIT_ACTION_LABELS).map(([type, label]) => (
+          <SelectItem value="all">{t("components.config.allActionTypes", "Todos los tipos de acción")}</SelectItem>
+          {Object.keys(AUDIT_ACTION_LABELS).map((type) => (
             <SelectItem key={type} value={type}>
-              {label}
+              {getAuditActionLabel(type, t)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -61,7 +63,7 @@ export function AuditLogFiltersBar() {
 
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={() => router.push(pathname)}>
-          <X /> Limpiar
+          <X /> {t("components.config.clearFilters", "Limpiar")}
         </Button>
       )}
     </div>

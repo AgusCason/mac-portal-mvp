@@ -14,6 +14,9 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProposalCard } from "@/components/ai-assistant/proposal-card";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
+
+const DATE_LOCALE: Record<string, string> = { es: "es-AR", en: "en-US" };
 
 /**
  * Chat del asistente IA (solo Admin). Cada mensaje del asistente que trae
@@ -28,6 +31,7 @@ export function AiChatPanel({
   conversationId: string | null;
   messages: AiMessage[];
 }) {
+  const { t, locale } = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingText, setPendingText] = React.useState<string | null>(null);
@@ -65,17 +69,19 @@ export function AiChatPanel({
         <div className="flex flex-col gap-4">
           {messages.length === 0 && !pendingText && (
             <p className="text-muted-foreground text-sm">
-              Preguntale a {MAX_AGENT.name} por el estado de un cliente, pedile que revise
-              errores comunes, o que te proponga un arreglo — vos siempre confirmás
-              antes de que se aplique.
+              {t("components.aiAssistant.emptyStatePrefix", "Preguntale a")} {MAX_AGENT.name}{" "}
+              {t(
+                "components.aiAssistant.emptyStateSuffix",
+                "por el estado de un cliente, pedile que revise errores comunes, o que te proponga un arreglo — vos siempre confirmás antes de que se aplique."
+              )}
             </p>
           )}
           {messages.map((m) => (
             <div key={m.id} className={cn("flex flex-col gap-2", m.role === "user" ? "items-end" : "items-start")}>
               <div className="text-muted-foreground flex items-center gap-1.5 text-[11px]">
                 {m.role === "user" ? <User className="size-3" /> : <Sparkles className="size-3" />}
-                {m.role === "user" ? "Vos" : MAX_AGENT.name} ·{" "}
-                {new Date(m.created_at).toLocaleTimeString("es-AR", {
+                {m.role === "user" ? t("components.aiAssistant.you", "Vos") : MAX_AGENT.name} ·{" "}
+                {new Date(m.created_at).toLocaleTimeString(DATE_LOCALE[locale] ?? "es-AR", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -97,7 +103,8 @@ export function AiChatPanel({
                 {pendingText}
               </div>
               <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                <Loader2 className="size-3 animate-spin" /> {MAX_AGENT.name} está pensando…
+                <Loader2 className="size-3 animate-spin" /> {MAX_AGENT.name}{" "}
+                {t("components.aiAssistant.thinkingSuffix", "está pensando…")}
               </div>
             </div>
           )}
@@ -111,7 +118,7 @@ export function AiChatPanel({
       >
         <Input
           name="message"
-          placeholder="Escribile al asistente…"
+          placeholder={t("components.aiAssistant.inputPlaceholder", "Escribile al asistente…")}
           required
           autoComplete="off"
           disabled={isPending}

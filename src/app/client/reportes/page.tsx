@@ -15,14 +15,14 @@ export default async function ClientReportesPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.client.reportes", "Reportes")}</h1>
         <p className="text-muted-foreground text-sm">
-          Resúmenes de performance que la agencia habilitó para tu cuenta.
+          {t("pages.clientReportes.description", "Resúmenes de performance que la agencia habilitó para tu cuenta.")}
         </p>
       </div>
       {clientId ? (
         <ReportList reports={reports} role="client" />
       ) : (
         <p className="text-muted-foreground text-sm">
-          Tu cuenta todavía no está vinculada a ningún cliente.
+          {t("pages.client.noClientLinked", "Tu cuenta todavía no está vinculada a ningún cliente.")}
         </p>
       )}
     </div>

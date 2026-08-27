@@ -7,17 +7,21 @@
  * organización sin tener que tocar código cada vez.
  */
 export type ModuleStatus = "incluido" | "proximamente";
+export type ModuleArea = "Marketing & Analytics" | "Gestión" | "Plataforma";
+
+type TFunc = (path: string, fallback?: string) => string;
 
 export interface ModuleEntry {
   key: string;
   label: string;
   description: string;
   status: ModuleStatus;
+  /** Key del módulo del que depende (ver MODULES_CATALOG), no el label — así queda traducible. */
   dependsOn?: string;
 }
 
 export interface ModuleCategory {
-  area: "Marketing & Analytics" | "Gestión" | "Plataforma";
+  area: ModuleArea;
   category: string;
   modules: ModuleEntry[];
 }
@@ -45,7 +49,7 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         label: "Redes — Insights",
         description: "Panel de insights de redes sociales dentro de Social Media (cuentas y métricas clave).",
         status: "incluido",
-        dependsOn: "Redes sociales",
+        dependsOn: "redes-sociales",
       },
     ],
   },
@@ -101,7 +105,7 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         label: "Alertas de métricas",
         description: "Aviso automático cuando una métrica de redes cae por debajo de lo esperado.",
         status: "incluido",
-        dependsOn: "Redes sociales",
+        dependsOn: "redes-sociales",
       },
     ],
   },
@@ -155,6 +159,13 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         key: "proyectos",
         label: "Proyectos",
         description: "Seguimiento de proyectos por cliente, con hitos y estado.",
+        status: "incluido",
+      },
+      {
+        key: "sitios-web",
+        label: "Diseño y Desarrollo Web",
+        description:
+          "Proyectos de sitios web por cliente, con etapas (Brief → Lanzamiento), datos técnicos y aprobación de entregables por el cliente.",
         status: "incluido",
       },
       {
@@ -273,4 +284,44 @@ export function countModulesByStatus(status: ModuleStatus): number {
 
 export function totalModulesCount(): number {
   return MODULES_CATALOG.reduce((sum, cat) => sum + cat.modules.length, 0);
+}
+
+/** Busca un módulo por su `key` en todo el catálogo (usado para resolver `dependsOn`). */
+export function findModuleByKey(key: string): ModuleEntry | undefined {
+  return MODULES_CATALOG.flatMap((cat) => cat.modules).find((m) => m.key === key);
+}
+
+const AREA_KEY: Record<ModuleArea, string> = {
+  "Marketing & Analytics": "marketingAnalytics",
+  Gestión: "gestion",
+  Plataforma: "plataforma",
+};
+
+const CATEGORY_KEY: Record<string, string> = {
+  Contenido: "contenido",
+  Analytics: "analytics",
+  Reportes: "reportes",
+  Cuentas: "cuentas",
+  Operación: "operacion",
+  Comercial: "comercial",
+  "Inteligencia Artificial": "ia",
+  Configuración: "configuracion",
+};
+
+export function getModuleLabel(mod: ModuleEntry, t?: TFunc): string {
+  return t ? t(`catalog.modules.${mod.key}.label`, mod.label) : mod.label;
+}
+
+export function getModuleDescription(mod: ModuleEntry, t?: TFunc): string {
+  return t ? t(`catalog.modules.${mod.key}.description`, mod.description) : mod.description;
+}
+
+export function getModuleAreaLabel(area: ModuleArea, t?: TFunc): string {
+  const slug = AREA_KEY[area];
+  return t ? t(`catalog.areas.${slug}`, area) : area;
+}
+
+export function getModuleCategoryLabel(category: string, t?: TFunc): string {
+  const slug = CATEGORY_KEY[category];
+  return slug && t ? t(`catalog.categories.${slug}`, category) : category;
 }

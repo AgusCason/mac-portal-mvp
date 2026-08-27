@@ -17,17 +17,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { ClientBrandVoice } from "@/types/database";
 
 type FieldKey = "tone_personality" | "vocabulary" | "emoji_rules" | "target_audience" | "platform_settings";
+type TFunc = (path: string, fallback?: string) => string;
 
-const FIELDS: { key: FieldKey; label: string; hint: string }[] = [
-  { key: "tone_personality", label: "Tono y Personalidad", hint: "Cómo suena la marca al hablar." },
-  { key: "vocabulary", label: "Vocabulario", hint: "Palabras/frases a usar y a evitar." },
-  { key: "emoji_rules", label: "Reglas de Emojis y Formato", hint: "Uso de emojis, mayúsculas, puntuación." },
-  { key: "target_audience", label: "Audiencia Objetivo", hint: "A quién le habla la marca." },
-  { key: "platform_settings", label: "Ajustes por Plataforma", hint: "Diferencias de tono entre IG/TikTok/YouTube." },
-];
+function getFields(t: TFunc): { key: FieldKey; label: string; hint: string }[] {
+  return [
+    {
+      key: "tone_personality",
+      label: t("components.brandVoice.fieldToneLabel", "Tono y Personalidad"),
+      hint: t("components.brandVoice.fieldToneHint", "Cómo suena la marca al hablar."),
+    },
+    {
+      key: "vocabulary",
+      label: t("components.brandVoice.fieldVocabularyLabel", "Vocabulario"),
+      hint: t("components.brandVoice.fieldVocabularyHint", "Palabras/frases a usar y a evitar."),
+    },
+    {
+      key: "emoji_rules",
+      label: t("components.brandVoice.fieldEmojiLabel", "Reglas de Emojis y Formato"),
+      hint: t("components.brandVoice.fieldEmojiHint", "Uso de emojis, mayúsculas, puntuación."),
+    },
+    {
+      key: "target_audience",
+      label: t("components.brandVoice.fieldAudienceLabel", "Audiencia Objetivo"),
+      hint: t("components.brandVoice.fieldAudienceHint", "A quién le habla la marca."),
+    },
+    {
+      key: "platform_settings",
+      label: t("components.brandVoice.fieldPlatformLabel", "Ajustes por Plataforma"),
+      hint: t("components.brandVoice.fieldPlatformHint", "Diferencias de tono entre IG/TikTok/YouTube."),
+    },
+  ];
+}
 
 const FIELD_FORM_NAME: Record<FieldKey, string> = {
   tone_personality: "tonePersonality",
@@ -49,7 +73,9 @@ function BrandVoiceForm({
   clientName: string;
   brandVoice: ClientBrandVoice | null;
 }) {
+  const { t } = useLocale();
   const router = useRouter();
+  const FIELDS = React.useMemo(() => getFields(t), [t]);
   const [values, setValues] = React.useState({
     tone_personality: brandVoice?.tone_personality ?? "",
     vocabulary: brandVoice?.vocabulary ?? "",
@@ -67,7 +93,7 @@ function BrandVoiceForm({
       setSuggestingField(null);
       if (res.ok) {
         setValues((prev) => ({ ...prev, [field]: res.text }));
-        toast.success("Sugerencia aplicada — revisá y guardá.");
+        toast.success(t("components.brandVoice.suggestionApplied", "Sugerencia aplicada — revisá y guardá."));
       } else {
         toast.error(res.error);
       }
@@ -79,7 +105,7 @@ function BrandVoiceForm({
     startSave(async () => {
       const res = await saveBrandVoiceAction(formData);
       if (res.ok) {
-        toast.success("Brand Voice guardado");
+        toast.success(t("components.brandVoice.saved", "Brand Voice guardado"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -107,16 +133,19 @@ function BrandVoiceForm({
         ))}
         <Button type="submit" disabled={savePending}>
           {savePending && !suggestingField && <Loader2 className="animate-spin" />}
-          <Save /> Guardar Brand Voice
+          <Save /> {t("components.brandVoice.saveButton", "Guardar Brand Voice")}
         </Button>
       </div>
 
       <div className="border-border h-fit space-y-3 rounded-xl border p-4">
         <p className="flex items-center gap-1.5 text-sm font-medium">
-          <Sparkles className="size-4" /> AI Agent
+          <Sparkles className="size-4" /> {t("components.brandVoice.aiAgentTitle", "AI Agent")}
         </p>
         <p className="text-muted-foreground text-xs">
-          Generá un borrador con Claude para cualquier campo, a partir del nombre de la cuenta.
+          {t(
+            "components.brandVoice.aiAgentDesc",
+            "Generá un borrador con Claude para cualquier campo, a partir del nombre de la cuenta."
+          )}
         </p>
         <div className="space-y-2">
           {FIELDS.map((f) => (
@@ -130,7 +159,7 @@ function BrandVoiceForm({
               onClick={() => handleSuggest(f.key)}
             >
               {suggestingField === f.key ? <Loader2 className="animate-spin" /> : <Sparkles />}
-              Sugerir {f.label}
+              {t("components.brandVoice.suggestPrefix", "Sugerir")} {f.label}
             </Button>
           ))}
         </div>
@@ -148,6 +177,7 @@ export function BrandVoiceView({
   selectedClientId: string | null;
   brandVoice: ClientBrandVoice | null;
 }) {
+  const { t } = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedClientName = clients.find((c) => c.id === selectedClientId)?.name ?? "";
@@ -161,10 +191,10 @@ export function BrandVoiceView({
   return (
     <div className="space-y-4">
       <div className="max-w-xs">
-        <Label htmlFor="client-select">Cuenta</Label>
+        <Label htmlFor="client-select">{t("components.brandVoice.accountLabel", "Cuenta")}</Label>
         <Select value={selectedClientId ?? undefined} onValueChange={handleClientChange}>
           <SelectTrigger id="client-select" className="w-full">
-            <SelectValue placeholder="Elegí una cuenta" />
+            <SelectValue placeholder={t("components.brandVoice.chooseAccountPlaceholder", "Elegí una cuenta")} />
           </SelectTrigger>
           <SelectContent>
             {clients.map((c) => (
@@ -178,7 +208,7 @@ export function BrandVoiceView({
 
       {!selectedClientId ? (
         <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-          Elegí una cuenta para ver o editar su Brand Voice.
+          {t("components.brandVoice.chooseAccountEmpty", "Elegí una cuenta para ver o editar su Brand Voice.")}
         </p>
       ) : (
         <BrandVoiceForm

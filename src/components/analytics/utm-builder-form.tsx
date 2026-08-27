@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /**
  * Analytics > UTM Builder — arma la URL con parámetros UTM (equivalente al
@@ -25,6 +26,7 @@ import {
  * abajo de la página.
  */
 export function UtmBuilderForm({ clients }: { clients: { id: string; name: string }[] }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const [clientId, setClientId] = React.useState("none");
   const [generatedUrl, setGeneratedUrl] = React.useState<string | null>(null);
@@ -36,7 +38,7 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
       const res = await createUtmLinkAction(formData);
       if (res.ok) {
         setGeneratedUrl(res.generatedUrl);
-        toast.success("Campaña UTM armada y guardada en el historial.");
+        toast.success(t("components.analytics.campaignBuiltToast", "Campaña UTM armada y guardada en el historial."));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -47,9 +49,9 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
   async function copyToClipboard(url: string) {
     try {
       await navigator.clipboard.writeText(url);
-      toast.success("Link copiado");
+      toast.success(t("components.analytics.linkCopied", "Link copiado"));
     } catch {
-      toast.error("No se pudo copiar — copialo manualmente");
+      toast.error(t("components.analytics.copyErrorManual", "No se pudo copiar — copialo manualmente"));
     }
   }
 
@@ -57,14 +59,14 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm">
-          <Link2 className="size-4" /> Armar campaña
+          <Link2 className="size-4" /> {t("components.analytics.buildCampaignTitle", "Armar campaña")}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form action={handleSubmit} className="space-y-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5 sm:col-span-2">
-              <Label htmlFor="baseUrl">URL base</Label>
+              <Label htmlFor="baseUrl">{t("components.analytics.baseUrlLabel", "URL base")}</Label>
               <Input
                 id="baseUrl"
                 name="baseUrl"
@@ -73,13 +75,13 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Cuenta (opcional)</Label>
+              <Label>{t("components.analytics.accountOptionalLabel", "Cuenta (opcional)")}</Label>
               <Select value={clientId} onValueChange={setClientId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sin cuenta asociada" />
+                  <SelectValue placeholder={t("components.analytics.noAccountPlaceholder", "Sin cuenta asociada")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin cuenta asociada</SelectItem>
+                  <SelectItem value="none">{t("components.analytics.noAccountPlaceholder", "Sin cuenta asociada")}</SelectItem>
                   {clients.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
@@ -101,17 +103,17 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
               <Input id="utmCampaign" name="utmCampaign" placeholder="lanzamiento-agosto" required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="utmTerm">utm_term (opcional)</Label>
+              <Label htmlFor="utmTerm">utm_term {t("components.analytics.optionalSuffix", "(opcional)")}</Label>
               <Input id="utmTerm" name="utmTerm" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="utmContent">utm_content (opcional)</Label>
+              <Label htmlFor="utmContent">utm_content {t("components.analytics.optionalSuffix", "(opcional)")}</Label>
               <Input id="utmContent" name="utmContent" />
             </div>
           </div>
 
           <Button type="submit" disabled={isPending} size="sm">
-            {isPending ? "Armando..." : "Generar link"}
+            {isPending ? t("components.analytics.building", "Armando...") : t("components.analytics.generateLink", "Generar link")}
           </Button>
         </form>
 
@@ -119,7 +121,7 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
           <div className="mt-4 flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-2 text-sm">
             <p className="min-w-0 flex-1 truncate font-mono text-xs">{generatedUrl}</p>
             <Button type="button" size="sm" variant="outline" onClick={() => copyToClipboard(generatedUrl)}>
-              <Copy className="size-3.5" /> Copiar
+              <Copy className="size-3.5" /> {t("components.analytics.copyButton", "Copiar")}
             </Button>
           </div>
         )}

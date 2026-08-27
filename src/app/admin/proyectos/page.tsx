@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/auth";
 import { getProjects } from "@/lib/queries/projects";
 import { getSelectableClients } from "@/lib/queries/content";
 import { NewProjectDialog } from "@/components/projects/new-project-dialog";
-import { PROJECT_STATUS_LABEL, PROJECT_STATUS_VARIANT } from "@/components/projects/project-status";
+import { getProjectStatusLabel, PROJECT_STATUS_VARIANT } from "@/components/projects/project-status";
 import { Badge } from "@/components/ui/badge";
 import { ListChecks } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
@@ -22,14 +22,16 @@ export default async function AdminProyectosPage() {
       <div className="flex items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.proyectos", "Proyectos")}</h1>
-          <p className="text-muted-foreground text-sm">Engagements y proyectos del workspace.</p>
+          <p className="text-muted-foreground text-sm">
+            {t("pages.proyectos.pageDescription", "Engagements y proyectos del workspace.")}
+          </p>
         </div>
         <NewProjectDialog clients={clients} />
       </div>
 
       {projects.length === 0 && (
         <p className="text-muted-foreground py-10 text-center text-sm">
-          Todavía no creaste ningún proyecto.
+          {t("pages.proyectos.noProjects", "Todavía no creaste ningún proyecto.")}
         </p>
       )}
 
@@ -54,7 +56,7 @@ export default async function AdminProyectosPage() {
                 <ListChecks className="size-3.5" /> {project.itemCount}
               </span>
               <Badge variant={PROJECT_STATUS_VARIANT[project.status]}>
-                {PROJECT_STATUS_LABEL[project.status]}
+                {getProjectStatusLabel(project.status, t)}
               </Badge>
             </div>
           </Link>

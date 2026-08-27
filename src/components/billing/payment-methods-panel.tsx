@@ -13,27 +13,35 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { PaymentMethodConfig, PaymentMethodKind } from "@/types/database";
 
 const LINK_KINDS: PaymentMethodKind[] = ["paypal", "mercadopago", "payoneer"];
 
-const LINK_HELP: Record<string, string> = {
-  paypal: "Pegá acá tu link de PayPal.me o el que generes con PayPal Payment Links.",
-  mercadopago: "Pegá acá el link que genera Mercado Pago con Checkout Pro / \"Cobrar\".",
-  payoneer: "Pegá acá el link que genera Payoneer al pedir un pago (\"Request a Payment\").",
-};
-
 function LinkMethodCard({ config }: { config: PaymentMethodConfig }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [enabled, setEnabled] = React.useState(config.enabled);
   const [isPending, startTransition] = React.useTransition();
+
+  const LINK_HELP: Record<string, string> = {
+    paypal: t("billing.paypalLinkHelp", "Pegá acá tu link de PayPal.me o el que generes con PayPal Payment Links."),
+    mercadopago: t(
+      "billing.mercadopagoLinkHelp",
+      'Pegá acá el link que genera Mercado Pago con Checkout Pro / "Cobrar".'
+    ),
+    payoneer: t(
+      "billing.payoneerLinkHelp",
+      'Pegá acá el link que genera Payoneer al pedir un pago ("Request a Payment").'
+    ),
+  };
 
   function handleSubmit(formData: FormData) {
     formData.set("enabled", enabled ? "on" : "off");
     startTransition(async () => {
       const res = await updatePaymentMethodAction(config.kind, formData);
       if (res.ok) {
-        toast.success(`${PAYMENT_METHOD_KIND_LABELS[config.kind]} actualizado`);
+        toast.success(`${PAYMENT_METHOD_KIND_LABELS[config.kind]} ${t("billing.updatedSuffix", "actualizado")}`);
         router.refresh();
       } else {
         toast.error(res.error);
@@ -55,7 +63,7 @@ function LinkMethodCard({ config }: { config: PaymentMethodConfig }) {
       <CardContent>
         <form action={handleSubmit} className="space-y-3">
           <div>
-            <Label htmlFor={`link-${config.kind}`}>Link de pago</Label>
+            <Label htmlFor={`link-${config.kind}`}>{t("billing.paymentLinkLabel", "Link de pago")}</Label>
             <Input
               id={`link-${config.kind}`}
               name="paymentLink"
@@ -66,7 +74,7 @@ function LinkMethodCard({ config }: { config: PaymentMethodConfig }) {
           </div>
           <div className="flex justify-end">
             <Button type="submit" size="sm" disabled={isPending}>
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </div>
         </form>
@@ -76,6 +84,7 @@ function LinkMethodCard({ config }: { config: PaymentMethodConfig }) {
 }
 
 function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [enabled, setEnabled] = React.useState(config.enabled);
   const [isPending, startTransition] = React.useTransition();
@@ -86,7 +95,7 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
     startTransition(async () => {
       const res = await updatePaymentMethodAction(config.kind, formData);
       if (res.ok) {
-        toast.success(`${PAYMENT_METHOD_KIND_LABELS[config.kind]} actualizado`);
+        toast.success(`${PAYMENT_METHOD_KIND_LABELS[config.kind]} ${t("billing.updatedSuffix", "actualizado")}`);
         router.refresh();
       } else {
         toast.error(res.error);
@@ -102,7 +111,8 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
             <Landmark className="size-4" /> {PAYMENT_METHOD_KIND_LABELS[config.kind]}
           </CardTitle>
           <CardDescription>
-            Datos que va a ver el cliente para transferir{isArs ? " en pesos" : " en dólares"}.
+            {t("billing.transferDescPrefix", "Datos que va a ver el cliente para transferir")}{" "}
+            {isArs ? t("billing.transferDescArs", "en pesos") : t("billing.transferDescUsd", "en dólares")}.
           </CardDescription>
         </div>
         <Switch checked={enabled} onCheckedChange={setEnabled} disabled={isPending} />
@@ -110,7 +120,7 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
       <CardContent>
         <form action={handleSubmit} className="space-y-3">
           <div>
-            <Label htmlFor={`holder-${config.kind}`}>Titular de la cuenta</Label>
+            <Label htmlFor={`holder-${config.kind}`}>{t("billing.accountHolderLabel", "Titular de la cuenta")}</Label>
             <Input
               id={`holder-${config.kind}`}
               name="accountHolder"
@@ -121,26 +131,26 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
           {isArs ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
-                <Label htmlFor="cuit">CUIT/CUIL</Label>
+                <Label htmlFor="cuit">{t("billing.cuitLabel", "CUIT/CUIL")}</Label>
                 <Input id="cuit" name="cuit" defaultValue={config.cuit ?? ""} />
               </div>
               <div>
-                <Label htmlFor="cbu">CBU</Label>
+                <Label htmlFor="cbu">{t("billing.cbuLabel", "CBU")}</Label>
                 <Input id="cbu" name="cbu" defaultValue={config.cbu ?? ""} />
               </div>
               <div>
-                <Label htmlFor="alias">Alias</Label>
+                <Label htmlFor="alias">{t("billing.aliasLabel", "Alias")}</Label>
                 <Input id="alias" name="alias" defaultValue={config.alias ?? ""} />
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <Label htmlFor="bankName">Banco</Label>
+                <Label htmlFor="bankName">{t("billing.bankNameLabel", "Banco")}</Label>
                 <Input id="bankName" name="bankName" defaultValue={config.bank_name ?? ""} />
               </div>
               <div>
-                <Label htmlFor="accountNumber">Número de cuenta</Label>
+                <Label htmlFor="accountNumber">{t("billing.accountNumberLabel", "Número de cuenta")}</Label>
                 <Input
                   id="accountNumber"
                   name="accountNumber"
@@ -148,7 +158,7 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
                 />
               </div>
               <div>
-                <Label htmlFor="routingNumber">Routing number</Label>
+                <Label htmlFor="routingNumber">{t("billing.routingNumberLabel", "Routing number")}</Label>
                 <Input
                   id="routingNumber"
                   name="routingNumber"
@@ -156,11 +166,11 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
                 />
               </div>
               <div>
-                <Label htmlFor="swiftBic">SWIFT/BIC</Label>
+                <Label htmlFor="swiftBic">{t("billing.swiftBicLabel", "SWIFT/BIC")}</Label>
                 <Input id="swiftBic" name="swiftBic" defaultValue={config.swift_bic ?? ""} />
               </div>
               <div className="sm:col-span-2">
-                <Label htmlFor="bankAddress">Dirección del banco</Label>
+                <Label htmlFor="bankAddress">{t("billing.bankAddressLabel", "Dirección del banco")}</Label>
                 <Input
                   id="bankAddress"
                   name="bankAddress"
@@ -171,7 +181,9 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
           )}
 
           <div>
-            <Label htmlFor={`notes-${config.kind}`}>Notas (opcional, las ve el cliente)</Label>
+            <Label htmlFor={`notes-${config.kind}`}>
+              {t("billing.notesClientVisibleLabel", "Notas (opcional, las ve el cliente)")}
+            </Label>
             <Textarea
               id={`notes-${config.kind}`}
               name="notes"
@@ -182,7 +194,7 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
 
           <div className="flex justify-end">
             <Button type="submit" size="sm" disabled={isPending}>
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </div>
         </form>

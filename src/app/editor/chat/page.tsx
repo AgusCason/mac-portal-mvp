@@ -22,7 +22,7 @@ export default async function EditorChatPage({
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.chat", "Chat")}</h1>
         <p className="text-muted-foreground text-sm">
-          Solo ves clientes donde el admin activó tu acceso al chat.
+          {t("pages.editorChat.description", "Solo ves clientes donde el admin activó tu acceso al chat.")}
         </p>
       </div>
       <ClientSelector clients={clients} />
@@ -30,7 +30,7 @@ export default async function EditorChatPage({
         <ChatThread clientId={activeClientId} messages={messages} currentProfileId={profile.id} />
       ) : (
         <p className="text-muted-foreground text-sm">
-          No tenés acceso de chat habilitado para ningún cliente todavía.
+          {t("pages.editorChat.noAccess", "No tenés acceso de chat habilitado para ningún cliente todavía.")}
         </p>
       )}
     </div>

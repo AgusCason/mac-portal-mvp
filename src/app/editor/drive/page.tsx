@@ -21,13 +21,13 @@ export default async function EditorDrivePage({
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.editor.driveClientes", "Drive de clientes")}</h1>
         <p className="text-muted-foreground text-sm">
-          Solo ves clientes donde el admin activó tu acceso a Drive.
+          {t("pages.editorDrive.description", "Solo ves clientes donde el admin activó tu acceso a Drive.")}
         </p>
       </div>
       <ClientSelector clients={clients.filter((c) => c.can_view_drive)} />
       {activeClient && !activeClient.can_view_drive && (
         <p className="text-muted-foreground text-sm">
-          No tenés permiso de Drive habilitado para este cliente.
+          {t("pages.editorDrive.noAccess", "No tenés permiso de Drive habilitado para este cliente.")}
         </p>
       )}
       {activeClient?.can_view_drive && <DriveBrowser clientId={activeClient.client_id} />}

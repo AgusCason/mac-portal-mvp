@@ -30,6 +30,8 @@ export const ROUTE_MODULE_MAP: { prefix: string; key: string }[] = [
   { prefix: "/admin/tareas", key: "tareas" },
   { prefix: "/editor/tareas", key: "tareas" },
   { prefix: "/admin/proyectos", key: "proyectos" },
+  { prefix: "/admin/sitios-web", key: "sitios-web" },
+  { prefix: "/client/sitio-web", key: "sitios-web" },
   { prefix: "/admin/contactos", key: "contactos" },
   { prefix: "/admin/media-library", key: "media-library" },
   { prefix: "/admin/knowledge-base", key: "knowledge-base" },

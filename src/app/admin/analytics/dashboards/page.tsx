@@ -33,7 +33,7 @@ export default async function AnalyticsDashboardsPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.dashboards", "Dashboards")}</h1>
         <p className="text-muted-foreground text-sm">
-          Vistas resumen por plataforma, con datos reales de las cuentas conectadas.
+          {t("pages.analyticsDashboards.description", "Vistas resumen por plataforma, con datos reales de las cuentas conectadas.")}
         </p>
       </div>
 
@@ -43,7 +43,10 @@ export default async function AnalyticsDashboardsPage() {
             <LayoutDashboard className="text-muted-foreground size-8" strokeWidth={1.5} />
             <p className="text-sm font-medium">{t("pages.analyticsDashboards.empty", "Todavía no hay cuentas conectadas")}</p>
             <p className="text-muted-foreground max-w-sm text-sm">
-              En cuanto se conecte una cuenta social desde una Cuenta, acá va a aparecer su dashboard.
+              {t(
+                "pages.analyticsDashboards.emptyHint",
+                "En cuanto se conecte una cuenta social desde una Cuenta, acá va a aparecer su dashboard."
+              )}
             </p>
           </CardContent>
         </Card>
@@ -59,8 +62,13 @@ export default async function AnalyticsDashboardsPage() {
                   <Icon className="size-4" /> {PLATFORM_LABEL[d.platform]}
                 </CardTitle>
                 <CardDescription>
-                  {d.accountCount} cuenta{d.accountCount === 1 ? "" : "s"} conectada
-                  {d.accountCount === 1 ? "" : "s"}
+                  {d.accountCount}{" "}
+                  {d.accountCount === 1
+                    ? t("pages.analyticsDashboards.accountSingular", "cuenta")
+                    : t("pages.analyticsDashboards.accountPlural", "cuentas")}{" "}
+                  {d.accountCount === 1
+                    ? t("pages.analyticsDashboards.connectedSingular", "conectada")
+                    : t("pages.analyticsDashboards.connectedPlural", "conectadas")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid grid-cols-3 gap-2 text-sm">

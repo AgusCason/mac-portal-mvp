@@ -27,17 +27,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { getInitials, cn } from "@/lib/utils";
 import type { Profile, ProfileTheme } from "@/types/database";
 
 type SectionKey = "perfil" | "preferencias" | "notificaciones";
 
-const SECTIONS: { key: SectionKey; label: string; icon: typeof User }[] = [
-  { key: "perfil", label: "Perfil de Cuenta", icon: User },
-  { key: "preferencias", label: "Preferencias", icon: Palette },
-  { key: "notificaciones", label: "Notificaciones", icon: Bell },
-];
-
+// Las 4 tarjetas de tema son nombres de producto (estilo MB Suite) — no se
+// traducen, se muestran igual en los dos idiomas.
 const THEME_CARDS: { value: ProfileTheme; label: string; tagline: string; icon: typeof Moon }[] = [
   { value: "midnight_dark", label: "Midnight Dark", tagline: "Deep & Premium", icon: Moon },
   { value: "modern_mix", label: "Modern Mix", tagline: "Dark chrome, light content", icon: Palette },
@@ -56,6 +53,7 @@ const THEME_TO_NEXT_THEME: Record<ProfileTheme, string> = {
 };
 
 function ProfileTab({ profile }: { profile: Profile }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = React.useState(false);
   const [preview, setPreview] = React.useState<string | null>(profile.avatar_url);
@@ -84,10 +82,10 @@ function ProfileTab({ profile }: { profile: Profile }) {
         .eq("id", profile.id);
       if (updateError) throw updateError;
 
-      toast.success("Foto de perfil actualizada");
+      toast.success(t("components.shared.avatarUpdated", "Foto de perfil actualizada"));
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No se pudo subir la imagen.");
+      toast.error(err instanceof Error ? err.message : t("components.shared.avatarUploadError", "No se pudo subir la imagen."));
       setPreview(profile.avatar_url);
     } finally {
       setIsUploading(false);
@@ -98,7 +96,7 @@ function ProfileTab({ profile }: { profile: Profile }) {
     startTransition(async () => {
       const res = await updateMyProfileAction(formData);
       if (res.ok) {
-        toast.success("Perfil actualizado");
+        toast.success(t("components.shared.profileUpdated", "Perfil actualizado"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -109,8 +107,8 @@ function ProfileTab({ profile }: { profile: Profile }) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold">Perfil de Cuenta</h2>
-        <p className="text-muted-foreground text-sm">Gestiona tu información personal y seguridad.</p>
+        <h2 className="text-lg font-semibold">{t("components.shared.sectionProfile", "Perfil de Cuenta")}</h2>
+        <p className="text-muted-foreground text-sm">{t("components.shared.profileDesc", "Gestiona tu información personal y seguridad.")}</p>
       </div>
 
       <div className="flex items-center gap-3 border-b border-border pb-5">
@@ -118,7 +116,7 @@ function ProfileTab({ profile }: { profile: Profile }) {
           type="button"
           className="group relative shrink-0"
           onClick={() => fileInputRef.current?.click()}
-          aria-label="Cambiar foto de perfil"
+          aria-label={t("components.shared.changeAvatarAria", "Cambiar foto de perfil")}
           disabled={isUploading}
         >
           <Avatar className="size-14">
@@ -138,7 +136,7 @@ function ProfileTab({ profile }: { profile: Profile }) {
           />
         </button>
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{profile.full_name || "Sin nombre"}</p>
+          <p className="truncate text-sm font-medium">{profile.full_name || t("pages.equipo.noName", "Sin nombre")}</p>
           <p className="text-muted-foreground truncate text-xs">{profile.email}</p>
         </div>
       </div>
@@ -146,31 +144,31 @@ function ProfileTab({ profile }: { profile: Profile }) {
       <form action={handleSubmit} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="fullName">Nombre (Display Name)</Label>
+            <Label htmlFor="fullName">{t("components.shared.displayNameLabel", "Nombre (Display Name)")}</Label>
             <Input id="fullName" name="fullName" required defaultValue={profile.full_name} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="jobTitle">Cargo / Título</Label>
-            <Input id="jobTitle" name="jobTitle" placeholder="ej. Project Manager" defaultValue={profile.job_title} />
+            <Label htmlFor="jobTitle">{t("components.shared.jobTitleLabel", "Cargo / Título")}</Label>
+            <Input id="jobTitle" name="jobTitle" placeholder={t("components.shared.jobTitlePlaceholder", "ej. Project Manager")} defaultValue={profile.job_title} />
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="phone">Teléfono</Label>
+            <Label htmlFor="phone">{t("components.shared.phoneLabel", "Teléfono")}</Label>
             <Input id="phone" name="phone" placeholder="+54 11 ..." defaultValue={profile.phone} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="location">Ubicación</Label>
-            <Input id="location" name="location" placeholder="Ciudad, País" defaultValue={profile.location} />
+            <Label htmlFor="location">{t("components.shared.locationLabel", "Ubicación")}</Label>
+            <Input id="location" name="location" placeholder={t("components.shared.locationPlaceholder", "Ciudad, País")} defaultValue={profile.location} />
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="bio">Bio / Sobre mí</Label>
-          <Textarea id="bio" name="bio" rows={3} placeholder="Breve descripción..." defaultValue={profile.bio} />
+          <Label htmlFor="bio">{t("components.shared.bioLabel", "Bio / Sobre mí")}</Label>
+          <Textarea id="bio" name="bio" rows={3} placeholder={t("components.shared.bioPlaceholder", "Breve descripción...")} defaultValue={profile.bio} />
         </div>
         <Button type="submit" disabled={isPending}>
           {isPending && <Loader2 className="animate-spin" />}
-          Guardar cambios
+          {t("components.shared.saveChanges", "Guardar cambios")}
         </Button>
       </form>
     </div>
@@ -178,6 +176,7 @@ function ProfileTab({ profile }: { profile: Profile }) {
 }
 
 function PreferencesTab({ profile }: { profile: Profile }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const [theme, setThemeChoice] = React.useState<ProfileTheme>(profile.theme_preference);
   const { setTheme } = useTheme();
@@ -189,7 +188,7 @@ function PreferencesTab({ profile }: { profile: Profile }) {
       const res = await updateMyPreferencesAction(formData);
       if (res.ok) {
         setTheme(THEME_TO_NEXT_THEME[theme]);
-        toast.success("Preferencias guardadas");
+        toast.success(t("components.shared.preferencesSaved", "Preferencias guardadas"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -200,13 +199,13 @@ function PreferencesTab({ profile }: { profile: Profile }) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold">Preferencias</h2>
-        <p className="text-muted-foreground text-sm">Personaliza tu experiencia en la plataforma.</p>
+        <h2 className="text-lg font-semibold">{t("settings.title", "Preferencias")}</h2>
+        <p className="text-muted-foreground text-sm">{t("components.shared.preferencesDesc", "Personaliza tu experiencia en la plataforma.")}</p>
       </div>
 
       <form action={handleSubmit} className="space-y-5">
         <div className="space-y-1.5">
-          <Label htmlFor="language">Idioma</Label>
+          <Label htmlFor="language">{t("settings.language", "Idioma")}</Label>
           <Select name="language" defaultValue={profile.language}>
             <SelectTrigger id="language" className="w-full">
               <SelectValue />
@@ -220,20 +219,20 @@ function PreferencesTab({ profile }: { profile: Profile }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="numberFormat">Formato de Números</Label>
+          <Label htmlFor="numberFormat">{t("components.shared.numberFormatLabel", "Formato de Números")}</Label>
           <Select name="numberFormat" defaultValue={profile.number_format}>
             <SelectTrigger id="numberFormat" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="es_latam">1.000,00 (Europe/LatAm)</SelectItem>
-              <SelectItem value="en_us">1,000.00 (US)</SelectItem>
+              <SelectItem value="es_latam">{t("components.shared.numberFormatEuLatam", "1.000,00 (Europe/LatAm)")}</SelectItem>
+              <SelectItem value="en_us">{t("components.shared.numberFormatUs", "1,000.00 (US)")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label>Tema</Label>
+          <Label>{t("settings.theme", "Tema")}</Label>
           {THEME_CARDS.map((card) => {
             const Icon = card.icon;
             const active = theme === card.value;
@@ -267,7 +266,7 @@ function PreferencesTab({ profile }: { profile: Profile }) {
 
         <Button type="submit" disabled={isPending}>
           {isPending && <Loader2 className="animate-spin" />}
-          Guardar cambios
+          {t("components.shared.saveChanges", "Guardar cambios")}
         </Button>
       </form>
     </div>
@@ -275,6 +274,7 @@ function PreferencesTab({ profile }: { profile: Profile }) {
 }
 
 function NotificationsTab({ profile }: { profile: Profile }) {
+  const { t } = useLocale();
   const [marketing, setMarketing] = React.useState(profile.notify_marketing);
   const [productUpdates, setProductUpdates] = React.useState(profile.notify_product_updates);
   const [isPending, startTransition] = useTransition();
@@ -294,15 +294,15 @@ function NotificationsTab({ profile }: { profile: Profile }) {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold">Notificaciones</h2>
-        <p className="text-muted-foreground text-sm">Gestiona cómo nos comunicamos contigo.</p>
+        <h2 className="text-lg font-semibold">{t("components.shared.sectionNotifications", "Notificaciones")}</h2>
+        <p className="text-muted-foreground text-sm">{t("components.shared.notificationsDesc", "Gestiona cómo nos comunicamos contigo.")}</p>
       </div>
 
       <div className="space-y-2">
         <div className="border-border flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
           <div>
-            <p className="text-sm font-medium">Marketing y Ofertas</p>
-            <p className="text-muted-foreground text-xs">Tips, tutoriales y promociones especiales.</p>
+            <p className="text-sm font-medium">{t("components.shared.marketingTitle", "Marketing y Ofertas")}</p>
+            <p className="text-muted-foreground text-xs">{t("components.shared.marketingDesc", "Tips, tutoriales y promociones especiales.")}</p>
           </div>
           <Switch
             checked={marketing}
@@ -315,8 +315,8 @@ function NotificationsTab({ profile }: { profile: Profile }) {
         </div>
         <div className="border-border flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
           <div>
-            <p className="text-sm font-medium">Actualizaciones de Producto</p>
-            <p className="text-muted-foreground text-xs">Nuevas funciones, mejoras y changelogs.</p>
+            <p className="text-sm font-medium">{t("components.shared.productUpdatesTitle", "Actualizaciones de Producto")}</p>
+            <p className="text-muted-foreground text-xs">{t("components.shared.productUpdatesDesc", "Nuevas funciones, mejoras y changelogs.")}</p>
           </div>
           <Switch
             checked={productUpdates}
@@ -329,8 +329,8 @@ function NotificationsTab({ profile }: { profile: Profile }) {
         </div>
         <div className="border-border flex items-center justify-between gap-3 rounded-lg border px-4 py-3 opacity-70">
           <div>
-            <p className="text-sm font-medium">Alertas de Seguridad</p>
-            <p className="text-muted-foreground text-xs">Avisos de inicio de sesión y seguridad (Obligatorio).</p>
+            <p className="text-sm font-medium">{t("components.shared.securityAlertsTitle", "Alertas de Seguridad")}</p>
+            <p className="text-muted-foreground text-xs">{t("components.shared.securityAlertsDesc", "Avisos de inicio de sesión y seguridad (Obligatorio).")}</p>
           </div>
           <Switch checked disabled />
         </div>
@@ -348,12 +348,19 @@ export function MyProfileDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useLocale();
   const [section, setSection] = React.useState<SectionKey>("perfil");
+
+  const SECTIONS: { key: SectionKey; label: string; icon: typeof User }[] = [
+    { key: "perfil", label: t("components.shared.sectionProfile", "Perfil de Cuenta"), icon: User },
+    { key: "preferencias", label: t("settings.title", "Preferencias"), icon: Palette },
+    { key: "notificaciones", label: t("components.shared.sectionNotifications", "Notificaciones"), icon: Bell },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="grid max-w-2xl grid-cols-[200px_1fr] gap-0 p-0 sm:max-w-2xl">
-        <DialogTitle className="sr-only">Perfil de Cuenta</DialogTitle>
+        <DialogTitle className="sr-only">{t("components.shared.sectionProfile", "Perfil de Cuenta")}</DialogTitle>
         <div className="bg-muted/40 space-y-0.5 rounded-l-lg border-r border-border p-3">
           {SECTIONS.map((s) => {
             const Icon = s.icon;

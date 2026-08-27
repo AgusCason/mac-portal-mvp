@@ -26,15 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const METHOD_OPTIONS = [
-  { value: "mercadopago", label: "Mercado Pago (automático)" },
-  { value: "paypal", label: "PayPal (automático)" },
-  { value: "transferencia", label: "Transferencia" },
-  { value: "payoneer", label: "Payoneer" },
-  { value: "crypto", label: "Cripto" },
-  { value: "otro", label: "Otro" },
-];
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewInvoiceDialog({
   clients,
@@ -43,15 +35,25 @@ export function NewInvoiceDialog({
   clients: { id: string; name: string }[];
   plans: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+
+  const METHOD_OPTIONS = [
+    { value: "mercadopago", label: t("billing.methodMercadopagoAuto", "Mercado Pago (automático)") },
+    { value: "paypal", label: t("billing.methodPaypalAuto", "PayPal (automático)") },
+    { value: "transferencia", label: t("billing.methodTransfer", "Transferencia") },
+    { value: "payoneer", label: t("billing.methodPayoneer", "Payoneer") },
+    { value: "crypto", label: t("billing.methodCrypto", "Cripto") },
+    { value: "otro", label: t("billing.methodOther", "Otro") },
+  ];
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
       const res = await createInvoiceAction(formData);
       if (res.ok) {
-        toast.success("Factura generada");
+        toast.success(t("billing.invoiceGenerated", "Factura generada"));
         setOpen(false);
         router.refresh();
       } else {
@@ -64,24 +66,26 @@ export function NewInvoiceDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Generar factura
+          <Plus /> {t("billing.generateInvoice", "Generar factura")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Generar factura</DialogTitle>
+            <DialogTitle>{t("billing.generateInvoice", "Generar factura")}</DialogTitle>
             <DialogDescription>
-              Mercado Pago y PayPal se concilian automáticamente cuando esté disponible;
-              el resto de los métodos se marcan como pagados manualmente.
+              {t(
+                "billing.generateInvoiceDesc",
+                "Mercado Pago y PayPal se concilian automáticamente cuando esté disponible; el resto de los métodos se marcan como pagados manualmente."
+              )}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5">
-            <Label htmlFor="clientId">Cliente</Label>
+            <Label htmlFor="clientId">{t("billing.clientLabel", "Cliente")}</Label>
             <Select name="clientId" required>
               <SelectTrigger className="w-full" id="clientId">
-                <SelectValue placeholder="Seleccioná un cliente" />
+                <SelectValue placeholder={t("billing.chooseClientPlaceholder", "Seleccioná un cliente")} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((c) => (
@@ -94,10 +98,10 @@ export function NewInvoiceDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="planId">Plan (opcional)</Label>
+            <Label htmlFor="planId">{t("billing.planOptionalLabel", "Plan (opcional)")}</Label>
             <Select name="planId">
               <SelectTrigger className="w-full" id="planId">
-                <SelectValue placeholder="Sin plan asociado" />
+                <SelectValue placeholder={t("billing.noPlanPlaceholder", "Sin plan asociado")} />
               </SelectTrigger>
               <SelectContent>
                 {plans.map((p) => (
@@ -111,25 +115,25 @@ export function NewInvoiceDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="amount">Monto</Label>
+              <Label htmlFor="amount">{t("billing.amountLabel", "Monto")}</Label>
               <Input id="amount" name="amount" type="number" min={0} step={100} required />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="currency">Moneda</Label>
+              <Label htmlFor="currency">{t("billing.currencyLabel", "Moneda")}</Label>
               <Select name="currency" defaultValue="ARS" required>
                 <SelectTrigger id="currency" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ARS">Pesos (ARS)</SelectItem>
-                  <SelectItem value="USD">Dólares (USD)</SelectItem>
+                  <SelectItem value="ARS">{t("billing.currencyArs", "Pesos (ARS)")}</SelectItem>
+                  <SelectItem value="USD">{t("billing.currencyUsd", "Dólares (USD)")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="method">Método de pago</Label>
+            <Label htmlFor="method">{t("billing.paymentMethodLabel", "Método de pago")}</Label>
             <Select name="method" required defaultValue="transferencia">
               <SelectTrigger className="w-full" id="method">
                 <SelectValue />
@@ -145,19 +149,19 @@ export function NewInvoiceDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="dueDate">Vencimiento</Label>
+            <Label htmlFor="dueDate">{t("billing.dueDateLabel", "Vencimiento")}</Label>
             <Input id="dueDate" name="dueDate" type="date" required />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="notes">Notas (opcional)</Label>
+            <Label htmlFor="notes">{t("billing.notesOptionalLabel", "Notas (opcional)")}</Label>
             <Input id="notes" name="notes" />
           </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Generar
+              {t("billing.generate", "Generar")}
             </Button>
           </DialogFooter>
         </form>

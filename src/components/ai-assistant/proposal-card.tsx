@@ -10,6 +10,7 @@ import type { AiProposedAction } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /**
  * Tarjeta de confirmación humana — el corazón del modelo de seguridad del
@@ -24,6 +25,7 @@ export function ProposalCard({
   messageId: string;
   proposal: AiProposedAction;
 }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const [resolved, setResolved] = React.useState<"confirmed" | "rejected" | null>(null);
 
@@ -55,7 +57,7 @@ export function ProposalCard({
       <CardHeader className="px-4">
         <CardTitle className="flex items-center gap-2 text-sm">
           <ShieldAlert className="text-warning size-4" />
-          Propuesta de cambio — requiere tu confirmación
+          {t("components.aiAssistant.proposalTitle", "Propuesta de cambio — requiere tu confirmación")}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 px-4">
@@ -67,12 +69,12 @@ export function ProposalCard({
 
         {resolved === "confirmed" && (
           <Badge variant="success" className="w-fit">
-            Confirmado y aplicado
+            {t("components.aiAssistant.proposalConfirmed", "Confirmado y aplicado")}
           </Badge>
         )}
         {resolved === "rejected" && (
           <Badge variant="secondary" className="w-fit">
-            Rechazado — no se aplicó ningún cambio
+            {t("components.aiAssistant.proposalRejected", "Rechazado — no se aplicó ningún cambio")}
           </Badge>
         )}
 
@@ -80,11 +82,11 @@ export function ProposalCard({
           <div className="flex items-center gap-2 pt-1">
             <Button size="sm" onClick={handleConfirm} disabled={isPending}>
               {isPending ? <Loader2 className="animate-spin" /> : <Check />}
-              Confirmar
+              {t("components.aiAssistant.confirmButton", "Confirmar")}
             </Button>
             <Button size="sm" variant="outline" onClick={handleReject} disabled={isPending}>
               <X />
-              Rechazar
+              {t("components.aiAssistant.rejectButton", "Rechazar")}
             </Button>
           </div>
         )}

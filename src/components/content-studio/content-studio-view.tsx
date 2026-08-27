@@ -16,9 +16,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IdeaFormFields, IDEA_TYPE_LABEL } from "@/components/content-studio/idea-form-fields";
+import { IdeaFormFields, IDEA_TYPE_KEYS } from "@/components/content-studio/idea-form-fields";
 import { NewIdeaDialog } from "@/components/content-studio/new-idea-dialog";
 import { MediaLibraryView } from "@/components/media-library/media-library-view";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { ContentIdeaWithClient } from "@/lib/queries/content-ideas";
 import type { MediaAssetWithRelations, MediaFolderWithCount } from "@/lib/queries/media-library";
 
@@ -33,6 +34,7 @@ function EditIdeaDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -40,7 +42,7 @@ function EditIdeaDialog({
     startTransition(async () => {
       const res = await updateContentIdeaAction(idea.id, formData);
       if (res.ok) {
-        toast.success("Idea actualizada");
+        toast.success(t("components.contentStudio.ideaUpdated", "Idea actualizada"));
         onOpenChange(false);
         router.refresh();
       } else {
@@ -53,7 +55,7 @@ function EditIdeaDialog({
     startTransition(async () => {
       const res = await deleteContentIdeaAction(idea.id);
       if (res.ok) {
-        toast.success("Idea eliminada");
+        toast.success(t("components.contentStudio.ideaDeleted", "Idea eliminada"));
         onOpenChange(false);
         router.refresh();
       } else {
@@ -67,7 +69,7 @@ function EditIdeaDialog({
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Editar</DialogTitle>
+            <DialogTitle>{t("components.contentStudio.editTitle", "Editar")}</DialogTitle>
           </DialogHeader>
           <IdeaFormFields idea={idea} clients={clients} />
           <DialogFooter className="sm:justify-between">
@@ -78,11 +80,11 @@ function EditIdeaDialog({
               disabled={isPending}
               onClick={handleDelete}
             >
-              <Trash2 /> Eliminar
+              <Trash2 /> {t("common.delete", "Eliminar")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </DialogFooter>
         </form>
@@ -92,6 +94,7 @@ function EditIdeaDialog({
 }
 
 function IdeaCard({ idea, clients }: { idea: ContentIdeaWithClient; clients: { id: string; name: string }[] }) {
+  const { t } = useLocale();
   const [editOpen, setEditOpen] = React.useState(false);
   return (
     <div className="border-border space-y-1.5 rounded-xl border p-3">
@@ -101,7 +104,7 @@ function IdeaCard({ idea, clients }: { idea: ContentIdeaWithClient; clients: { i
           type="button"
           onClick={() => setEditOpen(true)}
           className="text-muted-foreground hover:text-foreground shrink-0"
-          aria-label="Editar"
+          aria-label={t("components.contentStudio.editAriaLabel", "Editar")}
         >
           <Pencil className="size-3.5" />
         </button>
@@ -122,6 +125,7 @@ function IdeaGrid({
   clients: { id: string; name: string }[];
   type: string;
 }) {
+  const { t } = useLocale();
   const filtered = ideas.filter((i) => i.type === type);
   return (
     <div className="space-y-3">
@@ -130,7 +134,7 @@ function IdeaGrid({
       </div>
       {filtered.length === 0 ? (
         <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-          Todavía no hay nada acá.
+          {t("components.contentStudio.emptyIdeas", "Todavía no hay nada acá.")}
         </p>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -154,20 +158,22 @@ export function ContentStudioView({
   folders: MediaFolderWithCount[];
   assets: MediaAssetWithRelations[];
 }) {
+  const { t } = useLocale();
+
   return (
     <Tabs defaultValue="serie_social" className="w-full">
       <TabsList className="flex-wrap">
-        {Object.entries(IDEA_TYPE_LABEL).map(([value, label]) => (
+        {IDEA_TYPE_KEYS.map(({ value, labelKey, fallback }) => (
           <TabsTrigger key={value} value={value}>
-            {label}
+            {t(labelKey, fallback)}
           </TabsTrigger>
         ))}
-        <TabsTrigger value="media">Media Library</TabsTrigger>
+        <TabsTrigger value="media">{t("nav.management.mediaLibrary", "Media Library")}</TabsTrigger>
       </TabsList>
 
-      {Object.keys(IDEA_TYPE_LABEL).map((type) => (
-        <TabsContent key={type} value={type}>
-          <IdeaGrid ideas={ideas} clients={clients} type={type} />
+      {IDEA_TYPE_KEYS.map(({ value }) => (
+        <TabsContent key={value} value={value}>
+          <IdeaGrid ideas={ideas} clients={clients} type={value} />
         </TabsContent>
       ))}
 

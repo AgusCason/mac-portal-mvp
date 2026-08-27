@@ -93,7 +93,8 @@ export default async function AdminClientDetailPage({
           <div>
             <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
             <p className="text-muted-foreground text-sm">
-              {client.brand_name ?? t("pages.clienteDetail.noBrandName", "Sin nombre de marca")} · {client.contact_email ?? "sin email"}
+              {client.brand_name ?? t("pages.clienteDetail.noBrandName", "Sin nombre de marca")} ·{" "}
+              {client.contact_email ?? t("pages.clienteDetail.noEmail", "sin email")}
             </p>
             <div className="mt-1 flex items-center gap-2 text-muted-foreground">
               {PLATFORM_LINKS.filter((p) => client[p.key]).map((p) => (
@@ -102,7 +103,7 @@ export default async function AdminClientDetailPage({
                   href={client[p.key] ?? undefined}
                   target="_blank"
                   rel="noreferrer"
-                  title={p.label}
+                  title={p.key === "social_website" ? t("pages.clienteDetail.platformWebsite", "Sitio web") : p.label}
                   className="hover:text-foreground"
                 >
                   <p.icon className="size-3.5" />
@@ -119,7 +120,11 @@ export default async function AdminClientDetailPage({
                 ? t("pages.clienteDetail.statusPaused", "Pausado")
                 : t("pages.clienteDetail.statusLost", "Perdido")}
           </Badge>
-          {planName && <Badge variant="info">Plan {planName}</Badge>}
+          {planName && (
+            <Badge variant="info">
+              {t("pages.clienteDetail.planPrefix", "Plan")} {planName}
+            </Badge>
+          )}
         </div>
       </div>
 

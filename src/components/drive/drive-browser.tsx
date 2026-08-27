@@ -11,11 +11,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/lib/i18n/locale-context";
 
-const FOLDER_TABS: { value: DriveFolderType; label: string }[] = [
-  { value: "crudos", label: "Crudos" },
-  { value: "en_edicion", label: "En Edición" },
-  { value: "entregables_finales", label: "Entregables Finales" },
+const FOLDER_TABS: { value: DriveFolderType; labelKey: string; fallback: string }[] = [
+  { value: "crudos", labelKey: "components.drive.tabCrudos", fallback: "Crudos" },
+  { value: "en_edicion", labelKey: "components.drive.tabEnEdicion", fallback: "En Edición" },
+  { value: "entregables_finales", labelKey: "components.drive.tabEntregablesFinales", fallback: "Entregables Finales" },
 ];
 
 // Nota: no guardamos el ícono en una variable tipo componente (`const Icon = ...`)
@@ -29,6 +30,8 @@ function FileTypeIcon({ mimeType }: { mimeType: string }) {
 }
 
 function FileCard({ file }: { file: DriveFileSummary }) {
+  const { t } = useLocale();
+  const viewLabel = t("components.drive.viewButton", "Ver");
   return (
     <Card className="gap-0 overflow-hidden py-0">
       <div className="bg-muted flex aspect-video items-center justify-center">
@@ -51,7 +54,7 @@ function FileCard({ file }: { file: DriveFileSummary }) {
           {file.webViewLink && (
             <Button asChild size="sm" variant="outline" className="flex-1">
               <a href={file.webViewLink} target="_blank" rel="noreferrer">
-                <ExternalLink /> Ver
+                <ExternalLink /> {viewLabel}
               </a>
             </Button>
           )}
@@ -79,6 +82,7 @@ function FileCard({ file }: { file: DriveFileSummary }) {
  * granulares del editor antes de tocar la API de Drive.
  */
 export function DriveBrowser({ clientId }: { clientId: string }) {
+  const { t } = useLocale();
   const [active, setActive] = React.useState<DriveFolderType>("entregables_finales");
   const [files, setFiles] = React.useState<DriveFileSummary[] | null>(null);
   const [error, setError] = React.useState<string | null>(null);
@@ -99,7 +103,7 @@ export function DriveBrowser({ clientId }: { clientId: string }) {
       <TabsList>
         {FOLDER_TABS.map((tab) => (
           <TabsTrigger key={tab.value} value={tab.value}>
-            {tab.label}
+            {t(tab.labelKey, tab.fallback)}
           </TabsTrigger>
         ))}
       </TabsList>
@@ -117,7 +121,7 @@ export function DriveBrowser({ clientId }: { clientId: string }) {
           )}
           {!isPending && files && files.length === 0 && (
             <p className="text-muted-foreground text-sm">
-              Todavía no hay archivos en esta carpeta.
+              {t("components.drive.emptyFolder", "Todavía no hay archivos en esta carpeta.")}
             </p>
           )}
           {!isPending && files && files.length > 0 && (

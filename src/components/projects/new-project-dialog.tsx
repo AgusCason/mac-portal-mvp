@@ -26,8 +26,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewProjectDialog({ clients }: { clients: { id: string; name: string }[] }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -36,7 +38,7 @@ export function NewProjectDialog({ clients }: { clients: { id: string; name: str
     startTransition(async () => {
       const res = await createProjectAction(formData);
       if (res.ok) {
-        toast.success("Proyecto creado");
+        toast.success(t("components.projects.projectCreated", "Proyecto creado"));
         setOpen(false);
         router.push(`/admin/proyectos/${res.projectId}`);
       } else {
@@ -49,28 +51,28 @@ export function NewProjectDialog({ clients }: { clients: { id: string; name: str
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nuevo proyecto
+          <Plus /> {t("components.projects.newProject", "Nuevo proyecto")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nuevo proyecto</DialogTitle>
-            <DialogDescription>Arranca en la etapa &quot;Por iniciar&quot;.</DialogDescription>
+            <DialogTitle>{t("components.projects.newProject", "Nuevo proyecto")}</DialogTitle>
+            <DialogDescription>{t("components.projects.newProjectDesc", 'Arranca en la etapa "Por iniciar".')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
-            <Label htmlFor="title">Título</Label>
-            <Input id="title" name="title" required placeholder="Ej: Apertura corredor Asia-Pacífico" />
+            <Label htmlFor="title">{t("components.projects.titleLabel", "Título")}</Label>
+            <Input id="title" name="title" required placeholder={t("components.projects.titlePlaceholder", "Ej: Apertura corredor Asia-Pacífico")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="description">Descripción</Label>
+            <Label htmlFor="description">{t("components.projects.descriptionLabel", "Descripción")}</Label>
             <Input id="description" name="description" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="clientId">Cuenta (opcional)</Label>
+            <Label htmlFor="clientId">{t("components.projects.accountOptionalLabel", "Cuenta (opcional)")}</Label>
             <Select name="clientId">
               <SelectTrigger id="clientId" className="w-full">
-                <SelectValue placeholder="Proyecto interno de la agencia" />
+                <SelectValue placeholder={t("components.projects.internalProjectPlaceholder", "Proyecto interno de la agencia")} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((c) => (
@@ -84,7 +86,7 @@ export function NewProjectDialog({ clients }: { clients: { id: string; name: str
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Crear
+              {t("components.projects.create", "Crear")}
             </Button>
           </DialogFooter>
         </form>

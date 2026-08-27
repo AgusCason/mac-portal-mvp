@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { Profile } from "@/types/database";
 
 export function LinkClientMemberDialog({
@@ -33,6 +34,7 @@ export function LinkClientMemberDialog({
   clientId: string;
   candidates: Profile[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [profileId, setProfileId] = React.useState("");
   const [isPending, startTransition] = useTransition();
@@ -43,7 +45,7 @@ export function LinkClientMemberDialog({
     startTransition(async () => {
       const res = await linkClientMemberAction(clientId, profileId);
       if (res.ok) {
-        toast.success("Usuario vinculado al portal del cliente");
+        toast.success(t("components.clients.userLinked", "Usuario vinculado al portal del cliente"));
         setOpen(false);
         router.refresh();
       } else {
@@ -56,19 +58,22 @@ export function LinkClientMemberDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <Link2 /> Vincular usuario
+          <Link2 /> {t("components.clients.linkUser", "Vincular usuario")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Vincular usuario al portal</DialogTitle>
+          <DialogTitle>{t("components.clients.linkUserTitle", "Vincular usuario al portal")}</DialogTitle>
           <DialogDescription>
-            El usuario tiene que estar invitado con rol &quot;Cliente&quot; primero (Equipo &gt; Invitar).
+            {t(
+              "components.clients.linkUserDesc",
+              'El usuario tiene que estar invitado con rol "Cliente" primero (Equipo > Invitar).'
+            )}
           </DialogDescription>
         </DialogHeader>
         <Select value={profileId} onValueChange={setProfileId}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Elegí un usuario" />
+            <SelectValue placeholder={t("components.clients.chooseUserPlaceholder", "Elegí un usuario")} />
           </SelectTrigger>
           <SelectContent>
             {candidates.map((c) => (
@@ -81,7 +86,7 @@ export function LinkClientMemberDialog({
         <DialogFooter>
           <Button onClick={submit} disabled={isPending || !profileId}>
             {isPending && <Loader2 className="animate-spin" />}
-            Vincular
+            {t("components.clients.link", "Vincular")}
           </Button>
         </DialogFooter>
       </DialogContent>

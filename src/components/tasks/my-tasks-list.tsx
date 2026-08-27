@@ -20,11 +20,11 @@ const PRIORITY_VARIANT: Record<string, React.ComponentProps<typeof Badge>["varia
   urgente: "destructive",
 };
 
-const PRIORITY_LABEL: Record<string, string> = {
-  baja: "Baja",
-  media: "Media",
-  alta: "Alta",
-  urgente: "Urgente",
+const PRIORITY_LABEL_KEY: Record<string, { key: string; fallback: string }> = {
+  baja: { key: "components.tasks.priorityBaja", fallback: "Baja" },
+  media: { key: "components.tasks.priorityMedia", fallback: "Media" },
+  alta: { key: "components.tasks.priorityAlta", fallback: "Alta" },
+  urgente: { key: "components.tasks.priorityUrgente", fallback: "Urgente" },
 };
 
 /**
@@ -79,13 +79,15 @@ export function MyTasksList({ tasks }: { tasks: TaskWithRelations[] }) {
                   <p className={cn("text-sm font-medium", isDone && "text-muted-foreground line-through")}>
                     {task.title}
                   </p>
-                  <Badge variant={PRIORITY_VARIANT[task.priority]}>{PRIORITY_LABEL[task.priority]}</Badge>
+                  <Badge variant={PRIORITY_VARIANT[task.priority]}>
+                    {t(PRIORITY_LABEL_KEY[task.priority].key, PRIORITY_LABEL_KEY[task.priority].fallback)}
+                  </Badge>
                 </div>
                 {task.description && (
                   <p className="text-muted-foreground mt-0.5 text-xs">{task.description}</p>
                 )}
                 <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 text-xs">
-                  <span>{task.client_name ?? "Privada"}</span>
+                  <span>{task.client_name ?? t("components.tasks.privateAccount", "Privada")}</span>
                   {task.due_date && (
                     <span className={cn(isOverdue && "text-destructive font-medium")}>
                       {formatDate(task.due_date)}

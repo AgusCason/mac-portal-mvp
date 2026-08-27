@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /**
  * Selector de país con bandera — 247 países (src/lib/countries.ts), buscables
@@ -20,7 +21,7 @@ export function CountrySelect({
   id,
   value,
   onValueChange,
-  placeholder = "Seleccioná un país",
+  placeholder,
   className,
 }: {
   id?: string;
@@ -29,10 +30,11 @@ export function CountrySelect({
   placeholder?: string;
   className?: string;
 }) {
+  const { t } = useLocale();
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger id={id} className={className ?? "w-full"}>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder ?? t("components.shared.chooseCountryPlaceholder", "Seleccioná un país")} />
       </SelectTrigger>
       <SelectContent>
         {COUNTRIES.map((c) => (

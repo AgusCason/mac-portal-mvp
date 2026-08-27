@@ -14,6 +14,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn, formatCurrency, formatCompactCurrency, niceScaleMax } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
+import type { Locale } from "@/lib/i18n/dictionary";
+
+const DATE_LOCALE: Record<Locale, string> = { es: "es-AR", en: "en-US" };
+
+/** Recalcula el label del mes en el idioma del viewer a partir de `month` ("2026-08"), ignorando `d.label` (que siempre viene en español desde el server). */
+function monthDisplayLabel(monthKey: string, spansYears: boolean, locale: Locale): string {
+  const [year, month] = monthKey.split("-").map(Number);
+  const d = new Date(year, month - 1, 1);
+  const base = new Intl.DateTimeFormat(DATE_LOCALE[locale], { month: "short" }).format(d).replace(".", "");
+  const cap = base.charAt(0).toUpperCase() + base.slice(1);
+  return spansYears ? `${cap} ${String(year).slice(2)}` : cap;
+}
 
 /**
  * Facturación mensual apilada por estado.
@@ -33,16 +46,6 @@ import { cn, formatCurrency, formatCompactCurrency, niceScaleMax } from "@/lib/u
 
 type SegmentKey = "paid" | "pending" | "overdue" | "cancelled";
 
-const SEGMENTS: { key: SegmentKey; label: string; barClass: string; dotClass: string }[] = [
-  { key: "paid", label: "Pagado", barClass: "bg-success", dotClass: "bg-success" },
-  { key: "pending", label: "Pendiente", barClass: "bg-primary", dotClass: "bg-primary" },
-  { key: "overdue", label: "Atrasado", barClass: "bg-destructive", dotClass: "bg-destructive" },
-  { key: "cancelled", label: "Cancelado", barClass: "bg-muted-foreground", dotClass: "bg-muted-foreground" },
-];
-
-const PLOT_H = 176; // alto del área de trazado en px
-const TICK_COL_W = 44; // ancho reservado para las etiquetas del eje Y
-
 export function MonthlyBillingChart({
   data,
   currency,
@@ -50,8 +53,37 @@ export function MonthlyBillingChart({
   data: MonthlyBillingPoint[];
   currency: string;
 }) {
+  const { t, locale } = useLocale();
   const [showTable, setShowTable] = React.useState(false);
   const [hoverIdx, setHoverIdx] = React.useState<number | null>(null);
+
+  const spansYears =
+    data.length > 0 &&
+    data[0].month.slice(0, 4) !== data[data.length - 1].month.slice(0, 4);
+  const labels = React.useMemo(
+    () => new Map(data.map((d) => [d.month, monthDisplayLabel(d.month, spansYears, locale)])),
+    [data, spansYears, locale]
+  );
+
+  const SEGMENTS: { key: SegmentKey; label: string; barClass: string; dotClass: string }[] = [
+    { key: "paid", label: t("billing.segPaid", "Pagado"), barClass: "bg-success", dotClass: "bg-success" },
+    { key: "pending", label: t("billing.segPending", "Pendiente"), barClass: "bg-primary", dotClass: "bg-primary" },
+    {
+      key: "overdue",
+      label: t("billing.segOverdue", "Atrasado"),
+      barClass: "bg-destructive",
+      dotClass: "bg-destructive",
+    },
+    {
+      key: "cancelled",
+      label: t("billing.segCancelled", "Cancelado"),
+      barClass: "bg-muted-foreground",
+      dotClass: "bg-muted-foreground",
+    },
+  ];
+
+  const PLOT_H = 176; // alto del área de trazado en px
+  const TICK_COL_W = 44; // ancho reservado para las etiquetas del eje Y
 
   const max = niceScaleMax(Math.max(...data.map((d) => d.total), 1));
   const ticks = [0, 0.25, 0.5, 0.75, 1].map((f) => Math.round(max * f));
@@ -70,7 +102,7 @@ export function MonthlyBillingChart({
         </div>
         <Button variant="ghost" size="sm" onClick={() => setShowTable((v) => !v)}>
           {showTable ? <LayoutGrid /> : <Table2 />}
-          {showTable ? "Ver gráfico" : "Ver tabla"}
+          {showTable ? t("billing.viewChart", "Ver gráfico") : t("billing.viewTable", "Ver tabla")}
         </Button>
       </div>
 
@@ -79,18 +111,18 @@ export function MonthlyBillingChart({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Mes</TableHead>
-                <TableHead className="text-right">Pagado</TableHead>
-                <TableHead className="text-right">Pendiente</TableHead>
-                <TableHead className="text-right">Atrasado</TableHead>
-                <TableHead className="text-right">Cancelado</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead>{t("billing.colMonth", "Mes")}</TableHead>
+                <TableHead className="text-right">{t("billing.segPaid", "Pagado")}</TableHead>
+                <TableHead className="text-right">{t("billing.segPending", "Pendiente")}</TableHead>
+                <TableHead className="text-right">{t("billing.segOverdue", "Atrasado")}</TableHead>
+                <TableHead className="text-right">{t("billing.segCancelled", "Cancelado")}</TableHead>
+                <TableHead className="text-right">{t("billing.colTotal", "Total")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((d) => (
                 <TableRow key={d.month}>
-                  <TableCell className="text-muted-foreground">{d.label}</TableCell>
+                  <TableCell className="text-muted-foreground">{labels.get(d.month)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(d.paid, currency)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(d.pending, currency)}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatCurrency(d.overdue, currency)}</TableCell>
@@ -107,17 +139,17 @@ export function MonthlyBillingChart({
         <div>
           <div className="relative" style={{ height: PLOT_H, paddingLeft: TICK_COL_W }}>
             {/* Gridlines + etiquetas del eje Y — hairline, recesivas */}
-            {ticks.map((t) => (
+            {ticks.map((tick) => (
               <div
-                key={t}
+                key={tick}
                 className="absolute right-0 flex items-center gap-2"
-                style={{ left: 0, bottom: scaleY(t) }}
+                style={{ left: 0, bottom: scaleY(tick) }}
               >
                 <span
                   className="text-muted-foreground shrink-0 text-right tabular-nums"
                   style={{ width: TICK_COL_W - 8, fontSize: 10 }}
                 >
-                  {formatCompactCurrency(t, currency)}
+                  {formatCompactCurrency(tick, currency)}
                 </span>
                 <div className="border-border h-0 flex-1 border-t" />
               </div>
@@ -130,6 +162,7 @@ export function MonthlyBillingChart({
                   (acc, s, idx) => (d[s.key] > 0 ? idx : acc),
                   -1
                 );
+                const monthLabel = labels.get(d.month) ?? d.label;
                 return (
                   <div
                     key={d.month}
@@ -143,7 +176,7 @@ export function MonthlyBillingChart({
                         <div
                           key={s.key}
                           tabIndex={0}
-                          aria-label={`${s.label} ${d.label}: ${formatCurrency(d[s.key], currency)}`}
+                          aria-label={`${s.label} ${monthLabel}: ${formatCurrency(d[s.key], currency)}`}
                           className={cn(
                             "w-6 outline-none",
                             s.barClass,
@@ -161,7 +194,7 @@ export function MonthlyBillingChart({
 
                     {hoverIdx === i && (
                       <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-md border border-border bg-popover px-2.5 py-1.5 text-xs shadow-sm">
-                        <p className="text-popover-foreground font-medium">{d.label}</p>
+                        <p className="text-popover-foreground font-medium">{monthLabel}</p>
                         {SEGMENTS.filter((s) => d[s.key] > 0).map((s) => (
                           <p key={s.key} className="flex items-center gap-1.5 tabular-nums">
                             <span className={cn("size-1.5 rounded-full", s.dotClass)} />
@@ -172,7 +205,8 @@ export function MonthlyBillingChart({
                           </p>
                         ))}
                         <p className="text-muted-foreground mt-0.5 border-t border-border pt-0.5">
-                          Total: <span className="text-popover-foreground font-medium">{formatCurrency(d.total, currency)}</span>
+                          {t("billing.totalPrefix", "Total:")}{" "}
+                          <span className="text-popover-foreground font-medium">{formatCurrency(d.total, currency)}</span>
                         </p>
                       </div>
                     )}
@@ -189,7 +223,7 @@ export function MonthlyBillingChart({
                 className="text-muted-foreground flex-1 truncate text-center"
                 style={{ fontSize: 10 }}
               >
-                {d.label}
+                {labels.get(d.month)}
               </span>
             ))}
           </div>

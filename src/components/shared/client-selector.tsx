@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /** Selector de cliente que sincroniza la elección con ?cliente= en la URL. */
 export function ClientSelector({
@@ -17,6 +18,7 @@ export function ClientSelector({
   clients: { client_id: string; name: string }[];
   paramName?: string;
 }) {
+  const { t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -31,7 +33,7 @@ export function ClientSelector({
   if (clients.length === 0) {
     return (
       <p className="text-muted-foreground text-sm">
-        Todavía no tenés clientes asignados.
+        {t("components.shared.noClientsAssigned", "Todavía no tenés clientes asignados.")}
       </p>
     );
   }
@@ -39,7 +41,7 @@ export function ClientSelector({
   return (
     <Select value={current} onValueChange={handleChange}>
       <SelectTrigger className="w-64">
-        <SelectValue placeholder="Elegí un cliente" />
+        <SelectValue placeholder={t("components.shared.chooseClientPlaceholder", "Elegí un cliente")} />
       </SelectTrigger>
       <SelectContent>
         {clients.map((c) => (

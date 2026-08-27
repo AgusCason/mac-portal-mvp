@@ -17,13 +17,8 @@ import {
 import Link from "next/link";
 import { AccountCard } from "@/components/clients/account-card";
 import { cn, formatDate } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { AccountCardData } from "@/lib/queries/clients";
-
-const STATUS_LABEL: Record<string, string> = {
-  active: "Activa",
-  paused: "Pausada",
-  churned: "Perdida",
-};
 
 type StatusFilter = "active" | "all";
 type ViewMode = "grid" | "table";
@@ -36,10 +31,17 @@ type ViewMode = "grid" | "table";
  * tipeada.
  */
 export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
+  const { t } = useLocale();
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>("active");
   const [favoritesOnly, setFavoritesOnly] = React.useState(false);
   const [view, setView] = React.useState<ViewMode>("grid");
+
+  const STATUS_LABEL: Record<string, string> = {
+    active: t("components.clients.statusActive", "Activa"),
+    paused: t("components.clients.statusPaused", "Pausada"),
+    churned: t("components.clients.statusChurned", "Perdida"),
+  };
 
   const filtered = accounts.filter((a) => {
     if (statusFilter === "active" && a.status !== "active") return false;
@@ -61,7 +63,7 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar..."
+            placeholder={t("components.clients.searchPlaceholder", "Buscar...")}
             className="h-8 pl-8 text-sm"
           />
         </div>
@@ -75,7 +77,7 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
               statusFilter === "active" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Activas
+            {t("components.clients.filterActive", "Activas")}
           </button>
           <button
             type="button"
@@ -85,7 +87,7 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
               statusFilter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Todas
+            {t("components.clients.filterAll", "Todas")}
           </button>
         </div>
 
@@ -97,14 +99,14 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
           className="h-8"
         >
           <Star className={cn("size-3.5", favoritesOnly && "fill-current")} />
-          Favoritos
+          {t("components.clients.favorites", "Favoritos")}
         </Button>
 
         <div className="ml-auto flex items-center gap-1 rounded-lg border border-border p-0.5">
           <button
             type="button"
             onClick={() => setView("grid")}
-            aria-label="Ver como grilla"
+            aria-label={t("components.clients.viewAsGrid", "Ver como grilla")}
             className={cn(
               "rounded-md p-1.5",
               view === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -115,7 +117,7 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
           <button
             type="button"
             onClick={() => setView("table")}
-            aria-label="Ver como tabla"
+            aria-label={t("components.clients.viewAsTable", "Ver como tabla")}
             className={cn(
               "rounded-md p-1.5",
               view === "table" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -129,8 +131,8 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
       {filtered.length === 0 && (
         <p className="text-muted-foreground py-10 text-center text-sm">
           {accounts.length === 0
-            ? "Todavía no cargaste ninguna cuenta."
-            : "Ninguna cuenta coincide con estos filtros."}
+            ? t("components.clients.emptyNoAccounts", "Todavía no cargaste ninguna cuenta.")
+            : t("components.clients.emptyNoMatches", "Ninguna cuenta coincide con estos filtros.")}
         </p>
       )}
 
@@ -147,11 +149,11 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cuenta</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Suscripción</TableHead>
-                <TableHead>Equipo</TableHead>
-                <TableHead>Alta</TableHead>
+                <TableHead>{t("components.clients.colAccount", "Cuenta")}</TableHead>
+                <TableHead>{t("components.clients.colStatus", "Estado")}</TableHead>
+                <TableHead>{t("components.clients.colSubscription", "Suscripción")}</TableHead>
+                <TableHead>{t("components.clients.colTeam", "Equipo")}</TableHead>
+                <TableHead>{t("components.clients.colSignedUp", "Alta")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -172,11 +174,15 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
                   </TableCell>
                   <TableCell>
                     <Badge variant={account.planName ? "info" : "outline"}>
-                      {account.planName ? `Con suscripción — ${account.planName}` : "Interna"}
+                      {account.planName
+                        ? `${t("components.clients.withSubscriptionPrefix", "Con suscripción —")} ${account.planName}`
+                        : t("components.clients.internal", "Interna")}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {account.team.length === 0 ? "—" : account.team.map((t) => t.name).join(", ")}
+                    {account.team.length === 0
+                      ? t("components.clients.noTeamDash", "—")
+                      : account.team.map((member) => member.name).join(", ")}
                   </TableCell>
                   <TableCell className="tabular-nums text-sm">{formatDate(account.createdAt)}</TableCell>
                 </TableRow>

@@ -6,11 +6,12 @@ import { FileText, Download, CheckCircle2, Clock, Loader2 } from "lucide-react";
 
 import type { ReportWithClient } from "@/lib/queries/reports";
 import { getReportDownloadUrlAction, publishReportAction } from "@/app/actions/reports";
-import { NOVA_AGENT } from "@/lib/ai/agents";
+import { NOVA_AGENT, getAgentRole } from "@/lib/ai/agents";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /**
  * Lista de reportes de performance — misma pieza para /admin/reportes
@@ -25,6 +26,7 @@ export function ReportList({
   reports: ReportWithClient[];
   role: "admin" | "client";
 }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
 
   function view(reportId: string) {
@@ -42,7 +44,7 @@ export function ReportList({
     startTransition(async () => {
       const res = await publishReportAction(reportId);
       if (res.ok) {
-        toast.success("Reporte publicado — el cliente ya puede verlo");
+        toast.success(t("components.reports.reportPublishedToast", "Reporte publicado — el cliente ya puede verlo"));
       } else {
         toast.error(res.error);
       }
@@ -53,8 +55,8 @@ export function ReportList({
     return (
       <p className="text-muted-foreground text-sm">
         {role === "admin"
-          ? "Todavía no generaste ningún reporte."
-          : "Todavía no hay reportes publicados para tu cuenta."}
+          ? t("components.reports.noReportsAdmin", "Todavía no generaste ningún reporte.")
+          : t("components.reports.noReportsClient", "Todavía no hay reportes publicados para tu cuenta.")}
       </p>
     );
   }
@@ -71,7 +73,9 @@ export function ReportList({
               </div>
               <Badge variant={report.status === "published" ? "success" : "secondary"}>
                 {report.status === "published" ? <CheckCircle2 /> : <Clock />}
-                {report.status === "published" ? "Publicado" : "Borrador"}
+                {report.status === "published"
+                  ? t("components.reports.statusPublished", "Publicado")
+                  : t("components.reports.statusDraft", "Borrador")}
               </Badge>
             </div>
             {role === "admin" && (
@@ -93,12 +97,12 @@ export function ReportList({
             )}
             <p className="text-muted-foreground text-xs">
               {report.status === "published" && report.published_at
-                ? `Publicado el ${formatDate(report.published_at)}`
-                : `Generado el ${formatDate(report.created_at)}`}
+                ? `${t("components.reports.publishedOnPrefix", "Publicado el")} ${formatDate(report.published_at)}`
+                : `${t("components.reports.generatedOnPrefix", "Generado el")} ${formatDate(report.created_at)}`}
             </p>
             <p className="text-muted-foreground text-xs">
-              Redactado por <span className="font-medium">{NOVA_AGENT.name}</span> ·{" "}
-              {NOVA_AGENT.role}
+              {t("components.reports.writtenByPrefix", "Redactado por")} <span className="font-medium">{NOVA_AGENT.name}</span> ·{" "}
+              {getAgentRole(NOVA_AGENT, t)}
             </p>
             <div className="flex gap-2">
               <Button
@@ -109,11 +113,11 @@ export function ReportList({
                 onClick={() => view(report.id)}
               >
                 {isPending ? <Loader2 className="animate-spin" /> : <Download />}
-                Ver PDF
+                {t("components.reports.viewPdf", "Ver PDF")}
               </Button>
               {role === "admin" && report.status === "draft" && (
                 <Button size="sm" disabled={isPending} onClick={() => publish(report.id)}>
-                  Publicar
+                  {t("components.reports.publish", "Publicar")}
                 </Button>
               )}
             </div>

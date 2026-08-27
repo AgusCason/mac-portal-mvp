@@ -1,3 +1,5 @@
+"use client";
+
 import type { AiAuditLog, AiActionStatus } from "@/types/database";
 import {
   Table,
@@ -8,13 +10,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useLocale } from "@/lib/i18n/locale-context";
+import type { Locale } from "@/lib/i18n/dictionary";
 
-const STATUS_LABEL: Record<AiActionStatus, string> = {
-  proposed: "Propuesto",
-  confirmed: "Confirmado",
-  executed: "Aplicado",
-  rejected: "Rechazado",
-  failed: "Falló",
+const STATUS_LABEL_KEY: Record<AiActionStatus, { key: string; fallback: string }> = {
+  proposed: { key: "components.aiAssistant.statusProposed", fallback: "Propuesto" },
+  confirmed: { key: "components.aiAssistant.statusConfirmed", fallback: "Confirmado" },
+  executed: { key: "components.aiAssistant.statusExecuted", fallback: "Aplicado" },
+  rejected: { key: "components.aiAssistant.statusRejected", fallback: "Rechazado" },
+  failed: { key: "components.aiAssistant.statusFailed", fallback: "Falló" },
 };
 
 const STATUS_VARIANT: Record<AiActionStatus, "success" | "warning" | "destructive" | "secondary"> = {
@@ -25,6 +29,8 @@ const STATUS_VARIANT: Record<AiActionStatus, "success" | "warning" | "destructiv
   failed: "destructive",
 };
 
+const DATE_LOCALE: Record<Locale, string> = { es: "es-AR", en: "en-US" };
+
 /**
  * Historial de auditoría de todo lo que el asistente propuso — visible para
  * cualquier admin, más allá de quién haya iniciado la conversación (ver
@@ -32,10 +38,15 @@ const STATUS_VARIANT: Record<AiActionStatus, "success" | "warning" | "destructiv
  * la IA y qué pasó con eso?" en cualquier momento.
  */
 export function AuditLogTable({ entries }: { entries: AiAuditLog[] }) {
+  const { t, locale } = useLocale();
+
   if (entries.length === 0) {
     return (
       <p className="text-muted-foreground text-sm">
-        Todavía no hay propuestas registradas en la auditoría del asistente.
+        {t(
+          "components.aiAssistant.auditEmptyState",
+          "Todavía no hay propuestas registradas en la auditoría del asistente."
+        )}
       </p>
     );
   }
@@ -44,17 +55,17 @@ export function AuditLogTable({ entries }: { entries: AiAuditLog[] }) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Fecha</TableHead>
-          <TableHead>Acción</TableHead>
-          <TableHead>Resumen</TableHead>
-          <TableHead>Estado</TableHead>
+          <TableHead>{t("components.aiAssistant.colDate", "Fecha")}</TableHead>
+          <TableHead>{t("components.aiAssistant.colAction", "Acción")}</TableHead>
+          <TableHead>{t("components.aiAssistant.colSummary", "Resumen")}</TableHead>
+          <TableHead>{t("components.aiAssistant.colStatus", "Estado")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {entries.map((entry) => (
           <TableRow key={entry.id}>
             <TableCell className="text-muted-foreground whitespace-nowrap text-xs">
-              {new Date(entry.created_at).toLocaleString("es-AR", {
+              {new Date(entry.created_at).toLocaleString(DATE_LOCALE[locale], {
                 dateStyle: "short",
                 timeStyle: "short",
               })}
@@ -65,7 +76,9 @@ export function AuditLogTable({ entries }: { entries: AiAuditLog[] }) {
               {entry.error && <p className="text-destructive mt-1 text-xs">{entry.error}</p>}
             </TableCell>
             <TableCell>
-              <Badge variant={STATUS_VARIANT[entry.status]}>{STATUS_LABEL[entry.status]}</Badge>
+              <Badge variant={STATUS_VARIANT[entry.status]}>
+                {t(STATUS_LABEL_KEY[entry.status].key, STATUS_LABEL_KEY[entry.status].fallback)}
+              </Badge>
             </TableCell>
           </TableRow>
         ))}

@@ -1,8 +1,11 @@
+"use client";
+
 import type * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AUDIT_ACTION_LABELS } from "@/lib/audit-labels";
+import { getAuditActionLabel } from "@/lib/audit-labels";
 import { formatDate, formatTime } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { AuditLogEntryWithRelations } from "@/lib/queries/audit-log";
 
 const ACTION_VARIANT: Record<string, React.ComponentProps<typeof Badge>["variant"]> = {
@@ -21,10 +24,12 @@ const ACTION_VARIANT: Record<string, React.ComponentProps<typeof Badge>["variant
  * base — ver 0026_audit_log.sql.
  */
 export function AuditLogTable({ entries }: { entries: AuditLogEntryWithRelations[] }) {
+  const { t } = useLocale();
+
   if (entries.length === 0) {
     return (
       <p className="text-muted-foreground py-10 text-center text-sm">
-        Todavía no hay actividad registrada.
+        {t("audit.emptyState", "Todavía no hay actividad registrada.")}
       </p>
     );
   }
@@ -34,11 +39,11 @@ export function AuditLogTable({ entries }: { entries: AuditLogEntryWithRelations
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Quién</TableHead>
-            <TableHead>Acción</TableHead>
-            <TableHead>Cliente</TableHead>
-            <TableHead>Detalle</TableHead>
+            <TableHead>{t("audit.colDate", "Fecha")}</TableHead>
+            <TableHead>{t("audit.colWho", "Quién")}</TableHead>
+            <TableHead>{t("audit.colAction", "Acción")}</TableHead>
+            <TableHead>{t("audit.colClient", "Cliente")}</TableHead>
+            <TableHead>{t("audit.colDetail", "Detalle")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -47,10 +52,12 @@ export function AuditLogTable({ entries }: { entries: AuditLogEntryWithRelations
               <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                 {formatDate(entry.created_at)} · {formatTime(entry.created_at)}
               </TableCell>
-              <TableCell className="text-sm">{entry.actor_name ?? "Sistema"}</TableCell>
+              <TableCell className="text-sm">
+                {entry.actor_name ?? t("audit.systemFallback", "Sistema")}
+              </TableCell>
               <TableCell>
                 <Badge variant={ACTION_VARIANT[entry.action_type] ?? "secondary"}>
-                  {AUDIT_ACTION_LABELS[entry.action_type] ?? entry.action_type}
+                  {getAuditActionLabel(entry.action_type, t)}
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground text-sm">

@@ -15,7 +15,7 @@ export default async function ClientContratosPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("pages.clientContratos.title", "Tus contratos")}</h1>
         <p className="text-muted-foreground text-sm">
-          Revisá y firmá tus acuerdos de servicio.
+          {t("pages.clientContratos.description", "Revisá y firmá tus acuerdos de servicio.")}
         </p>
       </div>
       <ContractList contracts={contracts} role="client" />

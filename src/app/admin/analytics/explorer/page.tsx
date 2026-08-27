@@ -48,7 +48,11 @@ export default async function AnalyticsExplorerPage({
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.explorer", "Explorer")}</h1>
         <p className="text-muted-foreground text-sm">
-          {rows.length} fila{rows.length === 1 ? "" : "s"} de métricas diarias.
+          {rows.length}{" "}
+          {rows.length === 1
+            ? t("pages.analyticsExplorer.rowSingular", "fila")
+            : t("pages.analyticsExplorer.rowPlural", "filas")}{" "}
+          {t("pages.analyticsExplorer.rowsSuffix", "de métricas diarias.")}
         </p>
       </div>
 
@@ -93,7 +97,7 @@ export default async function AnalyticsExplorerPage({
             {rows.length === 0 && (
               <TableRow>
                 <TableCell colSpan={8} className="text-muted-foreground py-8 text-center">
-                  No hay métricas cargadas para estos filtros.
+                  {t("pages.analyticsExplorer.noMetrics", "No hay métricas cargadas para estos filtros.")}
                 </TableCell>
               </TableRow>
             )}

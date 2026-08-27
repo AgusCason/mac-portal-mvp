@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { Profile } from "@/types/database";
 
 export function AssignEditorDialog({
@@ -35,6 +36,7 @@ export function AssignEditorDialog({
   clientId: string;
   editors: Profile[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [editorId, setEditorId] = React.useState<string>("");
   const [canViewChat, setCanViewChat] = React.useState(false);
@@ -44,7 +46,7 @@ export function AssignEditorDialog({
 
   function submit() {
     if (!editorId) {
-      toast.error("Elegí un editor");
+      toast.error(t("components.clients.chooseEditorError", "Elegí un editor"));
       return;
     }
     startTransition(async () => {
@@ -55,7 +57,7 @@ export function AssignEditorDialog({
         canViewDrive,
       });
       if (res.ok) {
-        toast.success("Editor asignado");
+        toast.success(t("components.clients.editorAssigned", "Editor asignado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -68,23 +70,23 @@ export function AssignEditorDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <UserCog /> Asignar editor
+          <UserCog /> {t("components.clients.assignEditor", "Asignar editor")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Asignar editor a este cliente</DialogTitle>
+          <DialogTitle>{t("components.clients.assignEditorTitle", "Asignar editor a este cliente")}</DialogTitle>
           <DialogDescription>
-            Definí qué puede ver este editor: chat y/o Drive del cliente.
+            {t("components.clients.assignEditorDesc", "Definí qué puede ver este editor: chat y/o Drive del cliente.")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label>Editor</Label>
+            <Label>{t("components.clients.editorLabel", "Editor")}</Label>
             <Select value={editorId} onValueChange={setEditorId}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Elegí un editor" />
+                <SelectValue placeholder={t("components.clients.chooseEditorPlaceholder", "Elegí un editor")} />
               </SelectTrigger>
               <SelectContent>
                 {editors.map((e) => (
@@ -98,18 +100,18 @@ export function AssignEditorDialog({
 
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={canViewDrive} onCheckedChange={(v) => setCanViewDrive(!!v)} />
-            Puede ver el Drive del cliente
+            {t("components.clients.canViewDrive", "Puede ver el Drive del cliente")}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={canViewChat} onCheckedChange={(v) => setCanViewChat(!!v)} />
-            Puede ver el chat del cliente
+            {t("components.clients.canViewChat", "Puede ver el chat del cliente")}
           </label>
         </div>
 
         <DialogFooter>
           <Button onClick={submit} disabled={isPending}>
             {isPending && <Loader2 className="animate-spin" />}
-            Guardar
+            {t("common.save", "Guardar")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -33,6 +33,7 @@ import {
   Swords,
   LayoutGrid,
   History,
+  Globe,
 } from "lucide-react";
 import type { ModuleFlag, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
@@ -94,6 +95,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       children: [
         { label: "Tareas", key: "nav.management.tareas", href: "/admin/tareas", icon: ListChecks },
         { label: "Proyectos", key: "nav.management.proyectos", href: "/admin/proyectos", icon: FolderKanban },
+        { label: "Sitios Web", key: "nav.management.sitiosWeb", href: "/admin/sitios-web", icon: Globe },
         { label: "Contactos", key: "nav.management.contactos", href: "/admin/contactos", icon: Users },
         { label: "Media Library", key: "nav.management.mediaLibrary", href: "/admin/media-library", icon: ImageIcon },
         { label: "Knowledge Base", key: "nav.management.knowledgeBase", href: "/admin/knowledge-base", icon: BookOpen },
@@ -155,6 +157,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Contratos", key: "nav.contratos", href: "/client/contratos", icon: FileSignature },
     { label: "Reportes", key: "nav.client.reportes", href: "/client/reportes", icon: FileText },
     { label: "Facturación", key: "nav.client.facturas", href: "/client/facturas", icon: Wallet },
+    { label: "Mi sitio web", key: "nav.client.sitioWeb", href: "/client/sitio-web", icon: Globe },
     { label: "Chat", key: "nav.chat", href: "/client/chat", icon: Inbox },
   ],
 };

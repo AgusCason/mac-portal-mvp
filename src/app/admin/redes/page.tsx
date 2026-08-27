@@ -20,7 +20,10 @@ export default async function AdminRedesPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{t("pages.redes.title", "Redes sociales")}</h1>
           <p className="text-muted-foreground text-sm">
-            Cuentas conectadas y métricas clave por cliente (Meta Graph API, TikTok, YouTube).
+            {t(
+              "pages.redes.description",
+              "Cuentas conectadas y métricas clave por cliente (Meta Graph API, TikTok, YouTube)."
+            )}
           </p>
         </div>
         <Badge variant="secondary">{t("pages.redes.badge", "Fase avanzada")}</Badge>
@@ -33,13 +36,15 @@ export default async function AdminRedesPage() {
             <div>
               <p className="text-sm font-medium">{t("pages.redes.noAccounts", "Todavía no conectaste ninguna cuenta")}</p>
               <p className="text-muted-foreground max-w-sm text-sm">
-                Conectá Instagram, TikTok o YouTube desde el detalle de cada cliente
-                para ver alcance, reproducciones, engagement y crecimiento de seguidores acá.
+                {t(
+                  "pages.redes.connectHint",
+                  "Conectá Instagram, TikTok o YouTube desde el detalle de cada cliente para ver alcance, reproducciones, engagement y crecimiento de seguidores acá."
+                )}
               </p>
             </div>
             <Button asChild size="sm" variant="outline">
               <a href="/api/oauth/meta/connect">
-                <Camera /> Conectar Instagram
+                <Camera /> {t("pages.redes.connectInstagram", "Conectar Instagram")}
               </a>
             </Button>
           </CardContent>

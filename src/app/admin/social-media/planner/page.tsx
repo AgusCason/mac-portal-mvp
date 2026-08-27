@@ -23,7 +23,9 @@ export default async function AdminSocialMediaPlannerPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{t("nav.socialMedia.planner", "Planner")}</h1>
-        <p className="text-muted-foreground text-sm">Calendario editorial, publicados y grilla de Instagram.</p>
+        <p className="text-muted-foreground text-sm">
+          {t("pages.socialPlanner.description", "Calendario editorial, publicados y grilla de Instagram.")}
+        </p>
       </div>
       <PlannerView items={items} clients={clients} folders={folders} assets={assets} />
     </div>

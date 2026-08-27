@@ -67,6 +67,16 @@ export type CrmLeadStage =
 export type TaskStatus = "pendiente" | "en_curso" | "completada" | "cancelada";
 export type TaskPriority = "baja" | "media" | "alta" | "urgente";
 export type ProjectStatus = "por_iniciar" | "en_curso" | "en_pausa" | "completado" | "cancelado";
+export type WebProjectStage =
+  | "brief"
+  | "diseno"
+  | "desarrollo"
+  | "qa"
+  | "lanzamiento"
+  | "mantenimiento"
+  | "pausado"
+  | "cancelado";
+export type WebAssetStatus = "pendiente" | "aprobado" | "requiere_cambios";
 
 export type ProfileTheme = "midnight_dark" | "modern_mix" | "pure_light" | "psychedelic";
 export type ProfileLanguage = "es" | "en" | "pt";
@@ -316,6 +326,37 @@ export interface ProjectItem {
   status: ProjectStatus;
   assigned_to: string | null;
   due_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Proyecto de diseño y desarrollo web de un cliente — ver 0028_web_projects.sql. */
+export interface WebProject {
+  id: string;
+  client_id: string;
+  title: string;
+  description: string;
+  stage: WebProjectStage;
+  domain: string | null;
+  staging_url: string | null;
+  production_url: string | null;
+  hosting_provider: string | null;
+  tech_stack: string | null;
+  launch_date: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Entregable (mockup, link de staging, etc.) de un WebProject, aprobable por el cliente. */
+export interface WebProjectAsset {
+  id: string;
+  web_project_id: string;
+  title: string;
+  file_url: string;
+  status: WebAssetStatus;
+  client_note: string | null;
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -1147,6 +1188,52 @@ export interface Database {
           },
         ];
       };
+      web_projects: {
+        Row: Flatten<WebProject>;
+        Insert: Flatten<
+          Optional<
+            WebProject,
+            | "id"
+            | "description"
+            | "stage"
+            | "domain"
+            | "staging_url"
+            | "production_url"
+            | "hosting_provider"
+            | "tech_stack"
+            | "launch_date"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<WebProject>>;
+        Relationships: [
+          {
+            foreignKeyName: "web_projects_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      web_project_assets: {
+        Row: Flatten<WebProjectAsset>;
+        Insert: Flatten<
+          Optional<WebProjectAsset, "id" | "status" | "client_note" | "created_by" | "created_at" | "updated_at">
+        >;
+        Update: Flatten<Partial<WebProjectAsset>>;
+        Relationships: [
+          {
+            foreignKeyName: "web_project_assets_web_project_id_fkey";
+            columns: ["web_project_id"];
+            isOneToOne: false;
+            referencedRelation: "web_projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       contacts: {
         Row: Flatten<Contact>;
         Insert: Flatten<
@@ -1385,6 +1472,14 @@ export interface Database {
       sign_contract: {
         Args: Flatten<{ target_contract_id: string; client_ip?: string | null }>;
         Returns: Flatten<Contract>;
+      };
+      set_web_asset_approval: {
+        Args: Flatten<{
+          target_asset_id: string;
+          new_status: WebAssetStatus;
+          note?: string | null;
+        }>;
+        Returns: Flatten<WebProjectAsset>;
       };
       vault_add_credential: {
         Args: Flatten<{

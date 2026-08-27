@@ -35,14 +35,14 @@ function Sparkline({ values }: { values: number[] }) {
   );
 }
 
-function DeltaTag({ pct }: { pct: number | null }) {
+function DeltaTag({ pct, t }: { pct: number | null; t: (path: string, fallback?: string) => string }) {
   if (pct === null) {
-    return <span className="text-muted-foreground text-xs">sin mes anterior</span>;
+    return <span className="text-muted-foreground text-xs">{t("billing.noLastMonth", "sin mes anterior")}</span>;
   }
   if (Math.abs(pct) < 0.5) {
     return (
       <span className="text-muted-foreground flex items-center gap-0.5 text-xs">
-        <Minus className="size-3" /> igual que el mes pasado
+        <Minus className="size-3" /> {t("billing.sameAsLastMonth", "igual que el mes pasado")}
       </span>
     );
   }
@@ -55,17 +55,24 @@ function DeltaTag({ pct }: { pct: number | null }) {
       )}
     >
       {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
-      {Math.abs(pct).toFixed(0)}% vs. mes anterior
+      {Math.abs(pct).toFixed(0)}% {t("billing.vsLastMonthSuffix", "vs. mes anterior")}
     </span>
   );
 }
 
-function CollectionMeter({ pct }: { pct: number | null }) {
+function CollectionMeter({ pct, t }: { pct: number | null; t: (path: string, fallback?: string) => string }) {
   const value = pct ?? 0;
   const severity = pct === null ? "muted" : value >= 80 ? "good" : value >= 40 ? "warn" : "bad";
   const fillClass =
     severity === "good" ? "bg-success" : severity === "warn" ? "bg-warning" : severity === "bad" ? "bg-destructive" : "bg-muted-foreground";
-  const label = pct === null ? "Sin facturación este mes" : severity === "good" ? "Buena" : severity === "warn" ? "Regular" : "Baja";
+  const label =
+    pct === null
+      ? t("billing.noBillingThisMonth", "Sin facturación este mes")
+      : severity === "good"
+        ? t("billing.collectionGood", "Buena")
+        : severity === "warn"
+          ? t("billing.collectionRegular", "Regular")
+          : t("billing.collectionLow", "Baja");
 
   return (
     <div className="space-y-1.5">
@@ -102,7 +109,7 @@ export function BillingKpiRow({
           <p className="text-xl font-semibold tabular-nums">
             {formatCurrency(kpis.currentMonthTotal, currency)}
           </p>
-          <DeltaTag pct={kpis.deltaPct} />
+          <DeltaTag pct={kpis.deltaPct} t={t} />
           <Sparkline values={kpis.sparkline} />
         </CardContent>
       </Card>
@@ -117,7 +124,7 @@ export function BillingKpiRow({
           <p className="text-xl font-semibold tabular-nums">
             {kpis.collectionRatePct === null ? "—" : `${kpis.collectionRatePct.toFixed(0)}%`}
           </p>
-          <CollectionMeter pct={kpis.collectionRatePct} />
+          <CollectionMeter pct={kpis.collectionRatePct} t={t} />
         </CardContent>
       </Card>
 
@@ -129,7 +136,7 @@ export function BillingKpiRow({
         </CardHeader>
         <CardContent>
           <p className="text-xl font-semibold tabular-nums">{formatCurrency(kpis.pendingTotal, currency)}</p>
-          <p className="text-muted-foreground text-xs">Aún no vencido</p>
+          <p className="text-muted-foreground text-xs">{t("billing.notOverdueYet", "Aún no vencido")}</p>
         </CardContent>
       </Card>
 
@@ -144,7 +151,10 @@ export function BillingKpiRow({
             {formatCurrency(kpis.overdueTotal, currency)}
           </p>
           <p className="text-muted-foreground text-xs">
-            {kpis.overdueCount} {kpis.overdueCount === 1 ? "factura" : "facturas"}
+            {kpis.overdueCount}{" "}
+            {kpis.overdueCount === 1
+              ? t("billing.invoiceSingular", "factura")
+              : t("billing.invoicePlural", "facturas")}
           </p>
         </CardContent>
       </Card>

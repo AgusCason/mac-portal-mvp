@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { getProjectDetail } from "@/lib/queries/projects";
 import { ProjectBoard } from "@/components/projects/project-board";
-import { PROJECT_STATUS_LABEL, PROJECT_STATUS_VARIANT } from "@/components/projects/project-status";
+import { getProjectStatusLabel, PROJECT_STATUS_VARIANT } from "@/components/projects/project-status";
 import { Badge } from "@/components/ui/badge";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -36,7 +36,7 @@ export default async function AdminProyectoDetailPage({
           </p>
         </div>
         <Badge variant={PROJECT_STATUS_VARIANT[project.status]}>
-          {PROJECT_STATUS_LABEL[project.status]}
+          {getProjectStatusLabel(project.status, t)}
         </Badge>
       </div>
 

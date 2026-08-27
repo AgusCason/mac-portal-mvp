@@ -28,3 +28,15 @@ export const NOVA_AGENT: AiAgent = {
   role: "Analista de Reportes",
   tagline: "Cruza piezas publicadas y métricas reales para armar el resumen ejecutivo.",
 };
+
+type TFunc = (path: string, fallback?: string) => string;
+
+/** Versión traducible de `agent.role` — el nombre (MAX/Nova) no se traduce. */
+export function getAgentRole(agent: AiAgent, t?: TFunc): string {
+  return t ? t(`agents.${agent.id}.role`, agent.role) : agent.role;
+}
+
+/** Versión traducible de `agent.tagline`. */
+export function getAgentTagline(agent: AiAgent, t?: TFunc): string {
+  return t ? t(`agents.${agent.id}.tagline`, agent.tagline) : agent.tagline;
+}

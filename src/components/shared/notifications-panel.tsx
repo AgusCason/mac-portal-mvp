@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
 
 import type { AppNotification } from "@/types/database";
 import {
@@ -15,6 +15,7 @@ import {
 } from "@/app/actions/notifications";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -27,9 +28,11 @@ import {
 } from "@/components/ui/sheet";
 
 function NotificationRow({ notification }: { notification: AppNotification }) {
+  const { locale } = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const unread = !notification.read_at;
+  const dateLocale = locale === "en" ? enUS : es;
 
   function open() {
     if (unread) {
@@ -55,7 +58,7 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
         <p className="text-muted-foreground mt-0.5 text-xs">{notification.body}</p>
       )}
       <p className="text-muted-foreground mt-1 text-[11px]">
-        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: es })}
+        {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true, locale: dateLocale })}
       </p>
     </div>
   );
@@ -85,6 +88,7 @@ export function NotificationsPanel({
   notifications: AppNotification[];
   unreadCount: number;
 }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -98,7 +102,7 @@ export function NotificationsPanel({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative">
+        <Button variant="ghost" size="icon" aria-label={t("components.shared.sectionNotifications", "Notificaciones")} className="relative">
           <Bell />
           {unreadCount > 0 && (
             <span className="bg-destructive text-destructive-foreground absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-medium">
@@ -109,13 +113,13 @@ export function NotificationsPanel({
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-sm">
         <SheetHeader>
-          <SheetTitle>Notificaciones</SheetTitle>
-          <SheetDescription>Menciones, aprobaciones y avisos importantes.</SheetDescription>
+          <SheetTitle>{t("components.shared.sectionNotifications", "Notificaciones")}</SheetTitle>
+          <SheetDescription>{t("components.shared.notificationsPanelDesc", "Menciones, aprobaciones y avisos importantes.")}</SheetDescription>
         </SheetHeader>
         <ScrollArea className="h-[calc(100dvh-10rem)] px-4">
           <div className="flex flex-col gap-2 pb-6">
             {notifications.length === 0 && (
-              <p className="text-muted-foreground text-sm">No tenés notificaciones.</p>
+              <p className="text-muted-foreground text-sm">{t("components.shared.noNotifications", "No tenés notificaciones.")}</p>
             )}
             {notifications.map((n) => (
               <NotificationRow key={n.id} notification={n} />
@@ -125,7 +129,7 @@ export function NotificationsPanel({
         {unreadCount > 0 && (
           <SheetFooter>
             <Button variant="outline" size="sm" onClick={markAll} disabled={isPending}>
-              <CheckCheck /> Marcar todas como leídas
+              <CheckCheck /> {t("components.shared.markAllRead", "Marcar todas como leídas")}
             </Button>
           </SheetFooter>
         )}

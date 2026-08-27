@@ -22,7 +22,7 @@ export default async function AdminEquipoPage() {
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{t("nav.equipo", "Equipo")}</h1>
           <p className="text-muted-foreground text-sm">
-            Editores de la agencia y los clientes que tienen asignados.
+            {t("pages.equipo.description", "Editores de la agencia y los clientes que tienen asignados.")}
           </p>
         </div>
         <NewEditorDialog />
@@ -53,7 +53,7 @@ export default async function AdminEquipoPage() {
           </Card>
         ))}
         {editors.length === 0 && (
-          <p className="text-muted-foreground text-sm">Todavía no invitaste editores.</p>
+          <p className="text-muted-foreground text-sm">{t("pages.equipo.noEditors", "Todavía no invitaste editores.")}</p>
         )}
       </div>
     </div>
