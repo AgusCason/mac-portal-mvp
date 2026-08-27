@@ -11,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function TaskFilters() {
+  const { t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -36,27 +38,27 @@ export function TaskFilters() {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="pendientes">Pendientes</SelectItem>
-          <SelectItem value="todas">Cualquier fecha</SelectItem>
+          <SelectItem value="pendientes">{t("components.tasks.filterViewPendientes", "Pendientes")}</SelectItem>
+          <SelectItem value="todas">{t("components.tasks.filterViewTodas", "Cualquier fecha")}</SelectItem>
         </SelectContent>
       </Select>
 
       <Select value={currentStatus} onValueChange={(v) => setParam("estado", v)}>
         <SelectTrigger className="w-40" size="sm">
-          <SelectValue placeholder="Estado" />
+          <SelectValue placeholder={t("components.tasks.filterStatusPlaceholder", "Estado")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Todos los estados</SelectItem>
-          <SelectItem value="pendiente">Pendiente</SelectItem>
-          <SelectItem value="en_curso">En curso</SelectItem>
-          <SelectItem value="completada">Completada</SelectItem>
-          <SelectItem value="cancelada">Cancelada</SelectItem>
+          <SelectItem value="all">{t("components.tasks.filterStatusAll", "Todos los estados")}</SelectItem>
+          <SelectItem value="pendiente">{t("tasks.statusPendiente", "Pendiente")}</SelectItem>
+          <SelectItem value="en_curso">{t("tasks.statusEnCurso", "En curso")}</SelectItem>
+          <SelectItem value="completada">{t("tasks.statusCompletada", "Completada")}</SelectItem>
+          <SelectItem value="cancelada">{t("tasks.statusCancelada", "Cancelada")}</SelectItem>
         </SelectContent>
       </Select>
 
       {hasFilters && (
         <Button variant="ghost" size="sm" onClick={() => router.push(pathname)}>
-          <X /> Limpiar
+          <X /> {t("components.tasks.clearFilters", "Limpiar")}
         </Button>
       )}
     </div>

@@ -19,21 +19,16 @@ import { PlannerCalendar } from "@/components/social-media/planner-calendar";
 import { PlannerList } from "@/components/social-media/planner-list";
 import { NewContentDialog } from "@/components/content/new-content-dialog";
 import { MediaLibraryView } from "@/components/media-library/media-library-view";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/content-category-meta";
+import { CATEGORY_ORDER, getCategoryLabel } from "@/lib/content-category-meta";
 import { NETWORK_META } from "@/lib/network-meta";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { formatDate, cn } from "@/lib/utils";
 import type { ContentItemWithClient } from "@/lib/queries/content";
 import type { MediaAssetWithRelations, MediaFolderWithCount } from "@/lib/queries/media-library";
 
 type PlannerViewMode = "tablero" | "calendario" | "lista";
 
-const VIEW_OPTIONS: { value: PlannerViewMode; label: string; icon: typeof Kanban }[] = [
-  { value: "tablero", label: "Tablero", icon: Kanban },
-  { value: "calendario", label: "Calendario", icon: CalendarDays },
-  { value: "lista", label: "Lista", icon: List },
-];
-
-const MONTH_LABEL = new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric" });
+const MONTH_FORMAT_LOCALE: Record<string, string> = { es: "es-AR", en: "en-US" };
 
 function PlannerToolbar({
   view,
@@ -64,7 +59,21 @@ function PlannerToolbar({
   onCategoryFilterChange: (v: string) => void;
   clients: { id: string; name: string }[];
 }) {
-  const label = MONTH_LABEL.format(month);
+  const { t, locale } = useLocale();
+
+  const VIEW_OPTIONS: { value: PlannerViewMode; label: string; icon: typeof Kanban }[] = [
+    { value: "tablero", label: t("components.planner.viewTablero", "Tablero"), icon: Kanban },
+    { value: "calendario", label: t("components.planner.viewCalendario", "Calendario"), icon: CalendarDays },
+    { value: "lista", label: t("components.planner.viewLista", "Lista"), icon: List },
+  ];
+
+  const label = React.useMemo(
+    () =>
+      new Intl.DateTimeFormat(MONTH_FORMAT_LOCALE[locale] ?? "es-AR", { month: "long", year: "numeric" }).format(
+        month
+      ),
+    [month, locale]
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -73,7 +82,7 @@ function PlannerToolbar({
         <Input
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Buscar posts..."
+          placeholder={t("components.planner.searchPlaceholder", "Buscar posts...")}
           className="pl-8"
         />
       </div>
@@ -110,13 +119,13 @@ function PlannerToolbar({
         </PopoverTrigger>
         <PopoverContent align="end" className="w-56 space-y-3">
           <div className="space-y-1.5">
-            <p className="text-xs font-medium">Cliente</p>
+            <p className="text-xs font-medium">{t("components.planner.filterClientLabel", "Cliente")}</p>
             <Select value={clientFilter} onValueChange={onClientFilterChange}>
               <SelectTrigger size="sm" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los clientes</SelectItem>
+                <SelectItem value="all">{t("components.planner.allClients", "Todos los clientes")}</SelectItem>
                 {clients.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -126,13 +135,13 @@ function PlannerToolbar({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <p className="text-xs font-medium">Red</p>
+            <p className="text-xs font-medium">{t("components.planner.filterNetworkLabel", "Red")}</p>
             <Select value={networkFilter} onValueChange={onNetworkFilterChange}>
               <SelectTrigger size="sm" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas las redes</SelectItem>
+                <SelectItem value="all">{t("components.planner.allNetworks", "Todas las redes")}</SelectItem>
                 {Object.entries(NETWORK_META).map(([value, meta]) => (
                   <SelectItem key={value} value={value}>
                     {meta.label}
@@ -142,16 +151,16 @@ function PlannerToolbar({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <p className="text-xs font-medium">Categoría</p>
+            <p className="text-xs font-medium">{t("components.planner.filterCategoryLabel", "Categoría")}</p>
             <Select value={categoryFilter} onValueChange={onCategoryFilterChange}>
               <SelectTrigger size="sm" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
+                <SelectItem value="all">{t("components.planner.allCategories", "Todas las categorías")}</SelectItem>
                 {CATEGORY_ORDER.map((value) => (
                   <SelectItem key={value} value={value}>
-                    {CATEGORY_META[value].label}
+                    {getCategoryLabel(value, t)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -190,6 +199,7 @@ export function PlannerView({
   folders: MediaFolderWithCount[];
   assets: MediaAssetWithRelations[];
 }) {
+  const { t } = useLocale();
   const [view, setView] = React.useState<PlannerViewMode>("tablero");
   const [search, setSearch] = React.useState("");
   const [month, setMonth] = React.useState(() => {
@@ -226,10 +236,10 @@ export function PlannerView({
     <Tabs defaultValue="planner" className="w-full">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <TabsList>
-          <TabsTrigger value="planner">Planner</TabsTrigger>
-          <TabsTrigger value="publicados">Publicados</TabsTrigger>
-          <TabsTrigger value="grilla-ig">Grilla IG</TabsTrigger>
-          <TabsTrigger value="media">Media Library</TabsTrigger>
+          <TabsTrigger value="planner">{t("components.planner.tabPlanner", "Planner")}</TabsTrigger>
+          <TabsTrigger value="publicados">{t("components.planner.tabPublicados", "Publicados")}</TabsTrigger>
+          <TabsTrigger value="grilla-ig">{t("components.planner.tabGrillaIg", "Grilla IG")}</TabsTrigger>
+          <TabsTrigger value="media">{t("nav.management.mediaLibrary", "Media Library")}</TabsTrigger>
         </TabsList>
         <NewContentDialog clients={clients} />
       </div>
@@ -253,7 +263,7 @@ export function PlannerView({
 
         {filteredItems.length === 0 ? (
           <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-            No hay piezas que coincidan con el filtro.
+            {t("components.planner.noMatchFilter", "No hay piezas que coincidan con el filtro.")}
           </p>
         ) : (
           <>
@@ -268,7 +278,7 @@ export function PlannerView({
         <div className="space-y-2">
           {published.length === 0 && (
             <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-              Todavía no hay piezas publicadas.
+              {t("components.planner.noPublished", "Todavía no hay piezas publicadas.")}
             </p>
           )}
           {published.map((item) => {
@@ -293,7 +303,7 @@ export function PlannerView({
       <TabsContent value="grilla-ig">
         {igGrid.length === 0 ? (
           <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-            No hay piezas de Instagram Feed todavía.
+            {t("components.planner.noIgFeed", "No hay piezas de Instagram Feed todavía.")}
           </p>
         ) : (
           <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-6">

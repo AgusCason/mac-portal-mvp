@@ -3,8 +3,8 @@
 import { ImageOff } from "lucide-react";
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
-import { STATUS_META } from "@/components/dashboard/content-status-badge";
-import { CATEGORY_META } from "@/lib/content-category-meta";
+import { STATUS_META, getStatusLabel } from "@/components/dashboard/content-status-badge";
+import { CATEGORY_META, getCategoryLabel } from "@/lib/content-category-meta";
 import { NETWORK_META } from "@/lib/network-meta";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatDate, formatTime } from "@/lib/utils";
 
 /**
@@ -22,6 +23,7 @@ import { cn, formatDate, formatTime } from "@/lib/utils";
  * Contenido/Etiquetas/Canal/Formato), estilo MB Suite.
  */
 export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
+  const { t } = useLocale();
   const sorted = [...items].sort((a, b) =>
     (b.scheduled_at ?? b.created_at).localeCompare(a.scheduled_at ?? a.created_at)
   );
@@ -29,7 +31,7 @@ export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
   if (sorted.length === 0) {
     return (
       <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-        No hay piezas para este mes.
+        {t("components.planner.noPiecesThisMonth", "No hay piezas para este mes.")}
       </p>
     );
   }
@@ -39,12 +41,12 @@ export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Estado</TableHead>
-            <TableHead>Programación</TableHead>
-            <TableHead>Visual</TableHead>
-            <TableHead>Contenido</TableHead>
-            <TableHead>Etiquetas</TableHead>
-            <TableHead>Canal</TableHead>
+            <TableHead>{t("components.planner.tableStatus", "Estado")}</TableHead>
+            <TableHead>{t("components.planner.tableSchedule", "Programación")}</TableHead>
+            <TableHead>{t("components.planner.tableVisual", "Visual")}</TableHead>
+            <TableHead>{t("components.planner.tableContent", "Contenido")}</TableHead>
+            <TableHead>{t("components.planner.tableTags", "Etiquetas")}</TableHead>
+            <TableHead>{t("components.planner.tableChannel", "Canal")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -52,12 +54,14 @@ export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
             const meta = STATUS_META[item.status];
             const network = NETWORK_META[item.network];
             const NetworkIcon = network.icon;
-            const category = item.category ? CATEGORY_META[item.category] : null;
+            const category = item.category ? getCategoryLabel(item.category, t) : null;
+            const categoryDot = item.category ? CATEGORY_META[item.category].dot : null;
+            const categoryPill = item.category ? CATEGORY_META[item.category].pill : null;
             return (
               <TableRow key={item.id}>
                 <TableCell>
                   <Badge variant={meta.variant}>
-                    <meta.icon /> {meta.label}
+                    <meta.icon /> {getStatusLabel(item.status, t)}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-xs">
@@ -67,7 +71,7 @@ export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
                       <p className="text-muted-foreground">{formatTime(item.scheduled_at)}</p>
                     </>
                   ) : (
-                    <span className="text-muted-foreground">Sin fecha</span>
+                    <span className="text-muted-foreground">{t("components.content.noDate", "Sin fecha")}</span>
                   )}
                 </TableCell>
                 <TableCell>
@@ -91,11 +95,11 @@ export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
                     <span
                       className={cn(
                         "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
-                        category.pill
+                        categoryPill
                       )}
                     >
-                      <span className={cn("size-1.5 rounded-full", category.dot)} />
-                      {category.label}
+                      <span className={cn("size-1.5 rounded-full", categoryDot)} />
+                      {category}
                     </span>
                   ) : (
                     <span className="text-muted-foreground text-xs">—</span>

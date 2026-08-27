@@ -26,12 +26,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewContractDialog({
   clients,
 }: {
   clients: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -40,7 +42,7 @@ export function NewContractDialog({
     startTransition(async () => {
       const res = await createContractAction(formData);
       if (res.ok) {
-        toast.success("Contrato cargado");
+        toast.success(t("components.contracts.contractUploaded", "Contrato cargado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -53,23 +55,23 @@ export function NewContractDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Cargar contrato
+          <Plus /> {t("components.contracts.uploadContract", "Cargar contrato")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Cargar contrato</DialogTitle>
+            <DialogTitle>{t("components.contracts.uploadContractTitle", "Cargar contrato")}</DialogTitle>
             <DialogDescription>
-              Subí el PDF a Drive/Storage primero y pegá acá el link público de vista.
+              {t("components.contracts.uploadContractDesc", "Subí el PDF a Drive/Storage primero y pegá acá el link público de vista.")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5">
-            <Label htmlFor="clientId">Cliente</Label>
+            <Label htmlFor="clientId">{t("components.contracts.clientLabel", "Cliente")}</Label>
             <Select name="clientId" required>
               <SelectTrigger className="w-full" id="clientId">
-                <SelectValue placeholder="Seleccioná un cliente" />
+                <SelectValue placeholder={t("components.contracts.clientPlaceholder", "Seleccioná un cliente")} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((c) => (
@@ -82,19 +84,19 @@ export function NewContractDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="title">Título</Label>
-            <Input id="title" name="title" required placeholder="Ej: Contrato de prestación de servicios" />
+            <Label htmlFor="title">{t("components.contracts.titleLabel", "Título")}</Label>
+            <Input id="title" name="title" required placeholder={t("components.contracts.titlePlaceholder", "Ej: Contrato de prestación de servicios")} />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="fileUrl">URL del documento (PDF)</Label>
+            <Label htmlFor="fileUrl">{t("components.contracts.fileUrlLabel", "URL del documento (PDF)")}</Label>
             <Input id="fileUrl" name="fileUrl" type="url" required placeholder="https://..." />
           </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </DialogFooter>
         </form>

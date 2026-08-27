@@ -19,9 +19,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { WebFormWithCount } from "@/lib/queries/web-forms";
 
 export function WebFormsTable({ forms, baseUrl }: { forms: WebFormWithCount[]; baseUrl: string }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -40,7 +42,7 @@ export function WebFormsTable({ forms, baseUrl }: { forms: WebFormWithCount[]; b
     startTransition(async () => {
       const res = await deleteWebFormAction(formId);
       if (res.ok) {
-        toast.success("Formulario eliminado");
+        toast.success(t("components.webForms.formDeleted", "Formulario eliminado"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -51,8 +53,8 @@ export function WebFormsTable({ forms, baseUrl }: { forms: WebFormWithCount[]; b
   function handleCopy(formId: string) {
     const url = `${baseUrl}/f/${formId}`;
     navigator.clipboard.writeText(url).then(
-      () => toast.success("Link copiado"),
-      () => toast.error("No se pudo copiar el link")
+      () => toast.success(t("components.webForms.linkCopied", "Link copiado")),
+      () => toast.error(t("components.webForms.linkCopyFailed", "No se pudo copiar el link"))
     );
   }
 
@@ -61,9 +63,9 @@ export function WebFormsTable({ forms, baseUrl }: { forms: WebFormWithCount[]; b
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Formulario</TableHead>
-            <TableHead>Respuestas</TableHead>
-            <TableHead>Activo</TableHead>
+            <TableHead>{t("components.webForms.tableForm", "Formulario")}</TableHead>
+            <TableHead>{t("components.webForms.tableResponses", "Respuestas")}</TableHead>
+            <TableHead>{t("components.webForms.tableActive", "Activo")}</TableHead>
             <TableHead className="w-32" />
           </TableRow>
         </TableHeader>
@@ -90,11 +92,11 @@ export function WebFormsTable({ forms, baseUrl }: { forms: WebFormWithCount[]; b
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-1">
-                  <Button size="icon" variant="ghost" className="size-7" onClick={() => handleCopy(form.id)} aria-label="Copiar link">
+                  <Button size="icon" variant="ghost" className="size-7" onClick={() => handleCopy(form.id)} aria-label={t("components.webForms.copyLinkAria", "Copiar link")}>
                     <Copy className="size-3.5" />
                   </Button>
                   <a href={`/f/${form.id}`} target="_blank" rel="noopener noreferrer">
-                    <Button size="icon" variant="ghost" className="size-7" aria-label="Abrir formulario">
+                    <Button size="icon" variant="ghost" className="size-7" aria-label={t("components.webForms.openFormAria", "Abrir formulario")}>
                       <ExternalLink className="size-3.5" />
                     </Button>
                   </a>
@@ -104,7 +106,7 @@ export function WebFormsTable({ forms, baseUrl }: { forms: WebFormWithCount[]; b
                     className="text-destructive hover:text-destructive size-7"
                     disabled={isPending}
                     onClick={() => handleDelete(form.id)}
-                    aria-label="Eliminar formulario"
+                    aria-label={t("components.webForms.deleteFormAria", "Eliminar formulario")}
                   >
                     {isPending ? <Loader2 className="animate-spin" /> : <Trash2 className="size-3.5" />}
                   </Button>
@@ -115,7 +117,7 @@ export function WebFormsTable({ forms, baseUrl }: { forms: WebFormWithCount[]; b
           {forms.length === 0 && (
             <TableRow>
               <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
-                Todavía no creaste formularios.
+                {t("components.webForms.noForms", "Todavía no creaste formularios.")}
               </TableCell>
             </TableRow>
           )}

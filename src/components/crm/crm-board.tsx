@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatCurrency } from "@/lib/utils";
 
 const STAGE_ORDER: CrmLeadStage[] = [
@@ -63,41 +64,58 @@ const STAGE_ORDER: CrmLeadStage[] = [
 
 const STAGE_META: Record<
   CrmLeadStage,
-  { label: string; icon: typeof CircleDot; variant: React.ComponentProps<typeof Badge>["variant"] }
+  {
+    labelKey: string;
+    fallback: string;
+    icon: typeof CircleDot;
+    variant: React.ComponentProps<typeof Badge>["variant"];
+  }
 > = {
-  nuevo: { label: "Nuevo", icon: CircleDot, variant: "secondary" },
-  contactado: { label: "Contactado", icon: PhoneCall, variant: "info" },
-  calificado: { label: "Calificado", icon: BadgeCheck, variant: "info" },
-  propuesta: { label: "Propuesta", icon: FileText, variant: "warning" },
-  ganado: { label: "Ganado", icon: Trophy, variant: "success" },
-  perdido: { label: "Perdido", icon: XCircle, variant: "destructive" },
+  nuevo: { labelKey: "components.crm.stageNuevo", fallback: "Nuevo", icon: CircleDot, variant: "secondary" },
+  contactado: { labelKey: "components.crm.stageContactado", fallback: "Contactado", icon: PhoneCall, variant: "info" },
+  calificado: { labelKey: "components.crm.stageCalificado", fallback: "Calificado", icon: BadgeCheck, variant: "info" },
+  propuesta: { labelKey: "components.crm.stagePropuesta", fallback: "Propuesta", icon: FileText, variant: "warning" },
+  ganado: { labelKey: "components.crm.stageGanado", fallback: "Ganado", icon: Trophy, variant: "success" },
+  perdido: { labelKey: "components.crm.stagePerdido", fallback: "Perdido", icon: XCircle, variant: "destructive" },
 };
 
+function stageLabel(stage: CrmLeadStage, t: (path: string, fallback?: string) => string) {
+  const meta = STAGE_META[stage];
+  return t(meta.labelKey, meta.fallback);
+}
+
 function LeadFormFields({ lead }: { lead?: CrmLead }) {
+  const { t } = useLocale();
   return (
     <>
       <div className="space-y-1.5">
-        <Label htmlFor="name">Nombre / empresa</Label>
-        <Input id="name" name="name" required defaultValue={lead?.name} placeholder="Ej: Café Aurora" />
+        <Label htmlFor="name">{t("components.crm.nameLabel", "Nombre / empresa")}</Label>
+        <Input
+          id="name"
+          name="name"
+          required
+          defaultValue={lead?.name}
+          placeholder={t("components.crm.namePlaceholder", "Ej: Café Aurora")}
+        />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="contactName">Contacto</Label>
+          <Label htmlFor="contactName">{t("components.crm.contactLabel", "Contacto")}</Label>
           <Input id="contactName" name="contactName" defaultValue={lead?.contact_name ?? ""} />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="source">Origen</Label>
+          <Label htmlFor="source">{t("components.crm.sourceLabel", "Origen")}</Label>
           <Input
             id="source"
             name="source"
-            placeholder="Ej: Instagram, referido..."
+            placeholder={t("components.crm.sourcePlaceholder", "Ej: Instagram, referido...")}
             defaultValue={lead?.source ?? ""}
           />
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label htmlFor="contactEmail">Email</Label>
+          <Label htmlFor="contactEmail">{t("components.crm.emailLabel", "Email")}</Label>
           <Input
             id="contactEmail"
             name="contactEmail"
@@ -106,12 +124,12 @@ function LeadFormFields({ lead }: { lead?: CrmLead }) {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="contactPhone">Teléfono</Label>
+          <Label htmlFor="contactPhone">{t("components.crm.phoneLabel", "Teléfono")}</Label>
           <Input id="contactPhone" name="contactPhone" defaultValue={lead?.contact_phone ?? ""} />
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="estimatedValue">Valor estimado (ARS)</Label>
+        <Label htmlFor="estimatedValue">{t("components.crm.estimatedValueLabel", "Valor estimado (ARS)")}</Label>
         <Input
           id="estimatedValue"
           name="estimatedValue"
@@ -122,7 +140,7 @@ function LeadFormFields({ lead }: { lead?: CrmLead }) {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="notes">Notas</Label>
+        <Label htmlFor="notes">{t("components.crm.notesLabel", "Notas")}</Label>
         <Input id="notes" name="notes" defaultValue={lead?.notes ?? ""} />
       </div>
     </>
@@ -130,6 +148,7 @@ function LeadFormFields({ lead }: { lead?: CrmLead }) {
 }
 
 function NewLeadDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -138,7 +157,7 @@ function NewLeadDialog() {
     startTransition(async () => {
       const res = await createLeadAction(formData);
       if (res.ok) {
-        toast.success("Prospecto agregado");
+        toast.success(t("components.crm.leadAdded", "Prospecto agregado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -151,20 +170,20 @@ function NewLeadDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <UserPlus /> Nuevo prospecto
+          <UserPlus /> {t("components.crm.newLead", "Nuevo prospecto")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nuevo prospecto</DialogTitle>
-            <DialogDescription>Arranca en la etapa &quot;Nuevo&quot; del pipeline.</DialogDescription>
+            <DialogTitle>{t("components.crm.newLeadTitle", "Nuevo prospecto")}</DialogTitle>
+            <DialogDescription>{t("components.crm.newLeadDesc", 'Arranca en la etapa "Nuevo" del pipeline.')}</DialogDescription>
           </DialogHeader>
           <LeadFormFields />
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Agregar
+              {t("common.add", "Agregar")}
             </Button>
           </DialogFooter>
         </form>
@@ -174,6 +193,7 @@ function NewLeadDialog() {
 }
 
 function EditLeadDialog({ lead }: { lead: CrmLead }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -182,7 +202,7 @@ function EditLeadDialog({ lead }: { lead: CrmLead }) {
     startTransition(async () => {
       const res = await updateLeadAction(lead.id, formData);
       if (res.ok) {
-        toast.success("Prospecto actualizado");
+        toast.success(t("components.crm.leadUpdated", "Prospecto actualizado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -195,7 +215,7 @@ function EditLeadDialog({ lead }: { lead: CrmLead }) {
     startTransition(async () => {
       const res = await deleteLeadAction(lead.id);
       if (res.ok) {
-        toast.success("Prospecto eliminado");
+        toast.success(t("components.crm.leadDeleted", "Prospecto eliminado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -210,7 +230,7 @@ function EditLeadDialog({ lead }: { lead: CrmLead }) {
         <button
           type="button"
           className="text-muted-foreground hover:text-foreground shrink-0"
-          aria-label="Editar prospecto"
+          aria-label={t("components.crm.editLeadAria", "Editar prospecto")}
         >
           <Pencil className="size-3.5" />
         </button>
@@ -218,7 +238,7 @@ function EditLeadDialog({ lead }: { lead: CrmLead }) {
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Editar prospecto</DialogTitle>
+            <DialogTitle>{t("components.crm.editLeadTitle", "Editar prospecto")}</DialogTitle>
           </DialogHeader>
           <LeadFormFields lead={lead} />
           <DialogFooter className="sm:justify-between">
@@ -229,11 +249,11 @@ function EditLeadDialog({ lead }: { lead: CrmLead }) {
               disabled={isPending}
               onClick={handleDelete}
             >
-              <Trash2 /> Eliminar
+              <Trash2 /> {t("common.delete", "Eliminar")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </DialogFooter>
         </form>
@@ -243,6 +263,7 @@ function EditLeadDialog({ lead }: { lead: CrmLead }) {
 }
 
 function LeadCard({ lead }: { lead: CrmLead }) {
+  const { t } = useLocale();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: lead.id,
     data: { stage: lead.stage },
@@ -261,7 +282,7 @@ function LeadCard({ lead }: { lead: CrmLead }) {
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground cursor-grab touch-none active:cursor-grabbing"
-              aria-label="Arrastrar para cambiar de etapa"
+              aria-label={t("components.crm.dragAria", "Arrastrar para cambiar de etapa")}
               {...attributes}
               {...listeners}
             >
@@ -295,6 +316,7 @@ function LeadCard({ lead }: { lead: CrmLead }) {
 }
 
 function BoardColumn({ stage, leads }: { stage: CrmLeadStage; leads: CrmLead[] }) {
+  const { t } = useLocale();
   const meta = STAGE_META[stage];
   const { setNodeRef, isOver } = useDroppable({ id: stage });
   const total = leads.reduce((sum, l) => sum + (l.estimated_value ?? 0), 0);
@@ -303,7 +325,7 @@ function BoardColumn({ stage, leads }: { stage: CrmLeadStage; leads: CrmLead[] }
     <div className="min-w-0 lg:w-64">
       <div className="mb-2 flex items-center justify-between px-1">
         <Badge variant={meta.variant}>
-          <meta.icon /> {meta.label}
+          <meta.icon /> {stageLabel(stage, t)}
         </Badge>
         <span className="text-muted-foreground tabular-nums text-xs">{leads.length}</span>
       </div>
@@ -317,7 +339,7 @@ function BoardColumn({ stage, leads }: { stage: CrmLeadStage; leads: CrmLead[] }
           isOver && "bg-accent/60 ring-1 ring-inset ring-border"
         )}
       >
-        {leads.length === 0 && <p className="text-muted-foreground px-1 text-xs">Sin prospectos</p>}
+        {leads.length === 0 && <p className="text-muted-foreground px-1 text-xs">{t("components.crm.noLeads", "Sin prospectos")}</p>}
         {leads.map((lead) => (
           <LeadCard key={lead.id} lead={lead} />
         ))}
@@ -333,6 +355,7 @@ function BoardColumn({ stage, leads }: { stage: CrmLeadStage; leads: CrmLead[] }
  * intermedio obligatorio, así que cualquier movimiento es válido.
  */
 export function CrmBoard({ leads }: { leads: CrmLead[] }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -355,7 +378,7 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
     startTransition(async () => {
       const res = await updateLeadStageAction(active.id as string, targetStage);
       if (res.ok) {
-        toast.success(`Movido a "${STAGE_META[targetStage].label}"`);
+        toast.success(`${t("common.movedTo", "Movido a")} "${stageLabel(targetStage, t)}"`);
         router.refresh();
       } else {
         toast.error(res.error);

@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TaskFormFields } from "@/components/tasks/task-form-fields";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewTaskDialog({
   clients,
@@ -26,6 +27,7 @@ export function NewTaskDialog({
   clients: { id: string; name: string }[];
   staff: { id: string; full_name: string }[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -34,7 +36,7 @@ export function NewTaskDialog({
     startTransition(async () => {
       const res = await createTaskAction(formData);
       if (res.ok) {
-        toast.success("Tarea creada");
+        toast.success(t("components.tasks.taskCreated", "Tarea creada"));
         setOpen(false);
         router.refresh();
       } else {
@@ -47,20 +49,20 @@ export function NewTaskDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nueva Tarea
+          <Plus /> {t("components.tasks.newTask", "Nueva Tarea")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nueva tarea</DialogTitle>
-            <DialogDescription>Gestiona y asigná tareas para el workspace.</DialogDescription>
+            <DialogTitle>{t("components.tasks.newTaskTitle", "Nueva tarea")}</DialogTitle>
+            <DialogDescription>{t("components.tasks.newTaskDesc", "Gestiona y asigná tareas para el workspace.")}</DialogDescription>
           </DialogHeader>
           <TaskFormFields clients={clients} staff={staff} />
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Crear
+              {t("components.tasks.create", "Crear")}
             </Button>
           </DialogFooter>
         </form>

@@ -17,8 +17,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ArticleFormFields } from "@/components/knowledge-base/article-form-fields";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewArticleDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -27,7 +29,7 @@ export function NewArticleDialog() {
     startTransition(async () => {
       const res = await createKbArticleAction(formData);
       if (res.ok) {
-        toast.success("Artículo creado");
+        toast.success(t("components.knowledgeBase.articleCreated", "Artículo creado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -40,19 +42,19 @@ export function NewArticleDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nuevo artículo
+          <Plus /> {t("components.knowledgeBase.newArticle", "Nuevo artículo")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nuevo artículo</DialogTitle>
+            <DialogTitle>{t("components.knowledgeBase.newArticleTitle", "Nuevo artículo")}</DialogTitle>
           </DialogHeader>
           <ArticleFormFields />
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Crear
+              {t("components.knowledgeBase.create", "Crear")}
             </Button>
           </DialogFooter>
         </form>

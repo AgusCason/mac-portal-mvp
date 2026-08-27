@@ -4,12 +4,17 @@ import * as React from "react";
 import { ImageOff } from "lucide-react";
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
-import { STATUS_META } from "@/components/dashboard/content-status-badge";
+import { getStatusLabel } from "@/components/dashboard/content-status-badge";
 import { STATUS_COLUMN_META } from "@/components/social-media/planner-board";
-import { CATEGORY_META } from "@/lib/content-category-meta";
+import { CATEGORY_META, getCategoryLabel } from "@/lib/content-category-meta";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatTime } from "@/lib/utils";
+import type { Locale } from "@/lib/i18n/dictionary";
 
-const WEEKDAYS = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
+const WEEKDAYS: Record<Locale, string[]> = {
+  es: ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"],
+  en: ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"],
+};
 
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
@@ -27,7 +32,9 @@ export function PlannerCalendar({
   month: Date;
   items: ContentItemWithClient[];
 }) {
+  const { t, locale } = useLocale();
   const today = React.useMemo(() => new Date(), []);
+  const weekdays = WEEKDAYS[locale];
 
   const byDay = React.useMemo(() => {
     const map = new Map<number, ContentItemWithClient[]>();
@@ -60,7 +67,7 @@ export function PlannerCalendar({
   return (
     <div className="border-border overflow-hidden rounded-xl border">
       <div className="grid grid-cols-7 border-b border-border">
-        {WEEKDAYS.map((label) => (
+        {weekdays.map((label) => (
           <div
             key={label}
             className="text-muted-foreground border-r border-border px-2 py-2 text-center text-xs font-semibold last:border-r-0"
@@ -93,8 +100,9 @@ export function PlannerCalendar({
               )}
               <div className="space-y-1">
                 {dayItems.map((item) => {
-                  const meta = STATUS_META[item.status];
-                  const category = item.category ? CATEGORY_META[item.category] : null;
+                  const label = getStatusLabel(item.status, t);
+                  const category = item.category ? getCategoryLabel(item.category, t) : null;
+                  const categoryPill = item.category ? CATEGORY_META[item.category].pill : null;
                   return (
                     <div
                       key={item.id}
@@ -120,17 +128,17 @@ export function PlannerCalendar({
                           )}
                           <span className="inline-flex items-center gap-1">
                             <span className={cn("size-1.5 rounded-full", STATUS_COLUMN_META[item.status].dot)} />
-                            {meta.label}
+                            {label}
                           </span>
                         </div>
                         {category && (
                           <span
                             className={cn(
                               "mt-0.5 inline-flex items-center gap-1 rounded-full px-1.5 py-px text-[10px]",
-                              category.pill
+                              categoryPill
                             )}
                           >
-                            {category.label}
+                            {category}
                           </span>
                         )}
                       </div>

@@ -19,8 +19,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewWebFormDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -29,7 +31,7 @@ export function NewWebFormDialog() {
     startTransition(async () => {
       const res = await createWebFormAction(formData);
       if (res.ok) {
-        toast.success("Formulario creado");
+        toast.success(t("components.webForms.formCreated", "Formulario creado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -42,27 +44,27 @@ export function NewWebFormDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nuevo formulario
+          <Plus /> {t("components.webForms.newForm", "Nuevo formulario")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nuevo formulario</DialogTitle>
-            <DialogDescription>Generá un link público para recibir respuestas.</DialogDescription>
+            <DialogTitle>{t("components.webForms.newFormTitle", "Nuevo formulario")}</DialogTitle>
+            <DialogDescription>{t("components.webForms.newFormDesc", "Generá un link público para recibir respuestas.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-1.5">
-            <Label htmlFor="name">Nombre</Label>
-            <Input id="name" name="name" required placeholder="Ej: Contacto - Landing" />
+            <Label htmlFor="name">{t("components.webForms.nameLabel", "Nombre")}</Label>
+            <Input id="name" name="name" required placeholder={t("components.webForms.namePlaceholder", "Ej: Contacto - Landing")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="description">Descripción</Label>
-            <Input id="description" name="description" placeholder="Se muestra arriba del formulario" />
+            <Label htmlFor="description">{t("components.webForms.descriptionLabel", "Descripción")}</Label>
+            <Input id="description" name="description" placeholder={t("components.webForms.descriptionPlaceholder", "Se muestra arriba del formulario")} />
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Crear
+              {t("components.webForms.create", "Crear")}
             </Button>
           </DialogFooter>
         </form>

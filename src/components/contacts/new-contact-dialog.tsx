@@ -18,8 +18,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ContactFormFields } from "@/components/contacts/contact-form-fields";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewContactDialog({ clients }: { clients: { id: string; name: string }[] }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -28,7 +30,7 @@ export function NewContactDialog({ clients }: { clients: { id: string; name: str
     startTransition(async () => {
       const res = await createContactAction(formData);
       if (res.ok) {
-        toast.success("Contacto agregado");
+        toast.success(t("components.contacts.contactAdded", "Contacto agregado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -41,20 +43,20 @@ export function NewContactDialog({ clients }: { clients: { id: string; name: str
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <UserPlus /> Nuevo Contacto
+          <UserPlus /> {t("components.contacts.newContact", "Nuevo Contacto")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nuevo contacto</DialogTitle>
-            <DialogDescription>Gestiona todos los contactos del workspace.</DialogDescription>
+            <DialogTitle>{t("components.contacts.newContactTitle", "Nuevo contacto")}</DialogTitle>
+            <DialogDescription>{t("components.contacts.newContactDesc", "Gestiona todos los contactos del workspace.")}</DialogDescription>
           </DialogHeader>
           <ContactFormFields clients={clients} />
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Agregar
+              {t("common.add", "Agregar")}
             </Button>
           </DialogFooter>
         </form>

@@ -29,6 +29,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ContactFormFields } from "@/components/contacts/contact-form-fields";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { getInitials } from "@/lib/utils";
 import type { ContactWithClient } from "@/lib/queries/contacts";
 
@@ -39,6 +40,7 @@ function EditContactDialog({
   contact: ContactWithClient;
   clients: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -47,7 +49,7 @@ function EditContactDialog({
     startTransition(async () => {
       const res = await updateContactAction(contact.id, formData);
       if (res.ok) {
-        toast.success("Contacto actualizado");
+        toast.success(t("components.contacts.contactUpdated", "Contacto actualizado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -60,7 +62,7 @@ function EditContactDialog({
     startTransition(async () => {
       const res = await deleteContactAction(contact.id);
       if (res.ok) {
-        toast.success("Contacto eliminado");
+        toast.success(t("components.contacts.contactDeleted", "Contacto eliminado"));
         setOpen(false);
         router.refresh();
       } else {
@@ -72,14 +74,14 @@ function EditContactDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="Editar contacto">
+        <button type="button" className="text-muted-foreground hover:text-foreground" aria-label={t("components.contacts.editContactAria", "Editar contacto")}>
           <Pencil className="size-3.5" />
         </button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Editar contacto</DialogTitle>
+            <DialogTitle>{t("components.contacts.editContactTitle", "Editar contacto")}</DialogTitle>
           </DialogHeader>
           <ContactFormFields contact={contact} clients={clients} />
           <DialogFooter className="sm:justify-between">
@@ -90,11 +92,11 @@ function EditContactDialog({
               disabled={isPending}
               onClick={handleDelete}
             >
-              <Trash2 /> Eliminar
+              <Trash2 /> {t("common.delete", "Eliminar")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </DialogFooter>
         </form>
@@ -110,6 +112,7 @@ export function ContactsTable({
   contacts: ContactWithClient[];
   clients: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
   const [search, setSearch] = React.useState("");
 
   const filtered = contacts.filter((c) => {
@@ -118,7 +121,7 @@ export function ContactsTable({
     return (
       c.name.toLowerCase().includes(q) ||
       (c.email ?? "").toLowerCase().includes(q) ||
-      c.tags.some((t) => t.toLowerCase().includes(q))
+      c.tags.some((tag) => tag.toLowerCase().includes(q))
     );
   });
 
@@ -129,7 +132,7 @@ export function ContactsTable({
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar..."
+          placeholder={t("components.contacts.searchPlaceholder", "Buscar...")}
           className="h-8 pl-8 text-sm"
         />
       </div>
@@ -138,9 +141,9 @@ export function ContactsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Cuenta</TableHead>
+              <TableHead>{t("components.contacts.tableName", "Nombre")}</TableHead>
+              <TableHead>{t("components.contacts.tableEmail", "Email")}</TableHead>
+              <TableHead>{t("components.contacts.tableAccount", "Cuenta")}</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -182,15 +185,15 @@ export function ContactsTable({
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {contact.client_name ?? "Sin cuenta"}
+                  {contact.client_name ?? t("components.contacts.noAccountOption", "Sin cuenta")}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Link
                       href={`/admin/clientes?fromContact=${contact.id}`}
                       className="text-muted-foreground hover:text-foreground"
-                      aria-label="Convertir en cliente"
-                      title="Convertir en cliente"
+                      aria-label={t("components.contacts.convertToClientAria", "Convertir en cliente")}
+                      title={t("components.contacts.convertToClientAria", "Convertir en cliente")}
                     >
                       <UserPlus className="size-3.5" />
                     </Link>
@@ -202,7 +205,9 @@ export function ContactsTable({
             {filtered.length === 0 && (
               <TableRow>
                 <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
-                  {contacts.length === 0 ? "Todavía no cargaste contactos." : "Sin resultados."}
+                  {contacts.length === 0
+                    ? t("components.contacts.noContacts", "Todavía no cargaste contactos.")
+                    : t("components.contacts.noResults", "Sin resultados.")}
                 </TableCell>
               </TableRow>
             )}

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CalendarClock, Radar, Compass, Sparkles, Swords, LayoutGrid } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { getSocialMediaOverview } from "@/lib/queries/social-media";
-import { STATUS_META } from "@/components/dashboard/content-status-badge";
+import { STATUS_META, getStatusLabel } from "@/components/dashboard/content-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
@@ -95,7 +95,7 @@ export default async function AdminSocialMediaPage() {
               const meta = STATUS_META[status as keyof typeof STATUS_META];
               return (
                 <Badge key={status} variant={meta?.variant ?? "secondary"}>
-                  {meta?.label ?? status}: {count}
+                  {meta ? getStatusLabel(status as keyof typeof STATUS_META, t) : status}: {count}
                 </Badge>
               );
             })}

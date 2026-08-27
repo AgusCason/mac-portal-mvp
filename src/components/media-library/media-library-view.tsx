@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NewFolderDialog } from "@/components/media-library/new-folder-dialog";
 import { UploadAssetDialog } from "@/components/media-library/upload-asset-dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { MediaAssetWithRelations, MediaFolderWithCount } from "@/lib/queries/media-library";
 
 const COLOR_DOT: Record<string, string> = {
@@ -37,6 +38,7 @@ function AssetIcon({ mimeType }: { mimeType: string }) {
 }
 
 function AssetCard({ asset }: { asset: MediaAssetWithRelations }) {
+  const { t } = useLocale();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -55,7 +57,7 @@ function AssetCard({ asset }: { asset: MediaAssetWithRelations }) {
     startTransition(async () => {
       const res = await deleteMediaAssetAction(asset.id, asset.storage_path);
       if (res.ok) {
-        toast.success("Archivo eliminado");
+        toast.success(t("components.mediaLibrary.fileDeleted", "Archivo eliminado"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -77,7 +79,7 @@ function AssetCard({ asset }: { asset: MediaAssetWithRelations }) {
       </div>
       <div className="flex items-center gap-1">
         <Button size="sm" variant="outline" className="h-7 flex-1 text-xs" disabled={isPending} onClick={handleDownload}>
-          {isPending ? <Loader2 className="animate-spin" /> : <Download />} Ver
+          {isPending ? <Loader2 className="animate-spin" /> : <Download />} {t("components.mediaLibrary.view", "Ver")}
         </Button>
         <Button
           size="icon"
@@ -85,7 +87,7 @@ function AssetCard({ asset }: { asset: MediaAssetWithRelations }) {
           className="text-destructive hover:text-destructive size-7"
           disabled={isPending}
           onClick={handleDelete}
-          aria-label="Eliminar archivo"
+          aria-label={t("components.mediaLibrary.deleteFileAria", "Eliminar archivo")}
         >
           <Trash2 className="size-3.5" />
         </Button>
@@ -103,6 +105,7 @@ export function MediaLibraryView({
   assets: MediaAssetWithRelations[];
   clients: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
   const [selectedFolder, setSelectedFolder] = React.useState<string | null>(null);
   const [, startTransition] = useTransition();
   const router = useRouter();
@@ -113,7 +116,7 @@ export function MediaLibraryView({
     startTransition(async () => {
       const res = await deleteMediaFolderAction(folderId);
       if (res.ok) {
-        toast.success("Carpeta eliminada");
+        toast.success(t("components.mediaLibrary.folderDeleted", "Carpeta eliminada"));
         if (selectedFolder === folderId) setSelectedFolder(null);
         router.refresh();
       } else {
@@ -135,7 +138,7 @@ export function MediaLibraryView({
             }`}
           >
             <span className="flex items-center gap-2">
-              <Folder className="size-3.5" /> Todos
+              <Folder className="size-3.5" /> {t("components.mediaLibrary.allFolders", "Todos")}
             </span>
             <Badge variant="secondary" className="text-[10px]">
               {assets.length}
@@ -164,7 +167,7 @@ export function MediaLibraryView({
                   type="button"
                   onClick={() => handleDeleteFolder(folder.id)}
                   className="text-muted-foreground hover:text-destructive hidden group-hover:block"
-                  aria-label="Eliminar carpeta"
+                  aria-label={t("components.mediaLibrary.deleteFolderAria", "Eliminar carpeta")}
                 >
                   <Trash2 className="size-3" />
                 </button>
@@ -180,7 +183,9 @@ export function MediaLibraryView({
         </div>
         {filteredAssets.length === 0 ? (
           <div className="text-muted-foreground rounded-xl border border-dashed py-12 text-center text-sm">
-            No hay archivos {selectedFolder ? "en esta carpeta" : "todavía"}.
+            {selectedFolder
+              ? t("components.mediaLibrary.noFilesInFolder", "No hay archivos en esta carpeta.")
+              : t("components.mediaLibrary.noFilesYet", "No hay archivos todavía.")}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">

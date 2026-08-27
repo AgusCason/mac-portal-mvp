@@ -31,6 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TaskFormFields } from "@/components/tasks/task-form-fields";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatDate } from "@/lib/utils";
 import type { TaskWithRelations } from "@/lib/queries/tasks";
 
@@ -41,11 +42,11 @@ const PRIORITY_VARIANT: Record<string, React.ComponentProps<typeof Badge>["varia
   urgente: "destructive",
 };
 
-const PRIORITY_LABEL: Record<string, string> = {
-  baja: "Baja",
-  media: "Media",
-  alta: "Alta",
-  urgente: "Urgente",
+const PRIORITY_LABEL_KEY: Record<string, { key: string; fallback: string }> = {
+  baja: { key: "components.tasks.priorityBaja", fallback: "Baja" },
+  media: { key: "components.tasks.priorityMedia", fallback: "Media" },
+  alta: { key: "components.tasks.priorityAlta", fallback: "Alta" },
+  urgente: { key: "components.tasks.priorityUrgente", fallback: "Urgente" },
 };
 
 function EditTaskDialog({
@@ -57,6 +58,7 @@ function EditTaskDialog({
   clients: { id: string; name: string }[];
   staff: { id: string; full_name: string }[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -65,7 +67,7 @@ function EditTaskDialog({
     startTransition(async () => {
       const res = await updateTaskAction(task.id, formData);
       if (res.ok) {
-        toast.success("Tarea actualizada");
+        toast.success(t("components.tasks.taskUpdated", "Tarea actualizada"));
         setOpen(false);
         router.refresh();
       } else {
@@ -78,7 +80,7 @@ function EditTaskDialog({
     startTransition(async () => {
       const res = await deleteTaskAction(task.id);
       if (res.ok) {
-        toast.success("Tarea eliminada");
+        toast.success(t("components.tasks.taskDeleted", "Tarea eliminada"));
         setOpen(false);
         router.refresh();
       } else {
@@ -90,14 +92,14 @@ function EditTaskDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="Editar tarea">
+        <button type="button" className="text-muted-foreground hover:text-foreground" aria-label={t("components.tasks.editTaskAria", "Editar tarea")}>
           <Pencil className="size-3.5" />
         </button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Editar tarea</DialogTitle>
+            <DialogTitle>{t("components.tasks.editTaskTitle", "Editar tarea")}</DialogTitle>
           </DialogHeader>
           <TaskFormFields task={task} clients={clients} staff={staff} />
           <DialogFooter className="sm:justify-between">
@@ -108,11 +110,11 @@ function EditTaskDialog({
               disabled={isPending}
               onClick={handleDelete}
             >
-              <Trash2 /> Eliminar
+              <Trash2 /> {t("common.delete", "Eliminar")}
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Guardar
+              {t("common.save", "Guardar")}
             </Button>
           </DialogFooter>
         </form>
@@ -135,6 +137,7 @@ export function TasksTable({
   clients: { id: string; name: string }[];
   staff: { id: string; full_name: string }[];
 }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -153,7 +156,7 @@ export function TasksTable({
   if (tasks.length === 0) {
     return (
       <p className="text-muted-foreground py-10 text-center text-sm">
-        No hay tareas para estos filtros.
+        {t("components.tasks.noTasksForFilters", "No hay tareas para estos filtros.")}
       </p>
     );
   }
@@ -166,11 +169,11 @@ export function TasksTable({
         <TableHeader>
           <TableRow>
             <TableHead className="w-10" />
-            <TableHead>Tarea</TableHead>
-            <TableHead>Cuenta</TableHead>
-            <TableHead>Prioridad</TableHead>
-            <TableHead>Responsable</TableHead>
-            <TableHead>Vencimiento</TableHead>
+            <TableHead>{t("components.tasks.tableTask", "Tarea")}</TableHead>
+            <TableHead>{t("components.tasks.tableAccount", "Cuenta")}</TableHead>
+            <TableHead>{t("components.tasks.tablePriority", "Prioridad")}</TableHead>
+            <TableHead>{t("components.tasks.tableAssignee", "Responsable")}</TableHead>
+            <TableHead>{t("components.tasks.tableDueDate", "Vencimiento")}</TableHead>
             <TableHead className="w-16" />
           </TableRow>
         </TableHeader>
@@ -178,6 +181,7 @@ export function TasksTable({
           {tasks.map((task) => {
             const isDone = task.status === "completada" || task.status === "cancelada";
             const isOverdue = !isDone && task.due_date != null && task.due_date < today;
+            const priorityMeta = PRIORITY_LABEL_KEY[task.priority];
             return (
               <TableRow key={task.id}>
                 <TableCell>
@@ -192,13 +196,13 @@ export function TasksTable({
                   )}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {task.client_name ?? "Privada"}
+                  {task.client_name ?? t("components.tasks.privateAccount", "Privada")}
                 </TableCell>
                 <TableCell>
-                  <Badge variant={PRIORITY_VARIANT[task.priority]}>{PRIORITY_LABEL[task.priority]}</Badge>
+                  <Badge variant={PRIORITY_VARIANT[task.priority]}>{t(priorityMeta.key, priorityMeta.fallback)}</Badge>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
-                  {task.assignee_name ?? "Sin asignar"}
+                  {task.assignee_name ?? t("components.tasks.unassigned", "Sin asignar")}
                 </TableCell>
                 <TableCell className={cn("tabular-nums text-sm", isOverdue && "text-destructive font-medium")}>
                   {task.due_date ? formatDate(task.due_date) : "—"}

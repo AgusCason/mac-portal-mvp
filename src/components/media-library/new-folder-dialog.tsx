@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 const COLOR_SWATCH: Record<string, string> = {
   gray: "bg-gray-500",
@@ -30,6 +31,7 @@ const COLOR_SWATCH: Record<string, string> = {
 const COLORS = Object.keys(COLOR_SWATCH);
 
 export function NewFolderDialog() {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [color, setColor] = React.useState("gray");
   const [isPending, startTransition] = useTransition();
@@ -40,7 +42,7 @@ export function NewFolderDialog() {
     startTransition(async () => {
       const res = await createMediaFolderAction(formData);
       if (res.ok) {
-        toast.success("Carpeta creada");
+        toast.success(t("components.mediaLibrary.folderCreated", "Carpeta creada"));
         setOpen(false);
         setColor("gray");
         router.refresh();
@@ -54,20 +56,20 @@ export function NewFolderDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <FolderPlus /> Nueva carpeta
+          <FolderPlus /> {t("components.mediaLibrary.newFolder", "Nueva carpeta")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nueva carpeta</DialogTitle>
+            <DialogTitle>{t("components.mediaLibrary.newFolderTitle", "Nueva carpeta")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-1.5">
-            <Label htmlFor="name">Nombre</Label>
-            <Input id="name" name="name" required placeholder="Ej: Assets Cliente X" />
+            <Label htmlFor="name">{t("components.mediaLibrary.nameLabel", "Nombre")}</Label>
+            <Input id="name" name="name" required placeholder={t("components.mediaLibrary.namePlaceholder", "Ej: Assets Cliente X")} />
           </div>
           <div className="space-y-1.5">
-            <Label>Color</Label>
+            <Label>{t("components.mediaLibrary.colorLabel", "Color")}</Label>
             <div className="flex gap-2">
               {COLORS.map((c) => (
                 <button
@@ -85,7 +87,7 @@ export function NewFolderDialog() {
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Crear
+              {t("components.mediaLibrary.create", "Crear")}
             </Button>
           </DialogFooter>
         </form>

@@ -17,7 +17,7 @@ import {
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
 import type { ContentStatus, UserRole } from "@/types/database";
-import { STATUS_META } from "@/components/dashboard/content-status-badge";
+import { STATUS_META, getStatusLabel } from "@/components/dashboard/content-status-badge";
 import { NETWORK_META } from "@/lib/network-meta";
 import {
   updateContentStatusAction,
@@ -45,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatDate } from "@/lib/utils";
 
 export const COLUMN_ORDER: ContentStatus[] = [
@@ -78,6 +79,7 @@ function RequestChangesDialog({
   contentTitle: string;
   driveFileId: string | null;
 }) {
+  const { t } = useLocale();
   const [feedback, setFeedback] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
@@ -87,7 +89,7 @@ function RequestChangesDialog({
     startTransition(async () => {
       const res = await reviewContentAction(contentId, "requiere_cambios", feedback);
       if (res.ok) {
-        toast.success("Cambios solicitados");
+        toast.success(t("components.content.changesRequested", "Cambios solicitados"));
         setOpen(false);
         setFeedback("");
         // Redirige al chat con la agencia con un mensaje prearmado —
@@ -95,7 +97,7 @@ function RequestChangesDialog({
         const videoRef = driveFileId
           ? `https://drive.google.com/file/d/${driveFileId}/view`
           : `ID ${contentId}`;
-        const prefill = `Pedido de ajustes en "${contentTitle}" (${videoRef}): ${feedback}`;
+        const prefill = `${t("components.content.changeRequestPrefix", "Pedido de ajustes en")} "${contentTitle}" (${videoRef}): ${feedback}`;
         router.push(`/client/chat?prefill=${encodeURIComponent(prefill)}`);
       } else {
         toast.error(res.error);
@@ -107,29 +109,29 @@ function RequestChangesDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <MessageSquareWarning /> Pedir cambios
+          <MessageSquareWarning /> {t("components.content.requestChanges", "Pedir cambios")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Pedir cambios</DialogTitle>
+          <DialogTitle>{t("components.content.requestChangesTitle", "Pedir cambios")}</DialogTitle>
           <DialogDescription>
-            Contale al equipo qué te gustaría ajustar en esta pieza.
+            {t("components.content.requestChangesDesc", "Contale al equipo qué te gustaría ajustar en esta pieza.")}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-1.5">
-          <Label htmlFor="feedback">Feedback</Label>
+          <Label htmlFor="feedback">{t("components.content.feedbackLabel", "Feedback")}</Label>
           <Input
             id="feedback"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-            placeholder="Ej: cambiar el audio de fondo, acortar el intro..."
+            placeholder={t("components.content.feedbackPlaceholder", "Ej: cambiar el audio de fondo, acortar el intro...")}
           />
         </div>
         <DialogFooter>
           <Button onClick={submit} disabled={isPending || !feedback.trim()}>
             {isPending && <Loader2 className="animate-spin" />}
-            Enviar
+            {t("components.content.send", "Enviar")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -144,6 +146,7 @@ function ContentCard({
   item: ContentItemWithClient;
   role: UserRole;
 }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const network = NETWORK_META[item.network];
@@ -164,7 +167,7 @@ function ContentCard({
     startTransition(async () => {
       const res = await updateContentStatusAction(item.id, next);
       if (res.ok) {
-        toast.success(`Movido a "${STATUS_META[next].label}"`);
+        toast.success(`${t("common.movedTo", "Movido a")} "${getStatusLabel(next, t)}"`);
         router.refresh();
       } else {
         toast.error(res.error);
@@ -176,7 +179,7 @@ function ContentCard({
     startTransition(async () => {
       const res = await reviewContentAction(item.id, "aprobado");
       if (res.ok) {
-        toast.success("¡Aprobado!");
+        toast.success(t("components.content.approved", "¡Aprobado!"));
         router.refresh();
       } else {
         toast.error(res.error);
@@ -197,7 +200,7 @@ function ContentCard({
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground shrink-0 cursor-grab touch-none active:cursor-grabbing"
-              aria-label="Arrastrar para cambiar de estado"
+              aria-label={t("components.content.dragToChangeStatus", "Arrastrar para cambiar de estado")}
               {...attributes}
               {...listeners}
             >
@@ -216,7 +219,7 @@ function ContentCard({
         )}
         {item.scheduled_at && (
           <p className="text-muted-foreground tabular-nums text-xs">
-            Programado: {formatDate(item.scheduled_at)}
+            {t("components.content.scheduledPrefix", "Programado")}: {formatDate(item.scheduled_at)}
           </p>
         )}
 
@@ -227,7 +230,7 @@ function ContentCard({
         {(role === "admin" || role === "editor") && NEXT_STATUS[item.status] && (
           <Button size="sm" variant="secondary" onClick={advance} disabled={isPending}>
             {isPending ? <Loader2 className="animate-spin" /> : <ArrowRight />}
-            Mover a {STATUS_META[NEXT_STATUS[item.status]!].label}
+            {t("components.content.moveTo", "Mover a")} {getStatusLabel(NEXT_STATUS[item.status]!, t)}
           </Button>
         )}
 
@@ -235,7 +238,7 @@ function ContentCard({
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={approve} disabled={isPending}>
               {isPending ? <Loader2 className="animate-spin" /> : <Check />}
-              Aprobar
+              {t("components.content.approve", "Aprobar")}
             </Button>
             <RequestChangesDialog
               contentId={item.id}
@@ -258,6 +261,7 @@ function BoardColumn({
   items: ContentItemWithClient[];
   role: UserRole;
 }) {
+  const { t } = useLocale();
   const meta = STATUS_META[status];
   const draggable = role === "admin" || role === "editor";
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled: !draggable });
@@ -266,7 +270,7 @@ function BoardColumn({
     <div className="min-w-0 lg:w-64">
       <div className="mb-2 flex items-center justify-between px-1">
         <Badge variant={meta.variant}>
-          <meta.icon /> {meta.label}
+          <meta.icon /> {getStatusLabel(status, t)}
         </Badge>
         <span className="text-muted-foreground tabular-nums text-xs">{items.length}</span>
       </div>
@@ -277,7 +281,7 @@ function BoardColumn({
           isOver && "bg-accent/60 ring-1 ring-inset ring-border"
         )}
       >
-        {items.length === 0 && <p className="text-muted-foreground px-1 text-xs">Sin piezas</p>}
+        {items.length === 0 && <p className="text-muted-foreground px-1 text-xs">{t("components.content.noPieces", "Sin piezas")}</p>}
         {items.map((item) => (
           <ContentCard key={item.id} item={item} role={role} />
         ))}
@@ -301,6 +305,7 @@ export function ContentBoard({
   items: ContentItemWithClient[];
   role: UserRole;
 }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [, startTransition] = useTransition();
   const [clientFilter, setClientFilter] = React.useState("all");
@@ -345,14 +350,14 @@ export function ContentBoard({
     if (!currentStatus || targetStatus === currentStatus) return;
 
     if (targetStatus === "por_aprobar") {
-      toast.error('Para pasar a "Por Aprobar" usá el botón Entregar de la pieza (sube el archivo).');
+      toast.error(t("components.content.approveViaDeliverError", 'Para pasar a "Por Aprobar" usá el botón Entregar de la pieza (sube el archivo).'));
       return;
     }
 
     startTransition(async () => {
       const res = await updateContentStatusAction(active.id as string, targetStatus);
       if (res.ok) {
-        toast.success(`Movido a "${STATUS_META[targetStatus].label}"`);
+        toast.success(`${t("common.movedTo", "Movido a")} "${getStatusLabel(targetStatus, t)}"`);
         router.refresh();
       } else {
         toast.error(res.error);
@@ -367,10 +372,10 @@ export function ContentBoard({
           {clientOptions.length > 1 && (
             <Select value={clientFilter} onValueChange={setClientFilter}>
               <SelectTrigger size="sm" className="w-44">
-                <SelectValue placeholder="Cliente" />
+                <SelectValue placeholder={t("components.content.clientLabel", "Cliente")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los clientes</SelectItem>
+                <SelectItem value="all">{t("components.content.allClients", "Todos los clientes")}</SelectItem>
                 {clientOptions.map((c) => (
                   <SelectItem key={c.id} value={c.id}>
                     {c.name}
@@ -382,10 +387,10 @@ export function ContentBoard({
           {networkOptions.length > 1 && (
             <Select value={networkFilter} onValueChange={setNetworkFilter}>
               <SelectTrigger size="sm" className="w-44">
-                <SelectValue placeholder="Red" />
+                <SelectValue placeholder={t("components.content.networkLabel", "Red")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas las redes</SelectItem>
+                <SelectItem value="all">{t("components.content.allNetworks", "Todas las redes")}</SelectItem>
                 {networkOptions.map((n) => (
                   <SelectItem key={n} value={n}>
                     {NETWORK_META[n].label}

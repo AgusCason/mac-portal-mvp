@@ -8,7 +8,7 @@ import { Plus, Loader2 } from "lucide-react";
 
 import { createContentItemAction } from "@/app/actions/content";
 import { NETWORK_META } from "@/lib/network-meta";
-import { CATEGORY_META, CATEGORY_ORDER } from "@/lib/content-category-meta";
+import { CATEGORY_ORDER, getCategoryLabel } from "@/lib/content-category-meta";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,12 +28,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function NewContentDialog({
   clients,
 }: {
   clients: { id: string; name: string }[];
 }) {
+  const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -42,7 +44,7 @@ export function NewContentDialog({
     startTransition(async () => {
       const res = await createContentItemAction(formData);
       if (res.ok) {
-        toast.success("Pieza creada en Borrador");
+        toast.success(t("components.content.pieceCreated", "Pieza creada en Borrador"));
         setOpen(false);
         router.refresh();
       } else {
@@ -55,23 +57,23 @@ export function NewContentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus /> Nueva pieza
+          <Plus /> {t("components.content.newPiece", "Nueva pieza")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form action={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Nueva pieza de contenido</DialogTitle>
+            <DialogTitle>{t("components.content.newPieceTitle", "Nueva pieza de contenido")}</DialogTitle>
             <DialogDescription>
-              Se crea en estado &quot;Borrador&quot; dentro del calendario editorial.
+              {t("components.content.newPieceDesc", 'Se crea en estado "Borrador" dentro del calendario editorial.')}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-1.5">
-            <Label htmlFor="clientId">Cliente</Label>
+            <Label htmlFor="clientId">{t("components.content.clientLabel", "Cliente")}</Label>
             <Select name="clientId" required>
               <SelectTrigger className="w-full" id="clientId">
-                <SelectValue placeholder="Seleccioná un cliente" />
+                <SelectValue placeholder={t("components.content.clientSelectPlaceholder", "Seleccioná un cliente")} />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((c) => (
@@ -84,12 +86,12 @@ export function NewContentDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="title">Título</Label>
-            <Input id="title" name="title" required placeholder="Ej: Reel lanzamiento producto" />
+            <Label htmlFor="title">{t("components.content.titleLabel", "Título")}</Label>
+            <Input id="title" name="title" required placeholder={t("components.content.titlePlaceholder", "Ej: Reel lanzamiento producto")} />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="network">Red</Label>
+            <Label htmlFor="network">{t("components.content.networkSelectLabel", "Red")}</Label>
             <Select name="network" required defaultValue="instagram_reel">
               <SelectTrigger className="w-full" id="network">
                 <SelectValue />
@@ -105,16 +107,16 @@ export function NewContentDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="category">Categoría (opcional)</Label>
+            <Label htmlFor="category">{t("components.content.categorySelectLabel", "Categoría (opcional)")}</Label>
             <Select name="category" defaultValue="none">
               <SelectTrigger className="w-full" id="category">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Sin categoría</SelectItem>
+                <SelectItem value="none">{t("components.category.none", "Sin categoría")}</SelectItem>
                 {CATEGORY_ORDER.map((value) => (
                   <SelectItem key={value} value={value}>
-                    {CATEGORY_META[value].label}
+                    {getCategoryLabel(value, t)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -122,14 +124,14 @@ export function NewContentDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="scheduledAt">Fecha programada (opcional)</Label>
+            <Label htmlFor="scheduledAt">{t("components.content.scheduledAtLabel", "Fecha programada (opcional)")}</Label>
             <Input id="scheduledAt" name="scheduledAt" type="datetime-local" />
           </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              Crear
+              {t("components.content.create", "Crear")}
             </Button>
           </DialogFooter>
         </form>

@@ -17,13 +17,14 @@ import {
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
 import type { ContentStatus } from "@/types/database";
-import { STATUS_META } from "@/components/dashboard/content-status-badge";
+import { getStatusLabel } from "@/components/dashboard/content-status-badge";
 import { COLUMN_ORDER, NEXT_STATUS } from "@/components/content/content-board";
-import { CATEGORY_META } from "@/lib/content-category-meta";
+import { CATEGORY_META, getCategoryLabel } from "@/lib/content-category-meta";
 import { NETWORK_META } from "@/lib/network-meta";
 import { updateContentStatusAction } from "@/app/actions/content";
 import { DeliverContentDialog } from "@/components/content/deliver-content-dialog";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatTime } from "@/lib/utils";
 
 /** Fondo del stat-card grande y punto de color por columna — estilo MB Suite. */
@@ -59,11 +60,14 @@ export const STATUS_COLUMN_META: Record<ContentStatus, { header: string; dot: st
 };
 
 function PlannerCard({ item }: { item: ContentItemWithClient }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const network = NETWORK_META[item.network];
   const NetworkIcon = network.icon;
-  const category = item.category ? CATEGORY_META[item.category] : null;
+  const category = item.category ? getCategoryLabel(item.category, t) : null;
+  const categoryDot = item.category ? CATEGORY_META[item.category].dot : null;
+  const categoryPill = item.category ? CATEGORY_META[item.category].pill : null;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: item.id,
     data: { status: item.status },
@@ -78,7 +82,7 @@ function PlannerCard({ item }: { item: ContentItemWithClient }) {
     startTransition(async () => {
       const res = await updateContentStatusAction(item.id, next);
       if (res.ok) {
-        toast.success(`Movido a "${STATUS_META[next].label}"`);
+        toast.success(`${t("common.movedTo", "Movido a")} "${getStatusLabel(next, t)}"`);
         router.refresh();
       } else {
         toast.error(res.error);
@@ -124,11 +128,11 @@ function PlannerCard({ item }: { item: ContentItemWithClient }) {
         <span
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
-            category.pill
+            categoryPill
           )}
         >
-          <span className={cn("size-1.5 rounded-full", category.dot)} />
-          {category.label}
+          <span className={cn("size-1.5 rounded-full", categoryDot)} />
+          {category}
         </span>
       )}
 
@@ -149,7 +153,7 @@ function PlannerCard({ item }: { item: ContentItemWithClient }) {
           disabled={isPending}
         >
           {isPending ? <Loader2 className="animate-spin" /> : <ArrowRight />}
-          {STATUS_META[NEXT_STATUS[item.status]!].label}
+          {getStatusLabel(NEXT_STATUS[item.status]!, t)}
         </Button>
       )}
     </div>
@@ -157,20 +161,21 @@ function PlannerCard({ item }: { item: ContentItemWithClient }) {
 }
 
 function PlannerColumn({ status, items }: { status: ContentStatus; items: ContentItemWithClient[] }) {
-  const meta = STATUS_META[status];
+  const { t } = useLocale();
   const colorMeta = STATUS_COLUMN_META[status];
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  const label = getStatusLabel(status, t);
 
   return (
     <div className="w-72 shrink-0 space-y-2">
       <div className={cn("rounded-xl px-4 py-3 text-center", colorMeta.header)}>
         <p className="text-2xl font-bold tabular-nums">{items.length}</p>
-        <p className="text-xs font-medium">{meta.label}</p>
+        <p className="text-xs font-medium">{label}</p>
       </div>
       <div className="flex items-center justify-between px-1">
         <span className="flex items-center gap-1.5 text-xs font-medium">
           <span className={cn("size-2 rounded-full", colorMeta.dot)} />
-          {meta.label}
+          {label}
         </span>
         <span className="text-muted-foreground tabular-nums text-xs">{items.length}</span>
       </div>
@@ -182,7 +187,7 @@ function PlannerColumn({ status, items }: { status: ContentStatus; items: Conten
         )}
       >
         {items.length === 0 && (
-          <p className="text-muted-foreground px-1 py-4 text-center text-xs">Sin piezas</p>
+          <p className="text-muted-foreground px-1 py-4 text-center text-xs">{t("components.content.noPieces", "Sin piezas")}</p>
         )}
         {items.map((item) => (
           <PlannerCard key={item.id} item={item} />
@@ -198,6 +203,7 @@ function PlannerColumn({ status, items }: { status: ContentStatus; items: Conten
  * categoría y stat-cards de color por columna, estilo MB Suite.
  */
 export function PlannerBoard({ items }: { items: ContentItemWithClient[] }) {
+  const { t } = useLocale();
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -220,14 +226,14 @@ export function PlannerBoard({ items }: { items: ContentItemWithClient[] }) {
     if (!currentStatus || targetStatus === currentStatus) return;
 
     if (targetStatus === "por_aprobar") {
-      toast.error('Para pasar a "Por Aprobar" usá el botón de Entregar de la pieza (sube el archivo).');
+      toast.error(t("components.planner.approveViaDeliverError", 'Para pasar a "Por Aprobar" usá el botón de Entregar de la pieza (sube el archivo).'));
       return;
     }
 
     startTransition(async () => {
       const res = await updateContentStatusAction(active.id as string, targetStatus);
       if (res.ok) {
-        toast.success(`Movido a "${STATUS_META[targetStatus].label}"`);
+        toast.success(`${t("common.movedTo", "Movido a")} "${getStatusLabel(targetStatus, t)}"`);
         router.refresh();
       } else {
         toast.error(res.error);
