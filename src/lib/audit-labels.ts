@@ -16,4 +16,6 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "vault.credential_updated": "Credencial editada en la Bóveda",
   "vault.credential_revealed": "Secreto revelado en la Bóveda",
   "vault.credential_deleted": "Credencial eliminada de la Bóveda",
+  "security.blocked": "Bloqueo automático temporal",
+  "security.alert": "Alerta de monitoreo de seguridad",
 };

@@ -3,15 +3,17 @@ import { getVaultCredentials } from "@/lib/queries/vault";
 import { getClients } from "@/lib/queries/clients";
 import { VaultList } from "@/components/settings/vault-list";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getT } from "@/lib/i18n/dictionary";
 
 export default async function BovedaPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const [credentials, clients] = await Promise.all([getVaultCredentials(), getClients()]);
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Bóveda</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("nav.config.boveda", "Bóveda")}</h1>
         <p className="text-muted-foreground text-sm">
           Credenciales y accesos técnicos cifrados (Meta, dominios, hosting), con vínculo opcional
           a un cliente. Solo vos (admin) podés ver y usar esta pantalla.

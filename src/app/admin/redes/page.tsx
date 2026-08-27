@@ -4,24 +4,26 @@ import { getSocialAccountsOverview } from "@/lib/queries/social";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getT } from "@/lib/i18n/dictionary";
 
 // lucide-react v1 no incluye íconos de marca (Instagram/YouTube) — usamos genéricos.
 const PLATFORM_ICON = { instagram: Camera, tiktok: Music2, youtube: PlaySquare } as const;
 
 export default async function AdminRedesPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const accounts = await getSocialAccountsOverview();
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Redes sociales</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{t("pages.redes.title", "Redes sociales")}</h1>
           <p className="text-muted-foreground text-sm">
             Cuentas conectadas y métricas clave por cliente (Meta Graph API, TikTok, YouTube).
           </p>
         </div>
-        <Badge variant="secondary">Fase avanzada</Badge>
+        <Badge variant="secondary">{t("pages.redes.badge", "Fase avanzada")}</Badge>
       </div>
 
       {accounts.length === 0 && (
@@ -29,7 +31,7 @@ export default async function AdminRedesPage() {
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
             <Radar className="text-muted-foreground size-8" strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-medium">Todavía no conectaste ninguna cuenta</p>
+              <p className="text-sm font-medium">{t("pages.redes.noAccounts", "Todavía no conectaste ninguna cuenta")}</p>
               <p className="text-muted-foreground max-w-sm text-sm">
                 Conectá Instagram, TikTok o YouTube desde el detalle de cada cliente
                 para ver alcance, reproducciones, engagement y crecimiento de seguidores acá.
@@ -58,21 +60,21 @@ export default async function AdminRedesPage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-2 text-sm">
                   <div>
-                    <p className="text-muted-foreground text-xs uppercase">Alcance</p>
+                    <p className="text-muted-foreground text-xs uppercase">{t("pages.redes.reach", "Alcance")}</p>
                     <p className="tabular-nums font-medium">{acc.latest?.reach ?? "—"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs uppercase">Engagement</p>
+                    <p className="text-muted-foreground text-xs uppercase">{t("pages.redes.engagement", "Engagement")}</p>
                     <p className="tabular-nums font-medium">
                       {acc.latest ? `${acc.latest.engagement_rate}%` : "—"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs uppercase">Seguidores</p>
+                    <p className="text-muted-foreground text-xs uppercase">{t("pages.redes.followers", "Seguidores")}</p>
                     <p className="tabular-nums font-medium">{acc.latest?.followers ?? "—"}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs uppercase">Reproducciones</p>
+                    <p className="text-muted-foreground text-xs uppercase">{t("pages.redes.plays", "Reproducciones")}</p>
                     <p className="tabular-nums font-medium">{acc.latest?.plays ?? "—"}</p>
                   </div>
                 </CardContent>

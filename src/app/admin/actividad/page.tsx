@@ -3,28 +3,30 @@ import { es } from "date-fns/locale";
 import { requireAdmin } from "@/lib/auth";
 import { getRecentActivity } from "@/lib/queries/activity";
 import { Badge } from "@/components/ui/badge";
-
-const EVENT_META: Record<string, string> = {
-  content_created: "Nueva pieza",
-  content_status_changed: "Cambio de estado",
-  report_published: "Reporte publicado",
-  contract_signed: "Contrato firmado",
-  invoice_paid: "Pago registrado",
-  client_created: "Cliente nuevo",
-};
+import { getT } from "@/lib/i18n/dictionary";
 
 /**
  * Management > Actividad — bitácora completa del workspace (versión de
  * página completa del panel deslizante `ActivityPanel`).
  */
 export default async function AdminActividadPage() {
-  await requireAdmin();
+  const profile = await requireAdmin();
+  const t = getT(profile.language);
   const events = await getRecentActivity(100);
+
+  const EVENT_META: Record<string, string> = {
+    content_created: t("pages.actividad.contentCreated", "Nueva pieza"),
+    content_status_changed: t("pages.actividad.contentStatusChanged", "Cambio de estado"),
+    report_published: t("pages.actividad.reportPublished", "Reporte publicado"),
+    contract_signed: t("pages.actividad.contractSigned", "Contrato firmado"),
+    invoice_paid: t("pages.actividad.invoicePaid", "Pago registrado"),
+    client_created: t("pages.actividad.clientCreated", "Cliente nuevo"),
+  };
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Actividad</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.actividad", "Actividad")}</h1>
         <p className="text-muted-foreground text-sm">Bitácora completa de lo que pasó en el workspace.</p>
       </div>
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
-import { createClient } from "@/lib/supabase/client";
+import { loginAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,13 +23,16 @@ export function LoginForm() {
     setLoading(true);
     setError(null);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // El login pasa por un Server Action (loginAction) en vez de llamar a
+    // Supabase Auth directo desde el browser, para poder rate-limitar los
+    // intentos fallidos del lado del servidor — ver src/app/actions/auth.ts.
+    const formData = new FormData();
+    formData.set("email", email);
+    formData.set("password", password);
+    const result = await loginAction(formData);
 
-    if (signInError) {
-      setError("Email o contraseña incorrectos.");
+    if (!result.ok) {
+      setError(result.error);
       setLoading(false);
       return;
     }

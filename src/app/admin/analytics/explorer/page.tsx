@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
+import { getT } from "@/lib/i18n/dictionary";
 import type { SocialPlatform } from "@/types/database";
 
 const PLATFORM_LABEL: Record<SocialPlatform, string> = {
@@ -30,7 +31,8 @@ export default async function AnalyticsExplorerPage({
 }: {
   searchParams: Promise<{ cliente?: string; plataforma?: string; dias?: string }>;
 }) {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const { cliente, plataforma, dias } = await searchParams;
   const [clients, rows] = await Promise.all([
     getSelectableClients(),
@@ -44,7 +46,7 @@ export default async function AnalyticsExplorerPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Explorer</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.explorer", "Explorer")}</h1>
         <p className="text-muted-foreground text-sm">
           {rows.length} fila{rows.length === 1 ? "" : "s"} de métricas diarias.
         </p>
@@ -56,14 +58,14 @@ export default async function AnalyticsExplorerPage({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Cuenta</TableHead>
-              <TableHead>Plataforma</TableHead>
-              <TableHead className="text-right">Alcance</TableHead>
-              <TableHead className="text-right">Impresiones</TableHead>
-              <TableHead className="text-right">Engagement</TableHead>
-              <TableHead className="text-right">Seguidores</TableHead>
-              <TableHead className="text-right">Reproducciones</TableHead>
+              <TableHead>{t("pages.analyticsExplorer.date", "Fecha")}</TableHead>
+              <TableHead>{t("pages.analyticsExplorer.account", "Cuenta")}</TableHead>
+              <TableHead>{t("pages.analyticsExplorer.platform", "Plataforma")}</TableHead>
+              <TableHead className="text-right">{t("pages.analyticsExplorer.reach", "Alcance")}</TableHead>
+              <TableHead className="text-right">{t("pages.analyticsExplorer.impressions", "Impresiones")}</TableHead>
+              <TableHead className="text-right">{t("pages.analyticsExplorer.engagement", "Engagement")}</TableHead>
+              <TableHead className="text-right">{t("pages.redes.followers", "Seguidores")}</TableHead>
+              <TableHead className="text-right">{t("pages.redes.plays", "Reproducciones")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MAX_AGENT } from "@/lib/ai/agents";
+import { getT } from "@/lib/i18n/dictionary";
 
 /**
  * Asistente IA — SOLO Admin (ver proxy.ts + requireRole acá abajo, más las
@@ -24,7 +25,8 @@ export default async function AiAssistantPage({
 }: {
   searchParams: Promise<{ conv?: string }>;
 }) {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
 
   const { conv } = await searchParams;
   const conversations = await listAiConversations();
@@ -51,8 +53,8 @@ export default async function AiAssistantPage({
 
       <Tabs defaultValue="chat">
         <TabsList>
-          <TabsTrigger value="chat">Chat</TabsTrigger>
-          <TabsTrigger value="auditoria">Auditoría</TabsTrigger>
+          <TabsTrigger value="chat">{t("nav.chat", "Chat")}</TabsTrigger>
+          <TabsTrigger value="auditoria">{t("nav.config.auditoria", "Auditoría")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat" className="space-y-3">

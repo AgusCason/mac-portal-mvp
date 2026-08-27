@@ -2,15 +2,17 @@ import { requireRole } from "@/lib/auth";
 import { getBranding } from "@/lib/queries/branding";
 import { BrandingForm } from "@/components/settings/branding-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getT } from "@/lib/i18n/dictionary";
 
 export default async function MarcaPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const branding = await getBranding();
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Marca</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("nav.config.marca", "Marca")}</h1>
         <p className="text-muted-foreground text-sm">
           Nombre, logos y colores white-label de la plataforma — se aplican a todo el portal
           (los 3 roles) apenas guardás.

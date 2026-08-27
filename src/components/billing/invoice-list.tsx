@@ -3,10 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, XCircle, AlertTriangle } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle, AlertTriangle, Download } from "lucide-react";
 
 import type { InvoiceWithRelations } from "@/lib/queries/billing";
-import { markInvoicePaidAction, cancelInvoiceAction } from "@/app/actions/billing";
+import { markInvoicePaidAction, cancelInvoiceAction, getInvoicePdfAction } from "@/app/actions/billing";
+import { downloadBase64File } from "@/lib/download-file";
 import {
   Table,
   TableBody,
@@ -76,6 +77,17 @@ export function InvoiceList({ invoices }: { invoices: InvoiceWithRelations[] }) 
     });
   }
 
+  function downloadPdf(id: string) {
+    startTransition(async () => {
+      const res = await getInvoicePdfAction(id);
+      if (res.ok) {
+        downloadBase64File(res.base64, res.filename, "application/pdf");
+      } else {
+        toast.error(res.error);
+      }
+    });
+  }
+
   if (invoices.length === 0) {
     return <p className="text-muted-foreground text-sm">Todavía no hay facturas cargadas.</p>;
   }
@@ -105,23 +117,34 @@ export function InvoiceList({ invoices }: { invoices: InvoiceWithRelations[] }) 
               <StatusBadge status={inv.status} daysOverdue={inv.daysOverdue} />
             </TableCell>
             <TableCell className="text-right">
-              {(inv.status === "pending" || inv.status === "overdue") && (
-                <div className="flex justify-end gap-1.5">
-                  <Button size="sm" variant="outline" disabled={isPending} onClick={() => markPaid(inv.id)}>
-                    {isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
-                    Marcar pago recibido
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    disabled={isPending}
-                    onClick={() => cancel(inv.id)}
-                    title="Cancelar factura"
-                  >
-                    <XCircle />
-                  </Button>
-                </div>
-              )}
+              <div className="flex justify-end gap-1.5">
+                {(inv.status === "pending" || inv.status === "overdue") && (
+                  <>
+                    <Button size="sm" variant="outline" disabled={isPending} onClick={() => markPaid(inv.id)}>
+                      {isPending ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}
+                      Marcar pago recibido
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      disabled={isPending}
+                      onClick={() => cancel(inv.id)}
+                      title="Cancelar factura"
+                    >
+                      <XCircle />
+                    </Button>
+                  </>
+                )}
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  disabled={isPending}
+                  onClick={() => downloadPdf(inv.id)}
+                  title="Descargar PDF"
+                >
+                  <Download />
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         ))}

@@ -3,12 +3,14 @@ import { getContacts } from "@/lib/queries/contacts";
 import { getSelectableClients } from "@/lib/queries/content";
 import { NewContactDialog } from "@/components/contacts/new-contact-dialog";
 import { ContactsTable } from "@/components/contacts/contacts-table";
+import { getT } from "@/lib/i18n/dictionary";
 
 /**
  * Management > Contactos — directorio de personas del workspace.
  */
 export default async function AdminContactosPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
 
   const [clients, contacts] = await Promise.all([getSelectableClients(), getContacts()]);
 
@@ -16,7 +18,7 @@ export default async function AdminContactosPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Contactos</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.contactos", "Contactos")}</h1>
           <p className="text-muted-foreground text-sm">
             Directorio de personas y referentes vinculados a tus cuentas.
           </p>

@@ -1,12 +1,17 @@
 "use client";
 
-import { CheckCircle2, AlertTriangle } from "lucide-react";
+import * as React from "react";
+import { toast } from "sonner";
+import { CheckCircle2, AlertTriangle, Download, Loader2 } from "lucide-react";
 
 import { PayInvoiceDialog } from "@/components/billing/pay-invoice-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { getInvoicePdfAction } from "@/app/actions/billing";
+import { downloadBase64File } from "@/lib/download-file";
 import type { InvoiceWithRelations } from "@/lib/queries/billing";
 import type { PaymentMethodConfig } from "@/types/database";
 
@@ -42,6 +47,18 @@ export function ClientInvoiceList({
   enabledMethods: PaymentMethodConfig[];
 }) {
   const { t } = useLocale();
+  const [isPending, startTransition] = React.useTransition();
+
+  function downloadPdf(id: string) {
+    startTransition(async () => {
+      const res = await getInvoicePdfAction(id);
+      if (res.ok) {
+        downloadBase64File(res.base64, res.filename, "application/pdf");
+      } else {
+        toast.error(res.error);
+      }
+    });
+  }
 
   if (invoices.length === 0) {
     return (
@@ -61,6 +78,7 @@ export function ClientInvoiceList({
             <TableHead>Vencimiento</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="text-right">Pagar</TableHead>
+            <TableHead className="text-right"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -78,6 +96,17 @@ export function ClientInvoiceList({
                 {(inv.status === "pending" || inv.status === "overdue") && (
                   <PayInvoiceDialog invoice={inv} methods={enabledMethods} />
                 )}
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  disabled={isPending}
+                  onClick={() => downloadPdf(inv.id)}
+                  title="Descargar PDF"
+                >
+                  {isPending ? <Loader2 className="animate-spin" /> : <Download />}
+                </Button>
               </TableCell>
             </TableRow>
           ))}

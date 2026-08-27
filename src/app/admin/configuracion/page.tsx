@@ -1,13 +1,15 @@
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { getT } from "@/lib/i18n/dictionary";
 
 export default async function AdminConfiguracionPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Configuración</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("pages.configuracion.title", "Configuración")}</h1>
         <p className="text-muted-foreground text-sm">
           Integraciones y datos generales de la agencia.
         </p>

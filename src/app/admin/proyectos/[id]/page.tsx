@@ -4,6 +4,7 @@ import { getProjectDetail } from "@/lib/queries/projects";
 import { ProjectBoard } from "@/components/projects/project-board";
 import { PROJECT_STATUS_LABEL, PROJECT_STATUS_VARIANT } from "@/components/projects/project-status";
 import { Badge } from "@/components/ui/badge";
+import { getT } from "@/lib/i18n/dictionary";
 
 /**
  * Ficha de un Proyecto — tablero kanban de sus items (Fase Management,
@@ -14,7 +15,8 @@ export default async function AdminProyectoDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const { id } = await params;
   const detail = await getProjectDetail(id);
   if (!detail) notFound();
@@ -27,7 +29,9 @@ export default async function AdminProyectoDetailPage({
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{project.title}</h1>
           <p className="text-muted-foreground text-sm">
-            {project.client_name ? `Cuenta: ${project.client_name}` : "Proyecto interno"}
+            {project.client_name
+              ? `${t("pages.proyectos.account", "Cuenta")}: ${project.client_name}`
+              : t("pages.proyectos.internal", "Proyecto interno")}
             {project.description && ` — ${project.description}`}
           </p>
         </div>

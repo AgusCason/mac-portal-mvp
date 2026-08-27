@@ -4,6 +4,7 @@ import { getAnalyticsOverview } from "@/lib/queries/analytics";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getT } from "@/lib/i18n/dictionary";
 import {
   Radar,
   Eye,
@@ -17,50 +18,6 @@ import {
   Send,
   Link2,
 } from "lucide-react";
-const SHORTCUTS = [
-  {
-    href: "/admin/redes",
-    icon: Radar,
-    label: "Monitors",
-    description: "Cuentas sociales conectadas y su última métrica cargada.",
-  },
-  {
-    href: "/admin/analytics/dashboards",
-    icon: LayoutDashboard,
-    label: "Dashboards",
-    description: "Vistas armadas por tema: alcance, engagement, crecimiento.",
-  },
-  {
-    href: "/admin/analytics/explorer",
-    icon: Compass,
-    label: "Explorer",
-    description: "Tabla plana y filtrable de todas las métricas cargadas.",
-  },
-  {
-    href: "/admin/reportes",
-    icon: FileText,
-    label: "Reports",
-    description: "Reportes con IA por cliente, borrador o publicados.",
-  },
-  {
-    href: "/admin/analytics/alertas",
-    icon: AlertTriangle,
-    label: "Alertas",
-    description: "Caídas de métricas detectadas automáticamente.",
-  },
-  {
-    href: "/admin/analytics/envios",
-    icon: Send,
-    label: "Envíos",
-    description: "Historial de reportes publicados y enviados a clientes.",
-  },
-  {
-    href: "/admin/analytics/utm-builder",
-    icon: Link2,
-    label: "UTM Builder",
-    description: "Arma URLs de campaña con parámetros UTM.",
-  },
-];
 
 /**
  * Analytics > Overview — equivalente a `/demo-agency/analytics` de MB Suite:
@@ -68,24 +25,70 @@ const SHORTCUTS = [
  * el Módulo de Reportes) + accesos directos a las 7 sub-secciones restantes.
  */
 export default async function AdminAnalyticsPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const overview = await getAnalyticsOverview();
+
+  const SHORTCUTS = [
+    {
+      href: "/admin/redes",
+      icon: Radar,
+      label: "Monitors",
+      description: t("pages.analyticsOverview.shortcutMonitorsDesc", "Cuentas sociales conectadas y su última métrica cargada."),
+    },
+    {
+      href: "/admin/analytics/dashboards",
+      icon: LayoutDashboard,
+      label: "Dashboards",
+      description: t("pages.analyticsOverview.shortcutDashboardsDesc", "Vistas armadas por tema: alcance, engagement, crecimiento."),
+    },
+    {
+      href: "/admin/analytics/explorer",
+      icon: Compass,
+      label: "Explorer",
+      description: t("pages.analyticsOverview.shortcutExplorerDesc", "Tabla plana y filtrable de todas las métricas cargadas."),
+    },
+    {
+      href: "/admin/reportes",
+      icon: FileText,
+      label: "Reports",
+      description: t("pages.analyticsOverview.shortcutReportsDesc", "Reportes con IA por cliente, borrador o publicados."),
+    },
+    {
+      href: "/admin/analytics/alertas",
+      icon: AlertTriangle,
+      label: "Alertas",
+      description: t("pages.analyticsOverview.shortcutAlertasDesc", "Caídas de métricas detectadas automáticamente."),
+    },
+    {
+      href: "/admin/analytics/envios",
+      icon: Send,
+      label: "Envíos",
+      description: t("pages.analyticsOverview.shortcutEnviosDesc", "Historial de reportes publicados y enviados a clientes."),
+    },
+    {
+      href: "/admin/analytics/utm-builder",
+      icon: Link2,
+      label: "UTM Builder",
+      description: t("pages.analyticsOverview.shortcutUtmDesc", "Arma URLs de campaña con parámetros UTM."),
+    },
+  ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Analytics</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("pages.analyticsOverview.title", "Analytics")}</h1>
         <p className="text-muted-foreground text-sm">
-          Rendimiento agregado de todas las cuentas conectadas de la agencia.
+          {t("pages.analyticsOverview.description", "Rendimiento agregado de todas las cuentas conectadas de la agencia.")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Cuentas conectadas" value={overview.connectedAccounts} icon={Radar} />
-        <KpiCard label="Alcance total" value={overview.totalReach.toLocaleString("es-AR")} icon={Eye} />
-        <KpiCard label="Seguidores totales" value={overview.totalFollowers.toLocaleString("es-AR")} icon={Users} />
+        <KpiCard label={t("pages.analyticsOverview.connectedAccounts", "Cuentas conectadas")} value={overview.connectedAccounts} icon={Radar} />
+        <KpiCard label={t("pages.analyticsOverview.totalReach", "Alcance total")} value={overview.totalReach.toLocaleString("es-AR")} icon={Eye} />
+        <KpiCard label={t("pages.analyticsOverview.totalFollowers", "Seguidores totales")} value={overview.totalFollowers.toLocaleString("es-AR")} icon={Users} />
         <KpiCard
-          label="Engagement promedio"
+          label={t("pages.analyticsOverview.avgEngagement", "Engagement promedio")}
           value={`${overview.avgEngagementRate.toFixed(2)}%`}
           icon={TrendingUp}
         />
@@ -95,14 +98,14 @@ export default async function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <AlertTriangle className="text-destructive size-4" /> Alertas de métricas
+              <AlertTriangle className="text-destructive size-4" /> {t("pages.analyticsOverview.metricAlerts", "Alertas de métricas")}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <p className="tabular-nums text-2xl font-semibold">{overview.activeAlerts}</p>
             <Button asChild size="sm" variant="ghost">
               <Link href="/admin/analytics/alertas">
-                Ver todas <ArrowUpRight className="size-3.5" />
+                {t("pages.analyticsOverview.viewAll", "Ver todas")} <ArrowUpRight className="size-3.5" />
               </Link>
             </Button>
           </CardContent>
@@ -110,14 +113,14 @@ export default async function AdminAnalyticsPage() {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2 text-sm">
-              <FileText className="text-info size-4" /> Reportes este mes
+              <FileText className="text-info size-4" /> {t("pages.analyticsOverview.reportsThisMonth", "Reportes este mes")}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-between">
             <p className="tabular-nums text-2xl font-semibold">{overview.reportsThisMonth}</p>
             <Button asChild size="sm" variant="ghost">
               <Link href="/admin/reportes">
-                Ir a Reports <ArrowUpRight className="size-3.5" />
+                {t("pages.analyticsOverview.goToReports", "Ir a Reports")} <ArrowUpRight className="size-3.5" />
               </Link>
             </Button>
           </CardContent>
@@ -125,7 +128,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       <div>
-        <p className="mb-2 text-sm font-medium text-muted-foreground">Herramientas</p>
+        <p className="mb-2 text-sm font-medium text-muted-foreground">{t("pages.analyticsOverview.tools", "Herramientas")}</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {SHORTCUTS.map((s) => (
             <Link

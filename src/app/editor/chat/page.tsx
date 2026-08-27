@@ -3,6 +3,7 @@ import { getEditorAssignedClients } from "@/lib/queries/editor";
 import { getChatMessages } from "@/lib/queries/chat";
 import { ClientSelector } from "@/components/shared/client-selector";
 import { ChatThread } from "@/components/chat/chat-thread";
+import { getT } from "@/lib/i18n/dictionary";
 
 export default async function EditorChatPage({
   searchParams,
@@ -10,6 +11,7 @@ export default async function EditorChatPage({
   searchParams: Promise<{ cliente?: string }>;
 }) {
   const profile = await requireRole(["editor"]);
+  const t = getT(profile.language);
   const clients = (await getEditorAssignedClients(profile.id)).filter((c) => c.can_view_chat);
   const { cliente } = await searchParams;
   const activeClientId = cliente ?? clients[0]?.client_id;
@@ -18,7 +20,7 @@ export default async function EditorChatPage({
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Chat</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("nav.chat", "Chat")}</h1>
         <p className="text-muted-foreground text-sm">
           Solo ves clientes donde el admin activó tu acceso al chat.
         </p>

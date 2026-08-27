@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Send } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { getT } from "@/lib/i18n/dictionary";
 
 const PLATFORM_LABEL: Record<string, string> = {
   instagram: "Instagram",
@@ -26,7 +27,8 @@ const PLATFORM_LABEL: Record<string, string> = {
  * publicado ES un envío en el modelo de MAC Portal.
  */
 export default async function AnalyticsEnviosPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const reports = (await getReports({ status: "published" })).sort((a, b) => {
     const aDate = a.published_at ?? a.created_at;
     const bDate = b.published_at ?? b.created_at;
@@ -36,7 +38,7 @@ export default async function AnalyticsEnviosPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Envíos</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.envios", "Envíos")}</h1>
         <p className="text-muted-foreground text-sm">
           Reportes publicados y entregados a cada cliente, en orden cronológico.
         </p>
@@ -46,7 +48,7 @@ export default async function AnalyticsEnviosPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
             <Send className="text-muted-foreground size-8" strokeWidth={1.5} />
-            <p className="text-sm font-medium">Todavía no se publicó ningún reporte</p>
+            <p className="text-sm font-medium">{t("pages.analyticsEnvios.empty", "Todavía no se publicó ningún reporte")}</p>
             <p className="text-muted-foreground max-w-sm text-sm">
               Cuando publiques un reporte desde Analytics &gt; Reports, va a aparecer acá con su fecha de envío.
             </p>
@@ -59,10 +61,10 @@ export default async function AnalyticsEnviosPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Reporte</TableHead>
-                <TableHead>Período</TableHead>
-                <TableHead>Plataformas</TableHead>
+                <TableHead>{t("pages.analyticsEnvios.client", "Cliente")}</TableHead>
+                <TableHead>{t("pages.analyticsEnvios.report", "Reporte")}</TableHead>
+                <TableHead>{t("pages.analyticsEnvios.period", "Período")}</TableHead>
+                <TableHead>{t("pages.analyticsEnvios.platforms", "Plataformas")}</TableHead>
                 <TableHead>Enviado</TableHead>
               </TableRow>
             </TableHeader>

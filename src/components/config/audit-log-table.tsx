@@ -11,6 +11,8 @@ const ACTION_VARIANT: Record<string, React.ComponentProps<typeof Badge>["variant
   "invoice.amount_changed": "warning",
   "vault.credential_revealed": "warning",
   "vault.credential_deleted": "destructive",
+  "security.blocked": "destructive",
+  "security.alert": "warning",
 };
 
 /**

@@ -545,6 +545,20 @@ export interface AuditLogEntry {
   created_at: string;
 }
 
+/**
+ * Bloqueo automático temporal (0027_security_hardening.sql) — creado por
+ * `check_rate_limit()` cuando una key (IP, email+IP, teléfono, etc.) supera
+ * el máximo de intentos. Se destraba solo al pasar `blocked_until`; nada en
+ * la app inserta acá directamente, solo la función SQL.
+ */
+export interface SecurityBlock {
+  id: string;
+  block_key: string;
+  reason: string;
+  blocked_until: string;
+  created_at: string;
+}
+
 export interface ActivityEvent {
   id: string;
   client_id: string | null;
@@ -993,6 +1007,12 @@ export interface Database {
         Update: Flatten<Partial<AuditLogEntry>>;
         Relationships: [];
       };
+      security_blocks: {
+        Row: Flatten<SecurityBlock>;
+        Insert: Flatten<Optional<SecurityBlock, "id" | "created_at">>;
+        Update: Flatten<Partial<SecurityBlock>>;
+        Relationships: [];
+      };
       activity_events: {
         Row: Flatten<ActivityEvent>;
         Insert: Flatten<Optional<ActivityEvent, "id" | "client_id" | "actor_id" | "created_at">>;
@@ -1409,6 +1429,19 @@ export interface Database {
           p_diff?: Record<string, unknown> | null;
         }>;
         Returns: null;
+      };
+      check_rate_limit: {
+        Args: Flatten<{
+          p_key: string;
+          p_max_hits: number;
+          p_window_seconds: number;
+          p_block_minutes?: number;
+        }>;
+        Returns: boolean;
+      };
+      is_blocked: {
+        Args: Flatten<{ p_key: string }>;
+        Returns: boolean;
       };
     };
   };

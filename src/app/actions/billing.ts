@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin, requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { getBranding } from "@/lib/queries/branding";
+import { buildInvoicePdf } from "@/lib/billing-pdf";
+import type { InvoiceWithRelations } from "@/lib/queries/billing";
+import type { BillingInvoice } from "@/types/database";
 
 const createInvoiceSchema = z.object({
   clientId: z.string().uuid(),
@@ -98,6 +102,55 @@ export async function reportInvoicePaymentAction(invoiceId: string, method?: str
   }
   revalidatePath("/client/facturas");
   return { ok: true };
+}
+
+/**
+ * Genera el PDF de una factura al vuelo (nada se guarda — ver
+ * `buildInvoicePdf`). Devuelve el contenido en base64 para que el cliente
+ * arme un blob y dispare la descarga, sin necesitar un bucket de Storage.
+ * El SELECT de acá respeta RLS: el cliente solo puede pedir el PDF de SUS
+ * propias facturas (mismo criterio que `getReportDownloadUrlAction`).
+ */
+export async function getInvoicePdfAction(
+  invoiceId: string
+): Promise<{ ok: true; base64: string; filename: string } | { ok: false; error: string }> {
+  await requireRole(["admin", "client"]);
+  const supabase = await createSupabaseServerClient();
+
+  const { data: row, error } = await supabase
+    .from("billing_invoices")
+    .select("*, clients(name), plans(name)")
+    .eq("id", invoiceId)
+    .single();
+
+  if (error || !row) {
+    return { ok: false, error: "No tenés acceso a esta factura." };
+  }
+
+  const { clients, plans, ...rest } = row as BillingInvoice & {
+    clients: { name: string } | null;
+    plans: { name: string } | null;
+  };
+  const daysOverdue = 0; // no importa para el PDF — no se muestra ese dato
+  const invoice: InvoiceWithRelations = {
+    ...rest,
+    client_name: clients?.name ?? "—",
+    plan_name: plans?.name ?? null,
+    daysOverdue,
+  };
+
+  const branding = await getBranding();
+
+  try {
+    const pdfBuffer = await buildInvoicePdf({ agencyName: branding.app_name, invoice });
+    return {
+      ok: true,
+      base64: pdfBuffer.toString("base64"),
+      filename: `factura-${invoice.id.slice(0, 8)}.pdf`,
+    };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "No se pudo armar el PDF." };
+  }
 }
 
 /** Cancela una factura (ej: se creó por error). Solo admin. */

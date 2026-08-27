@@ -12,24 +12,26 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrendingDown } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-
-const METRIC_LABELS: Record<string, string> = {
-  reach: "Alcance",
-  followers: "Seguidores",
-};
+import { getT } from "@/lib/i18n/dictionary";
 
 /**
  * Analytics > Alertas — historial completo de caídas de métricas (Fase 3.4),
  * equivalente a lo que MB Suite muestra bajo Analytics > Alertas.
  */
 export default async function AnalyticsAlertasPage() {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const alerts = await getAllMetricAlerts();
+
+  const METRIC_LABELS: Record<string, string> = {
+    reach: t("pages.redes.reach", "Alcance"),
+    followers: t("pages.redes.followers", "Seguidores"),
+  };
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Alertas de métricas</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("pages.analyticsAlertas.title", "Alertas de métricas")}</h1>
         <p className="text-muted-foreground text-sm">
           Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos.
         </p>
@@ -39,7 +41,7 @@ export default async function AnalyticsAlertasPage() {
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
             <TrendingDown className="text-muted-foreground size-8" strokeWidth={1.5} />
-            <p className="text-sm font-medium">Sin caídas detectadas por ahora</p>
+            <p className="text-sm font-medium">{t("pages.analyticsAlertas.empty", "Sin caídas detectadas por ahora")}</p>
             <p className="text-muted-foreground max-w-sm text-sm">
               El cron diario revisa todas las cuentas conectadas y va a avisar acá apenas detecte una.
             </p>
@@ -52,10 +54,10 @@ export default async function AnalyticsAlertasPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Cuenta</TableHead>
-                <TableHead>Métrica</TableHead>
-                <TableHead className="text-right">Promedio previo</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
+                <TableHead>{t("pages.analyticsAlertas.account", "Cuenta")}</TableHead>
+                <TableHead>{t("pages.analyticsAlertas.metric", "Métrica")}</TableHead>
+                <TableHead className="text-right">{t("pages.analyticsAlertas.previousAvg", "Promedio previo")}</TableHead>
+                <TableHead className="text-right">{t("pages.analyticsAlertas.value", "Valor")}</TableHead>
                 <TableHead className="text-right">Caída</TableHead>
                 <TableHead>Fecha</TableHead>
               </TableRow>

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 const WEB_FORMS_PATH = "/admin/web-forms";
 
@@ -77,6 +78,20 @@ export async function submitWebFormAction(
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
 
   const supabase = await createSupabaseServerClient();
+
+  // Rate limit por IP + formulario: sin sesión de por medio (es la página
+  // pública /f/[id]), así que la única defensa contra un bot mandando spam
+  // es esto — bloqueo automático temporal si se pasa (ver 0027_security_hardening.sql).
+  const ip = await getClientIp();
+  const allowed = await checkRateLimit(supabase, `webform:${formId}:${ip}`, {
+    maxHits: 5,
+    windowSeconds: 600,
+    blockMinutes: 60,
+  });
+  if (!allowed) {
+    return { ok: false, error: "Demasiados envíos seguidos. Probá de nuevo más tarde." };
+  }
+
   const { error } = await supabase.from("form_submissions").insert({
     form_id: formId,
     name: parsed.data.name,

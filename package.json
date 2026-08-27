@@ -9,7 +9,9 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:rules": "node scripts/check-rules.mjs",
-    "verify": "npm run lint && npm run typecheck && npm run check:rules && npm run build"
+    "test": "vitest run",
+    "audit:deps": "npm audit --audit-level=high",
+    "verify": "npm run lint && npm run typecheck && npm run check:rules && npm run test && npm run build"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",
@@ -61,6 +63,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }

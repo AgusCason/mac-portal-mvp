@@ -2,13 +2,15 @@ import { requireAdmin } from "@/lib/auth";
 import { getContentItems, getSelectableClients } from "@/lib/queries/content";
 import { getMediaFolders, getMediaAssets } from "@/lib/queries/media-library";
 import { PlannerView } from "@/components/social-media/planner-view";
+import { getT } from "@/lib/i18n/dictionary";
 
 /**
  * Social Media > Planner — kanban editorial + publicados + grilla IG +
  * media library, en pestañas (equivalente a `/demo-agency/social-media/planner`).
  */
 export default async function AdminSocialMediaPlannerPage() {
-  await requireAdmin();
+  const profile = await requireAdmin();
+  const t = getT(profile.language);
 
   const [items, clients, folders, assets] = await Promise.all([
     getContentItems(),
@@ -20,7 +22,7 @@ export default async function AdminSocialMediaPlannerPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Planner</h1>
+        <h1 className="text-xl font-semibold tracking-tight">{t("nav.socialMedia.planner", "Planner")}</h1>
         <p className="text-muted-foreground text-sm">Calendario editorial, publicados y grilla de Instagram.</p>
       </div>
       <PlannerView items={items} clients={clients} folders={folders} assets={assets} />

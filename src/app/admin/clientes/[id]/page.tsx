@@ -35,6 +35,7 @@ import {
   Music2,
 } from "lucide-react";
 import { getInitials } from "@/lib/utils";
+import { getT } from "@/lib/i18n/dictionary";
 import type { Plan } from "@/types/database";
 
 const PLATFORM_LINKS = [
@@ -57,7 +58,8 @@ export default async function AdminClientDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireRole(["admin"]);
+  const profile = await requireRole(["admin"]);
+  const t = getT(profile.language);
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
@@ -91,7 +93,7 @@ export default async function AdminClientDetailPage({
           <div>
             <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
             <p className="text-muted-foreground text-sm">
-              {client.brand_name ?? "Sin nombre de marca"} · {client.contact_email ?? "sin email"}
+              {client.brand_name ?? t("pages.clienteDetail.noBrandName", "Sin nombre de marca")} · {client.contact_email ?? "sin email"}
             </p>
             <div className="mt-1 flex items-center gap-2 text-muted-foreground">
               {PLATFORM_LINKS.filter((p) => client[p.key]).map((p) => (
@@ -111,36 +113,40 @@ export default async function AdminClientDetailPage({
         </div>
         <div className="flex gap-2">
           <Badge variant={client.status === "active" ? "success" : "secondary"}>
-            {client.status === "active" ? "Activo" : client.status === "paused" ? "Pausado" : "Perdido"}
+            {client.status === "active"
+              ? t("pages.clienteDetail.statusActive", "Activo")
+              : client.status === "paused"
+                ? t("pages.clienteDetail.statusPaused", "Pausado")
+                : t("pages.clienteDetail.statusLost", "Perdido")}
           </Badge>
           {planName && <Badge variant="info">Plan {planName}</Badge>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard label="Piezas de contenido" value={contentCount} icon={CalendarDays} />
-        <KpiCard label="Contratos" value={contractCount} icon={FileSignature} />
-        <KpiCard label="Carpetas en Drive" value={driveFolders.length} icon={FolderOpen} />
+        <KpiCard label={t("pages.clienteDetail.kpiContent", "Piezas de contenido")} value={contentCount} icon={CalendarDays} />
+        <KpiCard label={t("pages.clienteDetail.kpiContracts", "Contratos")} value={contractCount} icon={FileSignature} />
+        <KpiCard label={t("pages.clienteDetail.kpiDriveFolders", "Carpetas en Drive")} value={driveFolders.length} icon={FolderOpen} />
       </div>
 
       <Tabs defaultValue="resumen">
         <TabsList>
-          <TabsTrigger value="resumen">Resumen</TabsTrigger>
-          <TabsTrigger value="contenido">Contenido</TabsTrigger>
-          <TabsTrigger value="reportes">Reportes</TabsTrigger>
-          <TabsTrigger value="contratos">Contratos</TabsTrigger>
-          <TabsTrigger value="facturacion">Facturación</TabsTrigger>
+          <TabsTrigger value="resumen">{t("pages.clienteDetail.tabSummary", "Resumen")}</TabsTrigger>
+          <TabsTrigger value="contenido">{t("pages.clienteDetail.tabContent", "Contenido")}</TabsTrigger>
+          <TabsTrigger value="reportes">{t("pages.clienteDetail.tabReports", "Reportes")}</TabsTrigger>
+          <TabsTrigger value="contratos">{t("pages.clienteDetail.tabContracts", "Contratos")}</TabsTrigger>
+          <TabsTrigger value="facturacion">{t("pages.clienteDetail.tabBilling", "Facturación")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="resumen" className="space-y-4">
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle>Editores asignados</CardTitle>
+              <CardTitle>{t("pages.clienteDetail.assignedEditors", "Editores asignados")}</CardTitle>
               <AssignEditorDialog clientId={client.id} editors={editors} />
             </CardHeader>
             <CardContent className="space-y-2">
               {assignments.length === 0 && (
-                <p className="text-muted-foreground text-sm">Sin editores asignados todavía.</p>
+                <p className="text-muted-foreground text-sm">{t("pages.clienteDetail.noEditors", "Sin editores asignados todavía.")}</p>
               )}
               {assignments.map((a) => (
                 <div
@@ -159,25 +165,27 @@ export default async function AdminClientDetailPage({
 
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle>Usuario del portal cliente</CardTitle>
+              <CardTitle>{t("pages.clienteDetail.portalUser", "Usuario del portal cliente")}</CardTitle>
               <LinkClientMemberDialog clientId={client.id} candidates={unlinkedClientProfiles} />
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
-                Vinculá acá la cuenta con la que este cliente va a loguearse a ver su portal.
+                {t("pages.clienteDetail.portalUserHint", "Vinculá acá la cuenta con la que este cliente va a loguearse a ver su portal.")}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Google Drive</CardTitle>
+              <CardTitle>{t("pages.clienteDetail.drive", "Google Drive")}</CardTitle>
             </CardHeader>
             <CardContent>
               {driveFolders.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  Las carpetas de Drive todavía no se crearon (revisá las credenciales de la
-                  Service Account en .env.local).
+                  {t(
+                    "pages.clienteDetail.driveNotCreated",
+                    "Las carpetas de Drive todavía no se crearon (revisá las credenciales de la Service Account en .env.local)."
+                  )}
                 </p>
               ) : (
                 <DriveBrowser clientId={client.id} />
