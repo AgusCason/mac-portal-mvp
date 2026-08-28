@@ -247,6 +247,8 @@ export interface BillingInvoice {
   id: string;
   client_id: string;
   plan_id: string | null;
+  /** Proyecto de Sitios Web al que corresponde esta factura, si es una factura de proyecto (no de plan). */
+  web_project_id: string | null;
   amount: number;
   currency: string;
   method: PaymentMethod;
@@ -861,6 +863,7 @@ export interface Database {
             BillingInvoice,
             | "id"
             | "plan_id"
+            | "web_project_id"
             | "currency"
             | "method"
             | "status"
@@ -885,6 +888,13 @@ export interface Database {
             columns: ["plan_id"];
             isOneToOne: false;
             referencedRelation: "plans";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "billing_invoices_web_project_id_fkey";
+            columns: ["web_project_id"];
+            isOneToOne: false;
+            referencedRelation: "web_projects";
             referencedColumns: ["id"];
           },
         ];

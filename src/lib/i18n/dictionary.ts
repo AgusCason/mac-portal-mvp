@@ -1182,6 +1182,8 @@ const es = {
       statusPendiente: "Pendiente",
       statusAprobado: "Aprobado",
       statusRequiereCambios: "Requiere cambios",
+      invoices: "Facturación",
+      noInvoices: "Todavía no se facturó nada de este proyecto.",
     },
     plans: {
       planCreated: "Plan creado",
@@ -2637,6 +2639,8 @@ const en: typeof es = {
       statusPendiente: "Pending",
       statusAprobado: "Approved",
       statusRequiereCambios: "Needs changes",
+      invoices: "Billing",
+      noInvoices: "Nothing has been invoiced for this project yet.",
     },
     plans: {
       planCreated: "Plan created",

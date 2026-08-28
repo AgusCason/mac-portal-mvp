@@ -31,9 +31,15 @@ import { useLocale } from "@/lib/i18n/locale-context";
 export function NewInvoiceDialog({
   clients,
   plans,
+  webProjectId,
+  lockedClient,
 }: {
   clients: { id: string; name: string }[];
   plans: { id: string; name: string }[];
+  /** Preselecciona el proyecto de Sitios Web al que va a quedar asociada la factura. */
+  webProjectId?: string;
+  /** Cuando se invoca desde la ficha de un proyecto, fija el cliente (no editable). */
+  lockedClient?: { id: string; name: string };
 }) {
   const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
@@ -81,21 +87,33 @@ export function NewInvoiceDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="clientId">{t("billing.clientLabel", "Cliente")}</Label>
-            <Select name="clientId" required>
-              <SelectTrigger className="w-full" id="clientId">
-                <SelectValue placeholder={t("billing.chooseClientPlaceholder", "Seleccioná un cliente")} />
-              </SelectTrigger>
-              <SelectContent>
-                {clients.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {webProjectId && <input type="hidden" name="webProjectId" value={webProjectId} />}
+
+          {lockedClient ? (
+            <div className="space-y-1.5">
+              <Label>{t("billing.clientLabel", "Cliente")}</Label>
+              <input type="hidden" name="clientId" value={lockedClient.id} />
+              <p className="border-input rounded-lg border bg-transparent px-3 py-2 text-sm">
+                {lockedClient.name}
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label htmlFor="clientId">{t("billing.clientLabel", "Cliente")}</Label>
+              <Select name="clientId" required>
+                <SelectTrigger className="w-full" id="clientId">
+                  <SelectValue placeholder={t("billing.chooseClientPlaceholder", "Seleccioná un cliente")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="planId">{t("billing.planOptionalLabel", "Plan (opcional)")}</Label>

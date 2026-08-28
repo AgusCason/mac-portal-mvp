@@ -12,6 +12,7 @@ import type { BillingInvoice } from "@/types/database";
 const createInvoiceSchema = z.object({
   clientId: z.string().uuid(),
   planId: z.string().uuid().optional().or(z.literal("")),
+  webProjectId: z.string().uuid().optional().or(z.literal("")),
   amount: z.coerce.number().positive("El monto tiene que ser mayor a 0"),
   currency: z.string().min(1).default("ARS"),
   method: z.enum(["mercadopago", "paypal", "transferencia", "payoneer", "crypto", "otro"]),
@@ -31,6 +32,7 @@ export async function createInvoiceAction(formData: FormData) {
   const parsed = createInvoiceSchema.safeParse({
     clientId: formData.get("clientId"),
     planId: formData.get("planId") ?? "",
+    webProjectId: formData.get("webProjectId") ?? "",
     amount: formData.get("amount"),
     currency: formData.get("currency") || "ARS",
     method: formData.get("method"),
@@ -46,6 +48,7 @@ export async function createInvoiceAction(formData: FormData) {
   const { error } = await supabase.from("billing_invoices").insert({
     client_id: parsed.data.clientId,
     plan_id: parsed.data.planId || null,
+    web_project_id: parsed.data.webProjectId || null,
     amount: parsed.data.amount,
     currency: parsed.data.currency,
     method: parsed.data.method,
@@ -55,6 +58,8 @@ export async function createInvoiceAction(formData: FormData) {
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/planes");
+  revalidatePath("/admin/sitios-web");
+  if (parsed.data.webProjectId) revalidatePath(`/admin/sitios-web/${parsed.data.webProjectId}`);
   return { ok: true };
 }
 
@@ -136,6 +141,7 @@ export async function getInvoicePdfAction(
     ...rest,
     client_name: clients?.name ?? "—",
     plan_name: plans?.name ?? null,
+    web_project_title: null, // no se muestra en el PDF
     daysOverdue,
   };
 

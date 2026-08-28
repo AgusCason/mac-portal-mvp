@@ -1,9 +1,11 @@
 import { requireRole } from "@/lib/auth";
 import { getPrimaryClientId } from "@/lib/queries/client-membership";
 import { getWebProjects, getWebProjectDetail } from "@/lib/queries/web-projects";
+import { getInvoicesForWebProject } from "@/lib/queries/billing";
 import { WebProjectStageStepper } from "@/components/web-projects/web-project-stage-stepper";
 import { WebProjectDetailsPanel } from "@/components/web-projects/web-project-details-panel";
 import { WebProjectAssetsPanel } from "@/components/web-projects/web-project-assets-panel";
+import { WebProjectInvoicesPanel } from "@/components/web-projects/web-project-invoices-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Globe } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
@@ -40,21 +42,31 @@ export default async function ClientSitioWebPage() {
         </Card>
       )}
 
-      {details.map((detail) => {
-        if (!detail) return null;
-        const { project, assets } = detail;
-        return (
-          <div key={project.id} className="space-y-4">
-            <div>
-              <h2 className="text-lg font-semibold tracking-tight">{project.title}</h2>
-              {project.description && <p className="text-muted-foreground text-sm">{project.description}</p>}
+      {await Promise.all(
+        details.map(async (detail) => {
+          if (!detail) return null;
+          const { project, assets } = detail;
+          const invoices = await getInvoicesForWebProject(project.id);
+          return (
+            <div key={project.id} className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold tracking-tight">{project.title}</h2>
+                {project.description && <p className="text-muted-foreground text-sm">{project.description}</p>}
+              </div>
+              <WebProjectStageStepper stage={project.stage} />
+              <WebProjectDetailsPanel project={project} />
+              <WebProjectAssetsPanel projectId={project.id} assets={assets} role="client" />
+              <WebProjectInvoicesPanel
+                invoices={invoices}
+                role="client"
+                webProjectId={project.id}
+                client={{ id: project.client_id, name: project.client_name }}
+                plans={[]}
+              />
             </div>
-            <WebProjectStageStepper stage={project.stage} />
-            <WebProjectDetailsPanel project={project} />
-            <WebProjectAssetsPanel projectId={project.id} assets={assets} role="client" />
-          </div>
-        );
-      })}
+          );
+        })
+      )}
     </div>
   );
 }

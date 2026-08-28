@@ -6,6 +6,8 @@ import { PAYMENT_METHOD_LABELS } from "@/lib/billing-labels";
 export interface InvoiceWithRelations extends BillingInvoice {
   client_name: string;
   plan_name: string | null;
+  /** Título del proyecto de Sitios Web, si esta factura corresponde a uno. */
+  web_project_title: string | null;
   /**
    * Días de atraso respecto a `due_date` (0 si no está vencida o ya está
    * paga/cancelada). Base del módulo de morosidad: 1-7 días sugiere
@@ -30,7 +32,7 @@ export async function getInvoices(clientId?: string, limit = 500): Promise<Invoi
   const supabase = await createClient();
   let query = supabase
     .from("billing_invoices")
-    .select("*, clients(name), plans(name)")
+    .select("*, clients(name), plans(name), web_projects(title)")
     .order("due_date", { ascending: false })
     .limit(limit);
 
@@ -43,14 +45,46 @@ export async function getInvoices(clientId?: string, limit = 500): Promise<Invoi
   }
 
   return (data ?? []).map((row) => {
-    const { clients, plans, ...rest } = row as BillingInvoice & {
+    const { clients, plans, web_projects, ...rest } = row as BillingInvoice & {
       clients: { name: string } | null;
       plans: { name: string } | null;
+      web_projects: { title: string } | null;
     };
     return {
       ...rest,
       client_name: clients?.name ?? "—",
       plan_name: plans?.name ?? null,
+      web_project_title: web_projects?.title ?? null,
+      daysOverdue: computeDaysOverdue(rest.due_date, rest.status),
+    };
+  });
+}
+
+/** Facturas de un proyecto de Sitios Web puntual — ver ficha de `/admin/sitios-web/[id]`. */
+export async function getInvoicesForWebProject(webProjectId: string): Promise<InvoiceWithRelations[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("billing_invoices")
+    .select("*, clients(name), plans(name), web_projects(title)")
+    .eq("web_project_id", webProjectId)
+    .order("due_date", { ascending: false });
+
+  if (error) {
+    console.error("[getInvoicesForWebProject]", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => {
+    const { clients, plans, web_projects, ...rest } = row as BillingInvoice & {
+      clients: { name: string } | null;
+      plans: { name: string } | null;
+      web_projects: { title: string } | null;
+    };
+    return {
+      ...rest,
+      client_name: clients?.name ?? "—",
+      plan_name: plans?.name ?? null,
+      web_project_title: web_projects?.title ?? null,
       daysOverdue: computeDaysOverdue(rest.due_date, rest.status),
     };
   });
