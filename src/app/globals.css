@@ -179,6 +179,16 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
+  body {
+    /* Red de seguridad: ningún elemento suelto (tabla sin wrapper, tablero
+       kanban mal contenido, etc.) debe poder correr la página entera hacia
+       los costados en mobile. Los scrolls horizontales intencionales
+       (tablas, tableros) siguen andando: viven en su propio contenedor con
+       overflow-x-auto, esto solo topea el documento. */
+    overflow-x: hidden;
+    max-width: 100%;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "cv11", "ss01";

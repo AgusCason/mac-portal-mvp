@@ -40,7 +40,7 @@ export function ClientSelector({
 
   return (
     <Select value={current} onValueChange={handleChange}>
-      <SelectTrigger className="w-64">
+      <SelectTrigger className="w-full sm:w-64">
         <SelectValue placeholder={t("components.shared.chooseClientPlaceholder", "Elegí un cliente")} />
       </SelectTrigger>
       <SelectContent>

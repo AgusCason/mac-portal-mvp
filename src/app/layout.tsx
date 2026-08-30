@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/shared/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -20,6 +20,15 @@ const RADIUS_BY_SHAPE: Record<string, string> = {
   square: "0rem",
   rounded: "0.625rem",
   pill: "9999px",
+};
+
+// Sin esto, mobile renderiza el layout a un ancho de escritorio virtual
+// (~980px) y lo escala hacia abajo — texto chico y sensación de scroll
+// lateral aunque el CSS sea responsive. maximumScale/userScalable quedan en
+// su default (permitir zoom), no los pisamos por accesibilidad.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 /**

@@ -293,7 +293,14 @@ function AppShellInner({
           <SidebarNav profile={profile} moduleFlags={moduleFlags} />
         </aside>
 
-        <div className="bg-background flex min-h-dvh flex-1 flex-col md:rounded-tl-xl md:border-l md:border-t md:border-border">
+        {/*
+          min-w-0 es crítico acá: sin él, un flex item usa min-width:auto (el
+          tamaño mínimo de su contenido), así que si algo adentro no se
+          reduce (una grilla ancha, texto sin wrap, etc.) este panel entero
+          — topbar incluido, porque vive adentro — se estira más que el
+          viewport y arrastra toda la página a un scroll lateral.
+        */}
+        <div className="bg-background flex min-h-dvh min-w-0 flex-1 flex-col md:rounded-tl-xl md:border-l md:border-t md:border-border">
           {/* Topbar */}
           <header className="flex h-14 items-center justify-between gap-3 border-b border-border px-4">
             <div className="flex items-center gap-2">

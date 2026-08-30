@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/auth";
 import { getContentItems } from "@/lib/queries/content";
 import { getPrimaryClientId } from "@/lib/queries/client-membership";
-import { ContentBoard } from "@/components/content/content-board";
+import { ContentCalendarView } from "@/components/content/content-calendar-view";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function ClientCalendarioPage() {
@@ -18,7 +18,7 @@ export default async function ClientCalendarioPage() {
           {t("pages.clientCalendario.description", "Previsualizá, aprobá con un clic o pedí cambios con feedback puntual.")}
         </p>
       </div>
-      <ContentBoard items={items} role="client" />
+      <ContentCalendarView items={items} role="client" />
     </div>
   );
 }

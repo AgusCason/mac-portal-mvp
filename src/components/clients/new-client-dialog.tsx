@@ -188,7 +188,7 @@ export function NewClientDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="contactFullName">
                     {t("components.clients.contactFullNameLabel", "Nombre y apellido del contacto")}
@@ -213,7 +213,7 @@ export function NewClientDialog({
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="country">{t("components.clients.countryLabel", "País")}</Label>
                   <CountrySelect id="country" value={countryIso} onValueChange={handleCountryChange} />
@@ -231,7 +231,7 @@ export function NewClientDialog({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="socialInstagram">Instagram</Label>
                   <HandleInput id="socialInstagram" name="socialInstagram" />
@@ -241,7 +241,7 @@ export function NewClientDialog({
                   <HandleInput id="socialTiktok" name="socialTiktok" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="socialFacebook">Facebook</Label>
                   <Input id="socialFacebook" name="socialFacebook" />
@@ -256,7 +256,7 @@ export function NewClientDialog({
                 <Input id="socialWebsite" name="socialWebsite" placeholder="https://..." />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="planId">{t("components.clients.planLabel", "Plan (opcional)")}</Label>
                   <Select name="planId">

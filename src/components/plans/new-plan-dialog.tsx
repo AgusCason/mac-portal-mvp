@@ -66,7 +66,7 @@ export function NewPlanDialog() {
             <Label htmlFor="description">{t("components.plans.descriptionLabel", "Descripción")}</Label>
             <Input id="description" name="description" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="priceMonthly">{t("components.plans.monthlyPriceLabel", "Precio mensual")}</Label>
               <Input id="priceMonthly" name="priceMonthly" type="number" min={0} step={1000} required />

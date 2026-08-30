@@ -131,7 +131,7 @@ export function NewInvoiceDialog({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="amount">{t("billing.amountLabel", "Monto")}</Label>
               <Input id="amount" name="amount" type="number" min={0} step={100} required />

@@ -71,7 +71,7 @@ export default async function AnalyticsDashboardsPage() {
                     : t("pages.analyticsDashboards.connectedPlural", "conectadas")}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-3 gap-2 text-sm">
+              <CardContent className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-3">
                 <div>
                   <p className="text-muted-foreground text-xs uppercase">{t("pages.analyticsDashboards.reach", "Alcance")}</p>
                   <p className="tabular-nums font-medium">{d.totalReach.toLocaleString("es-AR")}</p>

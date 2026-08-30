@@ -498,6 +498,10 @@ const es = {
       uploadAndDeliver: "Subir y entregar",
       deliveredToast: 'Entregado — pasó a "Por Aprobar"',
       uploadErrorGeneric: "No se pudo subir el archivo.",
+      viewPanel: "Panel",
+      viewCalendario: "Calendario",
+      viewListado: "Listado",
+      viewSwitchAriaLabel: "Formato de vista",
     },
     planner: {
       searchPlaceholder: "Buscar posts...",
@@ -1956,6 +1960,10 @@ const en: typeof es = {
       uploadAndDeliver: "Upload and deliver",
       deliveredToast: 'Delivered — moved to "Pending Approval"',
       uploadErrorGeneric: "Couldn't upload the file.",
+      viewPanel: "Panel",
+      viewCalendario: "Calendar",
+      viewListado: "List",
+      viewSwitchAriaLabel: "View format",
     },
     planner: {
       searchPlaceholder: "Search posts...",
