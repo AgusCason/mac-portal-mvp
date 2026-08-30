@@ -7,9 +7,12 @@ import { getContentItems } from "@/lib/queries/content";
 import { getReports } from "@/lib/queries/reports";
 import { getContracts } from "@/lib/queries/contracts";
 import { getInvoices } from "@/lib/queries/billing";
+import { getModuleFlags } from "@/lib/queries/module-flags";
+import { getClientModuleOverrides } from "@/lib/queries/client-module-overrides";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { AssignEditorDialog } from "@/components/clients/assign-editor-dialog";
 import { LinkClientMemberDialog } from "@/components/clients/link-client-member-dialog";
+import { ClientAccessPanel } from "@/components/clients/client-access-panel";
 import { DriveBrowser } from "@/components/drive/drive-browser";
 import { ContentBoard } from "@/components/content/content-board";
 import { NewContentDialog } from "@/components/content/new-content-dialog";
@@ -63,17 +66,29 @@ export default async function AdminClientDetailPage({
   const { id } = await params;
   const supabase = await createSupabaseServerClient();
 
-  const [detail, editors, unlinkedClientProfiles, contentItems, reports, contracts, invoices, { data: plans }] =
-    await Promise.all([
-      getClientDetail(id),
-      getEditors(),
-      getUnlinkedClientProfiles(id),
-      getContentItems(id),
-      getReports({ clientId: id }),
-      getContracts(id),
-      getInvoices(id),
-      supabase.from("plans").select("*").order("price_monthly"),
-    ]);
+  const [
+    detail,
+    editors,
+    unlinkedClientProfiles,
+    contentItems,
+    reports,
+    contracts,
+    invoices,
+    { data: plans },
+    moduleFlags,
+    accessOverrides,
+  ] = await Promise.all([
+    getClientDetail(id),
+    getEditors(),
+    getUnlinkedClientProfiles(id),
+    getContentItems(id),
+    getReports({ clientId: id }),
+    getContracts(id),
+    getInvoices(id),
+    supabase.from("plans").select("*").order("price_monthly"),
+    getModuleFlags(),
+    getClientModuleOverrides(id),
+  ]);
 
   if (!detail) notFound();
   const { client, planName, assignments, contentCount, contractCount, driveFolders } = detail;
@@ -141,6 +156,7 @@ export default async function AdminClientDetailPage({
           <TabsTrigger value="reportes">{t("pages.clienteDetail.tabReports", "Reportes")}</TabsTrigger>
           <TabsTrigger value="contratos">{t("pages.clienteDetail.tabContracts", "Contratos")}</TabsTrigger>
           <TabsTrigger value="facturacion">{t("pages.clienteDetail.tabBilling", "Facturación")}</TabsTrigger>
+          <TabsTrigger value="accesos">{t("pages.clienteDetail.tabAccess", "Accesos")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="resumen" className="space-y-4">
@@ -229,6 +245,10 @@ export default async function AdminClientDetailPage({
               <InvoiceList invoices={invoices} />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="accesos" className="space-y-4">
+          <ClientAccessPanel clientId={client.id} flags={moduleFlags} overrides={accessOverrides} />
         </TabsContent>
       </Tabs>
     </div>

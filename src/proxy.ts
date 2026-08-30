@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { updateSession } from "@/lib/supabase/middleware";
 import type { Database, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
-import { isModuleVisible } from "@/lib/module-visibility";
+import { isModuleVisible, mergeClientOverrides } from "@/lib/module-visibility";
 
 /** Solo lo que `isModuleVisible` necesita — la cookie de cache no carga
  *  `updated_at`/`updated_by` de las 18 filas de `module_flags` de arriba. */
@@ -67,12 +67,34 @@ async function resolveRoleAndFlags(
   ]);
 
   const role = (profile?.role as UserRole | undefined) ?? null;
-  const flags = Object.fromEntries(
+  let flags = Object.fromEntries(
     (flagRows ?? []).map((f) => [
       f.key,
       { enabled: f.enabled, visible_to_editor: f.visible_to_editor, visible_to_client: f.visible_to_client },
     ])
   );
+
+  // Acceso por cliente puntual (client_module_overrides) — capa fina sobre
+  // el `visible_to_client` general, ver ficha de cliente > pestaña Accesos.
+  // Solo aplica al rol "client"; admin/editor no tienen client_id propio.
+  if (role === "client") {
+    const { data: memberRow } = await supabase
+      .from("client_members")
+      .select("client_id")
+      .eq("profile_id", userId)
+      .limit(1)
+      .maybeSingle();
+    if (memberRow?.client_id) {
+      const { data: overrideRows } = await supabase
+        .from("client_module_overrides")
+        .select("module_key, visible")
+        .eq("client_id", memberRow.client_id);
+      const overrides = Object.fromEntries(
+        (overrideRows ?? []).map((o) => [o.module_key, o.visible])
+      );
+      flags = mergeClientOverrides(flags, overrides);
+    }
+  }
 
   if (role) {
     const cache: RoleCache = { uid: userId, role, flags, ts: Date.now() };

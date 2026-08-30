@@ -267,7 +267,7 @@ function BoardColumn({
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled: !draggable });
 
   return (
-    <div className="min-w-0 lg:w-64">
+    <div className="min-w-0 lg:w-64 lg:shrink-0">
       <div className="mb-2 flex items-center justify-between px-1">
         <Badge variant={meta.variant}>
           <meta.icon /> {getStatusLabel(status, t)}
@@ -403,7 +403,7 @@ export function ContentBoard({
       )}
 
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-flow-col lg:auto-cols-[16rem]">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:pb-2">
           {COLUMN_ORDER.map((status) => (
             <BoardColumn key={status} status={status} items={grouped.get(status) ?? []} role={role} />
           ))}

@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/auth";
 import { getContentItems, getSelectableClients } from "@/lib/queries/content";
-import { ContentBoard } from "@/components/content/content-board";
+import { ContentCalendarView } from "@/components/content/content-calendar-view";
 import { NewContentDialog } from "@/components/content/new-content-dialog";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -20,7 +20,7 @@ export default async function AdminCalendarioPage() {
         </div>
         <NewContentDialog clients={clients} />
       </div>
-      <ContentBoard items={items} role="admin" />
+      <ContentCalendarView items={items} role="admin" />
     </div>
   );
 }

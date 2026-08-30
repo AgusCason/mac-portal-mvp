@@ -502,6 +502,8 @@ const es = {
       viewCalendario: "Calendario",
       viewListado: "Listado",
       viewSwitchAriaLabel: "Formato de vista",
+      searchPlaceholder: "Buscar por título...",
+      noMatchFilter: "No hay piezas que coincidan con el filtro.",
     },
     planner: {
       searchPlaceholder: "Buscar posts...",
@@ -1048,6 +1050,18 @@ const es = {
       includedSummary: "incluidos",
       comingSoonSummary: "próximamente",
     },
+    clientAccess: {
+      infoText:
+        "Esto es aparte de Configuración > Módulos: ahí definís qué ve cada rol en general, acá le das o sacás acceso a un módulo puntual solo para este cliente.",
+      defaultLabel: "Como agencia",
+      visibleLabel: "Visible",
+      hiddenLabel: "Oculto",
+      customBadge: "Personalizado",
+      reset: "Restablecer",
+      offPlatformBadge: "Apagado para todos",
+      offPlatformReason:
+        "Este módulo está apagado en Configuración > Módulos para toda la plataforma — no se puede dar acceso puntual a un cliente mientras esté así.",
+    },
     branding: {
       brandingUpdated: "Branding actualizado",
       appNameLabel: "Nombre de la app",
@@ -1327,6 +1341,7 @@ const es = {
       tabReports: "Reportes",
       tabContracts: "Contratos",
       tabBilling: "Facturación",
+      tabAccess: "Accesos",
       assignedEditors: "Editores asignados",
       noEditors: "Sin editores asignados todavía.",
       portalUser: "Usuario del portal cliente",
@@ -1964,6 +1979,8 @@ const en: typeof es = {
       viewCalendario: "Calendar",
       viewListado: "List",
       viewSwitchAriaLabel: "View format",
+      searchPlaceholder: "Search by title...",
+      noMatchFilter: "No pieces match the filter.",
     },
     planner: {
       searchPlaceholder: "Search posts...",
@@ -2509,6 +2526,18 @@ const en: typeof es = {
       includedSummary: "included",
       comingSoonSummary: "coming soon",
     },
+    clientAccess: {
+      infoText:
+        "This is separate from Settings > Modules: that controls what each role sees in general, here you grant or revoke access to a specific module just for this client.",
+      defaultLabel: "Same as agency",
+      visibleLabel: "Visible",
+      hiddenLabel: "Hidden",
+      customBadge: "Custom",
+      reset: "Reset",
+      offPlatformBadge: "Off for everyone",
+      offPlatformReason:
+        "This module is turned off platform-wide in Settings > Modules — you can't grant a specific client access while it's off.",
+    },
     branding: {
       brandingUpdated: "Branding updated",
       appNameLabel: "App name",
@@ -2788,6 +2817,7 @@ const en: typeof es = {
       tabReports: "Reports",
       tabContracts: "Contracts",
       tabBilling: "Billing",
+      tabAccess: "Access",
       assignedEditors: "Assigned editors",
       noEditors: "No editors assigned yet.",
       portalUser: "Client portal user",

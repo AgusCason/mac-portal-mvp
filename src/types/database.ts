@@ -542,6 +542,16 @@ export interface ModuleFlag {
   updated_by: string | null;
 }
 
+/** Override de acceso a un módulo del Portal de Clientes para UN cliente
+ *  puntual — ver 0031_client_module_overrides.sql y module-visibility.ts. */
+export interface ClientModuleOverride {
+  client_id: string;
+  module_key: string;
+  visible: boolean;
+  updated_at: string;
+  updated_by: string | null;
+}
+
 /**
  * Una fila por método de cobro (siempre las 5 de `PaymentMethodKind`, sembradas
  * por la migración) — agency-wide, no por cliente. Nivel 1 (link generado a
@@ -1022,6 +1032,12 @@ export interface Database {
           >
         >;
         Update: Flatten<Partial<ModuleFlag>>;
+        Relationships: [];
+      };
+      client_module_overrides: {
+        Row: Flatten<ClientModuleOverride>;
+        Insert: Flatten<Optional<ClientModuleOverride, "updated_at" | "updated_by">>;
+        Update: Flatten<Partial<ClientModuleOverride>>;
         Relationships: [];
       };
       payment_methods: {

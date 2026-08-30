@@ -322,7 +322,7 @@ function BoardColumn({ stage, leads }: { stage: CrmLeadStage; leads: CrmLead[] }
   const total = leads.reduce((sum, l) => sum + (l.estimated_value ?? 0), 0);
 
   return (
-    <div className="min-w-0 lg:w-64">
+    <div className="min-w-0 lg:w-64 lg:shrink-0">
       <div className="mb-2 flex items-center justify-between px-1">
         <Badge variant={meta.variant}>
           <meta.icon /> {stageLabel(stage, t)}
@@ -392,7 +392,7 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
         <NewLeadDialog />
       </div>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-flow-col lg:auto-cols-[16rem]">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:pb-2">
           {STAGE_ORDER.map((stage) => (
             <BoardColumn key={stage} stage={stage} leads={grouped.get(stage) ?? []} />
           ))}

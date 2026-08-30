@@ -1,9 +1,7 @@
 import { requireRole } from "@/lib/auth";
 import { getContentItems, getSelectableClients } from "@/lib/queries/content";
-import { ContentBoard } from "@/components/content/content-board";
-import { ContentList } from "@/components/content/content-list";
+import { ContentCalendarView } from "@/components/content/content-calendar-view";
 import { NewContentDialog } from "@/components/content/new-content-dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function EditorCalendarioPage() {
@@ -24,18 +22,7 @@ export default async function EditorCalendarioPage() {
         <NewContentDialog clients={clients} />
       </div>
 
-      <Tabs defaultValue="lista">
-        <TabsList>
-          <TabsTrigger value="lista">{t("pages.editorCalendario.tabList", "Lista por fecha límite")}</TabsTrigger>
-          <TabsTrigger value="kanban">{t("pages.editorCalendario.tabKanban", "Kanban")}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="lista" className="mt-4">
-          <ContentList items={items} role="editor" />
-        </TabsContent>
-        <TabsContent value="kanban" className="mt-4">
-          <ContentBoard items={items} role="editor" />
-        </TabsContent>
-      </Tabs>
+      <ContentCalendarView items={items} role="editor" />
     </div>
   );
 }
