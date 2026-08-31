@@ -16,6 +16,15 @@ import { useLocale } from "@/lib/i18n/locale-context";
 
 const DATE_LOCALE: Record<string, string> = { es: "es-AR", en: "en-US" };
 
+/** Iniciales cortas para el avatar circular del remitente (máx. 2 letras). */
+function initials(name: string | null): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  const first = parts[0]?.[0] ?? "";
+  const second = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+  return (first + second).toUpperCase() || "?";
+}
+
 /**
  * Bandeja de chat tipo CRM (Módulo E). `outbound` = agencia -> cliente,
  * `inbound` = cliente -> agencia (o mensaje real recibido por WhatsApp
@@ -58,9 +67,9 @@ export function ChatThread({
   }
 
   return (
-    <div className="flex h-[32rem] flex-col overflow-hidden rounded-xl border border-border">
+    <div className="border-border bg-card flex h-[32rem] flex-col overflow-hidden rounded-xl border">
       <ScrollArea className="flex-1 p-4">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {messages.length === 0 && (
             <p className="text-muted-foreground text-sm">
               {t("components.chat.noMessages", "Todavía no hay mensajes en este hilo.")}
@@ -68,32 +77,45 @@ export function ChatThread({
           )}
           {messages.map((m) => {
             const mine = m.sender_profile_id === currentProfileId;
+            const senderLabel =
+              m.sender_name ??
+              (m.direction === "inbound"
+                ? t("components.chat.senderClient", "Cliente")
+                : t("components.chat.senderAgency", "Agencia"));
             return (
               <div
                 key={m.id}
-                className={cn("flex flex-col", mine ? "items-end" : "items-start")}
+                className={cn("flex items-end gap-2", mine ? "flex-row-reverse" : "flex-row")}
               >
                 <div
                   className={cn(
-                    "max-w-[75%] rounded-lg px-3 py-2 text-sm",
-                    mine
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
+                    "flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-medium",
+                    mine ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
                   )}
+                  aria-hidden
                 >
-                  {m.body}
+                  {initials(senderLabel)}
                 </div>
-                <span className="text-muted-foreground mt-1 text-[11px]">
-                  {m.sender_name ??
-                    (m.direction === "inbound"
-                      ? t("components.chat.senderClient", "Cliente")
-                      : t("components.chat.senderAgency", "Agencia"))}{" "}
-                  ·{" "}
-                  {new Date(m.created_at).toLocaleTimeString(DATE_LOCALE[locale] ?? "es-AR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
+                <div className={cn("flex max-w-[75%] flex-col", mine ? "items-end" : "items-start")}>
+                  <div
+                    className={cn(
+                      "rounded-2xl px-3.5 py-2 text-sm shadow-sm",
+                      mine
+                        ? "bg-primary text-primary-foreground rounded-br-sm"
+                        : "bg-muted text-foreground rounded-bl-sm"
+                    )}
+                  >
+                    {m.body}
+                  </div>
+                  <span className="text-muted-foreground mt-1 px-0.5 text-[11px]">
+                    {senderLabel}{" "}
+                    ·{" "}
+                    {new Date(m.created_at).toLocaleTimeString(DATE_LOCALE[locale] ?? "es-AR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -103,7 +125,7 @@ export function ChatThread({
       <form
         ref={formRef}
         action={handleSubmit}
-        className="flex items-center gap-2 border-t border-border p-3"
+        className="border-border bg-muted/30 flex items-center gap-2 border-t p-3"
       >
         <input type="hidden" name="clientId" value={clientId} />
         <Input
@@ -113,6 +135,7 @@ export function ChatThread({
           autoComplete="off"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
+          className="bg-background"
         />
         <Button
           type="submit"

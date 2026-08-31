@@ -73,6 +73,7 @@ function NavLink({
   icon: Icon,
   active,
   indented,
+  collapsed,
 }: {
   href: string;
   label: string;
@@ -80,21 +81,25 @@ function NavLink({
   icon: LucideIconType;
   active: boolean;
   indented?: boolean;
+  collapsed?: boolean;
 }) {
   const { t } = useLocale();
+  const resolvedLabel = labelKey ? t(labelKey, label) : label;
   return (
     <Link
       href={href}
+      title={collapsed ? resolvedLabel : undefined}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
         indented && "py-1.5 pl-9 text-[13px]",
+        collapsed && "justify-center px-0",
         active
           ? "bg-sidebar-accent text-sidebar-accent-foreground"
           : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >
       <Icon className={cn("shrink-0", indented ? "size-3.5" : "size-4")} strokeWidth={1.75} />
-      {labelKey ? t(labelKey, label) : label}
+      {!collapsed && resolvedLabel}
     </Link>
   );
 }
@@ -111,11 +116,15 @@ function NavGroup({
   pathname,
   open,
   onToggle,
+  collapsed,
+  onExpand,
 }: {
   item: NavItem & { children: NonNullable<NavItem["children"]> };
   pathname: string;
   open: boolean;
   onToggle: () => void;
+  collapsed?: boolean;
+  onExpand?: () => void;
 }) {
   const activeChildHref = pickActiveChildHref(
     pathname,
@@ -125,27 +134,43 @@ function NavGroup({
 
   const Icon = item.icon;
   const { t } = useLocale();
+  const resolvedLabel = item.key ? t(item.key, item.label) : item.label;
 
   return (
     <div>
       <button
         type="button"
-        onClick={onToggle}
+        onClick={() => {
+          // Colapsado, un grupo no tiene dónde mostrar sus hijos — el click
+          // primero reabre el sidebar completo y de paso abre el grupo.
+          if (collapsed) {
+            onExpand?.();
+            if (!open) onToggle();
+            return;
+          }
+          onToggle();
+        }}
+        title={collapsed ? resolvedLabel : undefined}
         aria-expanded={open}
         className={cn(
           "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
+          collapsed && "justify-center px-0",
           hasActiveChild
             ? "text-foreground"
             : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
         )}
       >
         <Icon className="size-4 shrink-0" strokeWidth={1.75} />
-        <span className="flex-1 text-left">{item.key ? t(item.key, item.label) : item.label}</span>
-        <ChevronDown
-          className={cn("size-3.5 shrink-0 transition-transform duration-150", open && "rotate-180")}
-        />
+        {!collapsed && (
+          <>
+            <span className="flex-1 text-left">{resolvedLabel}</span>
+            <ChevronDown
+              className={cn("size-3.5 shrink-0 transition-transform duration-150", open && "rotate-180")}
+            />
+          </>
+        )}
       </button>
-      {open && (
+      {open && !collapsed && (
         <div className="mt-0.5 flex flex-col gap-0.5">
           {item.children.map((child) => (
             <NavLink
@@ -167,9 +192,13 @@ function NavGroup({
 function SidebarNav({
   profile,
   moduleFlags,
+  collapsed,
+  onExpand,
 }: {
   profile: Profile;
   moduleFlags: Record<string, ModuleFlag>;
+  collapsed?: boolean;
+  onExpand?: () => void;
 }) {
   const pathname = usePathname();
   const items = filterNavItems(NAV_CONFIG[profile.role], profile.role, moduleFlags);
@@ -190,7 +219,7 @@ function SidebarNav({
   const openGroup = manualOpenGroup === undefined ? activeGroupLabel : manualOpenGroup;
 
   return (
-    <nav className="flex flex-col gap-1 p-3">
+    <nav className={cn("flex flex-col gap-1 p-3", collapsed && "items-center px-2")}>
       {items.map((item) =>
         item.children ? (
           <NavGroup
@@ -201,6 +230,8 @@ function SidebarNav({
             onToggle={() =>
               setManualOpenGroup(openGroup === item.label ? null : item.label)
             }
+            collapsed={collapsed}
+            onExpand={onExpand}
           />
         ) : (
           <NavLink
@@ -210,6 +241,7 @@ function SidebarNav({
             labelKey={item.key}
             icon={item.icon}
             active={isItemActive(pathname, item.href!, profile.role)}
+            collapsed={collapsed}
           />
         )
       )}
@@ -217,10 +249,24 @@ function SidebarNav({
   );
 }
 
-function BrandHeader({ branding }: { branding: AgencyBranding }) {
+function BrandHeader({
+  branding,
+  collapsed,
+  hideAppName,
+}: {
+  branding: AgencyBranding;
+  collapsed?: boolean;
+  hideAppName?: boolean;
+}) {
+  const hasCustomLogo = branding.logo_light_url || branding.logo_dark_url;
   return (
-    <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
-      {branding.logo_light_url || branding.logo_dark_url ? (
+    <div
+      className={cn(
+        "flex h-14 items-center gap-2 border-b border-sidebar-border px-4",
+        collapsed && "justify-center px-0"
+      )}
+    >
+      {hasCustomLogo ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element -- URL de logo arbitraria configurada por el admin, no se puede allowlistar en next.config en runtime. */}
           <img
@@ -236,9 +282,20 @@ function BrandHeader({ branding }: { branding: AgencyBranding }) {
           />
         </>
       ) : (
-        <Image src="/logo.png" alt={branding.app_name} width={28} height={28} className="rounded-md" />
+        // El logo default (public/logo.png) ya trae la marca "MAC" + estrella
+        // en el propio archivo (fondo transparente) — un poco más alto que
+        // ancho lo deja legible tanto colapsado (rail angosto) como expandido.
+        <Image
+          src="/logo.png"
+          alt={branding.app_name}
+          width={109}
+          height={40}
+          className={collapsed ? "h-5 w-auto" : "h-6 w-auto"}
+        />
       )}
-      <span className="truncate text-sm font-semibold tracking-tight">{branding.app_name}</span>
+      {!hideAppName && !collapsed && (
+        <span className="truncate text-sm font-semibold tracking-tight">{branding.app_name}</span>
+      )}
     </div>
   );
 }
@@ -285,13 +342,58 @@ function AppShellInner({
   const [profileOpen, setProfileOpen] = React.useState(false);
   const { t } = useLocale();
 
+  // El sidebar colapsable (rail de íconos ↔ ancho completo con textos) es,
+  // por ahora, solo para el portal de clientes — admin/editor tienen grupos
+  // con acordeón (Analytics, Management, ...) que no está pensado colapsar
+  // todavía, así que quedan con el sidebar de siempre, sin tocar nada.
+  const isClient = profile.role === "client";
+  // Vive solo en memoria (no localStorage): el layout de /client no se
+  // desmonta entre navegaciones client-side, así que alcanza para que el
+  // estado "abierto/cerrado" se mantenga mientras el cliente navega el
+  // portal, sin arriesgar un mismatch de hidratación SSR/cliente.
+  const [collapsedRaw, setCollapsedRaw] = React.useState(false);
+  const collapsed = isClient && collapsedRaw;
+
+  const toggleCollapsed = React.useCallback(() => {
+    setCollapsedRaw((prev) => !prev);
+  }, []);
+
   return (
     <div className="bg-sidebar min-h-dvh">
       <div className="flex">
         {/* Sidebar desktop */}
-        <aside className="border-sidebar-border bg-sidebar hidden w-60 shrink-0 flex-col border-r md:flex">
-          <BrandHeader branding={branding} />
-          <SidebarNav profile={profile} moduleFlags={moduleFlags} />
+        <aside
+          className={cn(
+            "border-sidebar-border bg-sidebar hidden shrink-0 flex-col border-r transition-[width] duration-200 md:flex",
+            collapsed ? "w-[76px]" : "w-60"
+          )}
+        >
+          <BrandHeader branding={branding} collapsed={collapsed} hideAppName={isClient} />
+          {isClient && (
+            <button
+              type="button"
+              onClick={toggleCollapsed}
+              title={
+                collapsed
+                  ? t("components.appShell.expandSidebar", "Expandir menú")
+                  : t("components.appShell.collapseSidebar", "Cerrar menú")
+              }
+              className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mx-auto my-2 flex size-7 items-center justify-center rounded-lg transition-colors duration-150"
+            >
+              <ChevronDown
+                className={cn(
+                  "size-3.5 transition-transform duration-200",
+                  collapsed ? "-rotate-90" : "rotate-90"
+                )}
+              />
+            </button>
+          )}
+          <SidebarNav
+            profile={profile}
+            moduleFlags={moduleFlags}
+            collapsed={collapsed}
+            onExpand={collapsed ? toggleCollapsed : undefined}
+          />
         </aside>
 
         {/*
@@ -314,7 +416,7 @@ function AppShellInner({
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 p-0">
                   <SheetTitle className="sr-only">{t("components.appShell.mobileMenuTitle", "Menú")}</SheetTitle>
-                  <BrandHeader branding={branding} />
+                  <BrandHeader branding={branding} hideAppName={isClient} />
                   <SidebarNav profile={profile} moduleFlags={moduleFlags} />
                 </SheetContent>
               </Sheet>

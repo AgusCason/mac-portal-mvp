@@ -1,5 +1,13 @@
 import Link from "next/link";
-import { Eye, FileSignature, Sparkles } from "lucide-react";
+import {
+  Eye,
+  FileSignature,
+  Sparkles,
+  MessageCircle,
+  CalendarDays,
+  ChevronRight,
+  Image as ImageIcon,
+} from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import {
   Card,
@@ -9,7 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { AvatarUploadDialog } from "@/components/shared/avatar-upload-dialog";
 import { getT } from "@/lib/i18n/dictionary";
@@ -97,47 +104,109 @@ export function ClientDashboard({
           label={t("components.dashboard.kpiWaitingApproval", "Esperando tu aprobación")}
           value={data.pendingReview.length}
           icon={Eye}
+          tone="info"
         />
-        <KpiCard label={t("components.dashboard.kpiApprovedReady", "Aprobado / listo")} value={aprobado} icon={Sparkles} />
+        <KpiCard
+          label={t("components.dashboard.kpiApprovedReady", "Aprobado / listo")}
+          value={aprobado}
+          icon={Sparkles}
+          tone="primary"
+        />
         <KpiCard
           label={t("components.dashboard.kpiPendingContracts", "Contratos pendientes")}
           value={data.pendingContracts}
           icon={FileSignature}
+          tone="warning"
           hint={data.pendingContracts > 0 ? t("components.dashboard.kpiPendingContractsHint", "Requieren tu firma") : undefined}
         />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("components.dashboard.pendingReviewTitle", "Contenido por aprobar")}</CardTitle>
-          <CardDescription>
-            {t("components.dashboard.pendingReviewDesc", "Revisá y aprobá con un clic, o pedí cambios con feedback puntual.")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {data.pendingReview.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              {t("components.dashboard.noPendingReview", "No tenés contenido esperando aprobación en este momento.")}
-            </p>
-          )}
-          {data.pendingReview.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
-            >
-              <div>
-                <p className="font-medium">{item.title}</p>
-                <p className="text-muted-foreground text-xs capitalize">
-                  {item.network.replace(/_/g, " ")}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle>{t("components.dashboard.pendingReviewTitle", "Contenido por aprobar")}</CardTitle>
+            <CardDescription>
+              {t("components.dashboard.pendingReviewDesc", "Revisá y aprobá con un clic, o pedí cambios con feedback puntual.")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-1">
+            {data.pendingReview.length === 0 && (
+              <p className="text-muted-foreground text-sm">
+                {t("components.dashboard.noPendingReview", "No tenés contenido esperando aprobación en este momento.")}
+              </p>
+            )}
+            {data.pendingReview.map((item) => (
+              <Link
+                key={item.id}
+                href={`/client/calendario?item=${item.id}`}
+                className="hover:bg-accent -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors duration-150"
+              >
+                <div className="bg-info/15 text-info flex size-9 shrink-0 items-center justify-center rounded-full">
+                  <ImageIcon className="size-4" strokeWidth={1.75} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{item.title}</p>
+                  <p className="text-muted-foreground truncate text-xs capitalize">
+                    {item.network.replace(/_/g, " ")}
+                  </p>
+                </div>
+                <Badge variant="info" className="shrink-0">
+                  {t("components.dashboard.review", "Revisar")}
+                </Badge>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+
+        <div className="flex flex-col gap-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">
+                {t("components.dashboard.quickAccessTitle", "Accesos rápidos")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <Link
+                href="/client/calendario"
+                className="hover:bg-accent -mx-2 flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors duration-150"
+              >
+                <CalendarDays className="text-muted-foreground size-4 shrink-0" strokeWidth={1.75} />
+                <span className="flex-1">
+                  {t("components.dashboard.quickAccessCalendar", "Ver calendario de contenido")}
+                </span>
+                <ChevronRight className="text-muted-foreground size-3.5 shrink-0" />
+              </Link>
+              <Link
+                href="/client/chat"
+                className="hover:bg-accent -mx-2 flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-colors duration-150"
+              >
+                <MessageCircle className="text-muted-foreground size-4 shrink-0" strokeWidth={1.75} />
+                <span className="flex-1">
+                  {t("components.dashboard.quickAccessChat", "Hablar con la agencia")}
+                </span>
+                <ChevronRight className="text-muted-foreground size-3.5 shrink-0" />
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/30 bg-primary/10">
+            <CardContent className="space-y-2 pt-6">
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-primary size-4" strokeWidth={1.75} />
+                <p className="text-sm font-semibold">
+                  {t("components.dashboard.helpTitle", "¿Necesitás ayuda?")}
                 </p>
               </div>
-              <Button asChild size="sm" variant="outline">
-                <Link href={`/client/calendario?item=${item.id}`}>{t("components.dashboard.review", "Revisar")}</Link>
-              </Button>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+              <p className="text-foreground/80 text-xs leading-relaxed">
+                {t(
+                  "components.dashboard.helpBody",
+                  "Tocá el ícono ✦ abajo a la derecha para preguntarle a MAX, tu asistente del portal, cómo usar cualquier sección."
+                )}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       <p className="text-muted-foreground text-xs">
         {t("components.dashboard.publishedSoFar", "Publicado hasta ahora:")}{" "}

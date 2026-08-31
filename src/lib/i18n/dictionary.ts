@@ -845,6 +845,11 @@ const es = {
       noPendingReview: "No tenés contenido esperando aprobación en este momento.",
       publishedSoFar: "Publicado hasta ahora:",
       pieces: "piezas",
+      quickAccessTitle: "Accesos rápidos",
+      quickAccessCalendar: "Ver calendario de contenido",
+      quickAccessChat: "Hablar con la agencia",
+      helpTitle: "¿Necesitás ayuda?",
+      helpBody: "Tocá el ícono ✦ abajo a la derecha para preguntarle a MAX, tu asistente del portal, cómo usar cualquier sección.",
     },
     clients: {
       statusActive: "Activa",
@@ -1245,6 +1250,8 @@ const es = {
     },
     appShell: {
       mobileMenuTitle: "Menú",
+      expandSidebar: "Expandir menú",
+      collapseSidebar: "Cerrar menú",
     },
   },
   pages: {
@@ -2340,6 +2347,11 @@ const en: typeof es = {
       noPendingReview: "You have no content awaiting approval right now.",
       publishedSoFar: "Published so far:",
       pieces: "pieces",
+      quickAccessTitle: "Quick access",
+      quickAccessCalendar: "View content calendar",
+      quickAccessChat: "Talk to the agency",
+      helpTitle: "Need help?",
+      helpBody: "Tap the ✦ icon in the bottom right to ask MAX, your portal assistant, how to use any section.",
     },
     clients: {
       statusActive: "Active",
@@ -2739,6 +2751,8 @@ const en: typeof es = {
     },
     appShell: {
       mobileMenuTitle: "Menu",
+      expandSidebar: "Expand menu",
+      collapseSidebar: "Collapse menu",
     },
   },
   pages: {

@@ -191,7 +191,10 @@ function ContentCard({
     <Card
       ref={setNodeRef}
       style={style}
-      className={cn("gap-3 py-4", isDragging && "z-50 opacity-60 shadow-lg")}
+      className={cn(
+        "gap-3 py-4 transition-shadow duration-150 hover:shadow-md",
+        isDragging && "z-50 opacity-60 shadow-lg"
+      )}
     >
       <CardHeader className="px-4">
         <CardTitle className="flex items-start justify-between gap-2 text-sm font-medium">
@@ -210,8 +213,10 @@ function ContentCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 px-4">
-        <div className="text-muted-foreground flex items-center gap-1.5 text-xs">
-          <NetworkIcon className="size-3.5" />
+        <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <span className="bg-accent flex size-6 shrink-0 items-center justify-center rounded-full">
+            <NetworkIcon className="size-3.5" />
+          </span>
           {network.label}
         </div>
         {role !== "client" && (
