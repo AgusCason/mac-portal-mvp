@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, UserCog, Wallet, Clock, ArrowUpRight, TrendingDown } from "lucide-react";
+import { Users, UserCog, Wallet, Clock, ArrowUpRight, TrendingDown, Building2 } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { ContentStatusBadge } from "@/components/dashboard/content-status-badge";
 import {
@@ -49,19 +49,27 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
           label={t("components.dashboard.kpiActiveAccounts", "Cuentas activas")}
           value={`${data.activeClients}/${data.totalClients}`}
           icon={Users}
+          tone="info"
           hint={t("components.dashboard.kpiActiveAccountsHint", "Cuentas activas sobre el total")}
         />
-        <KpiCard label={t("components.dashboard.kpiTeamEditors", "Editores en equipo")} value={data.totalEditors} icon={UserCog} />
+        <KpiCard
+          label={t("components.dashboard.kpiTeamEditors", "Editores en equipo")}
+          value={data.totalEditors}
+          icon={UserCog}
+          tone="primary"
+        />
         <KpiCard
           label={t("components.dashboard.kpiMonthlyRevenue", "Facturación mensual")}
           value={formatCurrency(data.monthlyRevenue)}
           icon={Wallet}
+          tone="success"
           hint={t("components.dashboard.kpiMonthlyRevenueHint", "Suma de planes activos")}
         />
         <KpiCard
           label={t("components.dashboard.kpiContentInProgress", "Contenido en curso")}
           value={inFlight}
           icon={Clock}
+          tone="warning"
           hint={t("components.dashboard.kpiContentInProgressHint", "En edición + por aprobar + con cambios")}
         />
       </div>
@@ -83,9 +91,12 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
             {data.pendingApprovals.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
+                className="flex items-center gap-3 rounded-lg border border-border px-3 py-2"
               >
-                <div className="min-w-0">
+                <span className="bg-info/15 text-info flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <Clock className="size-4" strokeWidth={1.75} />
+                </span>
+                <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{item.title}</p>
                   <p className="text-muted-foreground text-xs">{item.client_name}</p>
                 </div>
@@ -106,8 +117,15 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
           </CardHeader>
           <CardContent className="space-y-2">
             {data.recentClients.map((c) => (
-              <div key={c.id} className="flex items-center justify-between text-sm">
-                <div className="min-w-0">
+              <Link
+                key={c.id}
+                href={`/admin/clientes/${c.id}`}
+                className="hover:bg-accent -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors duration-150"
+              >
+                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <Building2 className="size-4" strokeWidth={1.75} />
+                </span>
+                <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{c.name}</p>
                   <p className="text-muted-foreground text-xs">
                     {t("components.dashboard.signedUpOn", "Alta")} {formatDate(c.created_at)}
@@ -116,7 +134,7 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
                 <Badge variant={c.status === "active" ? "success" : "secondary"}>
                   {ACCOUNT_STATUS_LABEL[c.status] ?? c.status}
                 </Badge>
-              </div>
+              </Link>
             ))}
             <Button asChild variant="ghost" size="sm" className="mt-1 w-full justify-between">
               <Link href="/admin/clientes">
@@ -146,8 +164,10 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
               key={alert.id}
               className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
             >
-              <div className="flex items-center gap-2 min-w-0">
-                <TrendingDown className="text-destructive size-4 shrink-0" />
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="bg-destructive/15 text-destructive flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <TrendingDown className="size-4" strokeWidth={1.75} />
+                </span>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{alert.client_name}</p>
                   <p className="text-muted-foreground text-xs">

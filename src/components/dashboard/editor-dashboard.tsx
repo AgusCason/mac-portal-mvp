@@ -28,16 +28,23 @@ export function EditorDashboard({ data, profile }: { data: EditorDashboardData; 
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard label={t("components.dashboard.kpiAssignedClients", "Clientes asignados")} value={data.assignedClients.length} icon={Users} />
+        <KpiCard
+          label={t("components.dashboard.kpiAssignedClients", "Clientes asignados")}
+          value={data.assignedClients.length}
+          icon={Users}
+          tone="primary"
+        />
         <KpiCard
           label={t("components.dashboard.kpiChangesRequested", "Con cambios pedidos")}
           value={data.myContentByStatus.requiere_cambios}
           icon={MessageCircleWarning}
+          tone="warning"
         />
         <KpiCard
           label={t("components.dashboard.kpiUpcomingDeliveries", "Próximas entregas")}
           value={data.upcoming.length}
           icon={CalendarClock}
+          tone="info"
         />
       </div>
 
@@ -54,9 +61,12 @@ export function EditorDashboard({ data, profile }: { data: EditorDashboardData; 
             {data.needsChanges.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm"
               >
-                <div className="min-w-0">
+                <span className="bg-warning/15 text-warning flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <MessageCircleWarning className="size-4" strokeWidth={1.75} />
+                </span>
+                <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{item.title}</p>
                   <p className="text-muted-foreground text-xs">{item.client_name}</p>
                 </div>
@@ -75,9 +85,12 @@ export function EditorDashboard({ data, profile }: { data: EditorDashboardData; 
             {data.assignedClients.map((c) => (
               <div
                 key={c.client_id}
-                className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm"
               >
-                <span className="font-medium">{c.name}</span>
+                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                  <Users className="size-4" strokeWidth={1.75} />
+                </span>
+                <span className="flex-1 truncate font-medium">{c.name}</span>
                 <div className="flex gap-1.5">
                   <Badge variant={c.can_view_drive ? "info" : "outline"}>
                     <FolderOpen /> Drive
@@ -102,12 +115,15 @@ export function EditorDashboard({ data, profile }: { data: EditorDashboardData; 
             <p className="text-muted-foreground text-sm">{t("components.dashboard.noUpcomingDeliveries", "No hay entregas programadas todavía.")}</p>
           )}
           {data.upcoming.map((item) => (
-            <div key={item.id} className="flex items-center justify-between text-sm">
-              <div>
-                <p className="font-medium">{item.title}</p>
+            <div key={item.id} className="flex items-center gap-3 text-sm">
+              <span className="bg-info/15 text-info flex size-8 shrink-0 items-center justify-center rounded-full">
+                <CalendarClock className="size-4" strokeWidth={1.75} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{item.title}</p>
                 <p className="text-muted-foreground text-xs">{item.client_name}</p>
               </div>
-              <span className="text-muted-foreground tabular-nums text-xs">
+              <span className="text-muted-foreground shrink-0 tabular-nums text-xs">
                 {formatDate(item.scheduled_at)}
               </span>
             </div>

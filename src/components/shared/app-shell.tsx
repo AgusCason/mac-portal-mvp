@@ -342,20 +342,18 @@ function AppShellInner({
   const [profileOpen, setProfileOpen] = React.useState(false);
   const { t } = useLocale();
 
-  // El sidebar colapsable (rail de íconos ↔ ancho completo con textos) es,
-  // por ahora, solo para el portal de clientes — admin/editor tienen grupos
-  // con acordeón (Analytics, Management, ...) que no está pensado colapsar
-  // todavía, así que quedan con el sidebar de siempre, sin tocar nada.
-  const isClient = profile.role === "client";
-  // Vive solo en memoria (no localStorage): el layout de /client no se
+  // El sidebar colapsable (rail de íconos ↔ ancho completo con textos) es
+  // para los 3 roles — los grupos con acordeón de admin/editor (Analytics,
+  // Management, ...) ya soportan `collapsed`/`onExpand` en NavGroup: click
+  // en un grupo colapsado reabre el sidebar y de paso abre ese grupo.
+  // Vive solo en memoria (no localStorage): ningún layout de rol se
   // desmonta entre navegaciones client-side, así que alcanza para que el
-  // estado "abierto/cerrado" se mantenga mientras el cliente navega el
-  // portal, sin arriesgar un mismatch de hidratación SSR/cliente.
-  const [collapsedRaw, setCollapsedRaw] = React.useState(false);
-  const collapsed = isClient && collapsedRaw;
+  // estado "abierto/cerrado" se mantenga mientras se navega el portal, sin
+  // arriesgar un mismatch de hidratación SSR/cliente.
+  const [collapsed, setCollapsed] = React.useState(false);
 
   const toggleCollapsed = React.useCallback(() => {
-    setCollapsedRaw((prev) => !prev);
+    setCollapsed((prev) => !prev);
   }, []);
 
   return (
@@ -368,26 +366,24 @@ function AppShellInner({
             collapsed ? "w-[76px]" : "w-60"
           )}
         >
-          <BrandHeader branding={branding} collapsed={collapsed} hideAppName={isClient} />
-          {isClient && (
-            <button
-              type="button"
-              onClick={toggleCollapsed}
-              title={
-                collapsed
-                  ? t("components.appShell.expandSidebar", "Expandir menú")
-                  : t("components.appShell.collapseSidebar", "Cerrar menú")
-              }
-              className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mx-auto my-2 flex size-7 items-center justify-center rounded-lg transition-colors duration-150"
-            >
-              <ChevronDown
-                className={cn(
-                  "size-3.5 transition-transform duration-200",
-                  collapsed ? "-rotate-90" : "rotate-90"
-                )}
-              />
-            </button>
-          )}
+          <BrandHeader branding={branding} collapsed={collapsed} hideAppName />
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            title={
+              collapsed
+                ? t("components.appShell.expandSidebar", "Expandir menú")
+                : t("components.appShell.collapseSidebar", "Cerrar menú")
+            }
+            className="text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground mx-auto my-2 flex size-7 items-center justify-center rounded-lg transition-colors duration-150"
+          >
+            <ChevronDown
+              className={cn(
+                "size-3.5 transition-transform duration-200",
+                collapsed ? "-rotate-90" : "rotate-90"
+              )}
+            />
+          </button>
           <SidebarNav
             profile={profile}
             moduleFlags={moduleFlags}
@@ -416,7 +412,7 @@ function AppShellInner({
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 p-0">
                   <SheetTitle className="sr-only">{t("components.appShell.mobileMenuTitle", "Menú")}</SheetTitle>
-                  <BrandHeader branding={branding} hideAppName={isClient} />
+                  <BrandHeader branding={branding} hideAppName />
                   <SidebarNav profile={profile} moduleFlags={moduleFlags} />
                 </SheetContent>
               </Sheet>
