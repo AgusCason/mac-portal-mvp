@@ -42,7 +42,14 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background/85 supports-[backdrop-filter]:bg-background/70 backdrop-blur-xl fixed top-[50%] left-[50%] z-50 grid w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 rounded-xl border border-border p-8 max-h-[calc(100%-2rem)] overflow-y-auto",
+          // w-[calc(100%-2rem)] sigue poniendo un margen mínimo de 1rem a los
+          // costados incluso en pantallas chicas; max-w-2xl (antes max-w-lg)
+          // le da más aire real a formularios de 2 columnas en desktop.
+          // flex-col (en vez de grid) para que un hijo pueda pedir flex-1 y
+          // ocupar el resto de la altura — así el que necesita scroll interno
+          // (ScrollArea) no termina compitiendo con el propio overflow-y-auto
+          // de acá afuera (esa combinación producía doble scrollbar).
+          "bg-background/85 supports-[backdrop-filter]:bg-background/70 backdrop-blur-xl fixed top-[50%] left-[50%] z-50 flex w-[calc(100%-2rem)] max-w-2xl translate-x-[-50%] translate-y-[-50%] flex-col gap-6 rounded-3xl border border-border p-8 max-h-[calc(100%-2rem)] overflow-y-auto",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className
         )}

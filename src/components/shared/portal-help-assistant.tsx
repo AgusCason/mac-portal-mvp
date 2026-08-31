@@ -80,7 +80,7 @@ export function PortalHelpAssistant() {
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="flex w-full flex-col p-0 sm:max-w-sm">
+        <SheetContent side="right" className="flex flex-col p-0">
           <SheetHeader className="border-b border-border">
             <SheetTitle className="flex items-center gap-2">
               <Sparkles className="text-primary size-5" />

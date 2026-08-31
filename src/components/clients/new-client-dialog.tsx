@@ -134,8 +134,21 @@ export function NewClientDialog({
           <Plus /> {t("components.clients.newClient", "Nuevo cliente")}
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh]">
-        <form action={handleSubmit} className="flex max-h-[80vh] flex-col">
+      <DialogContent
+        className="flex max-h-[85vh] flex-col overflow-hidden"
+      >
+        {/*
+          Antes: DialogContent (overflow-y-auto) + este form (max-h-[80vh]) +
+          la ScrollArea de abajo (max-h-[55vh]) eran TRES alturas adivinadas
+          por separado — apenas header+footer+contenido superaban cualquiera
+          de esas cotas, tanto el diálogo como la ScrollArea scrolleaban a la
+          vez (el doble scrollbar reportado). Ahora el diálogo nunca scrollea
+          (overflow-hidden arriba): el form es flex-1 y la ScrollArea de abajo
+          también, así el layout reparte la altura exacta entre
+          header/footer/contenido y un solo scroll (el de la ScrollArea) se
+          lleva el sobrante.
+        */}
+        <form action={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogHeader>
             <DialogTitle>{t("components.clients.newClient", "Nuevo cliente")}</DialogTitle>
             <DialogDescription>
@@ -146,7 +159,7 @@ export function NewClientDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="max-h-[55vh] pr-4">
+          <ScrollArea className="min-h-0 flex-1 pr-4">
             <div className="space-y-4 py-2">
               {contacts.length > 0 && (
                 <div className="space-y-1.5">

@@ -48,12 +48,12 @@ export function ActivityPanel({ eventsPromise }: { eventsPromise: Promise<Activi
           <ActivityIcon />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-sm">
+      <SheetContent side="right" className="flex flex-col">
         <SheetHeader>
           <SheetTitle>{t("components.shared.activity", "Actividad")}</SheetTitle>
           <SheetDescription>{t("components.shared.activityDesc", "Lo último que pasó en el workspace.")}</SheetDescription>
         </SheetHeader>
-        <ScrollArea className="h-[calc(100dvh-6rem)] px-6">
+        <ScrollArea className="min-h-0 flex-1 px-6">
           <div className="flex flex-col gap-3 pb-6">
             {events.length === 0 && (
               <p className="text-muted-foreground text-sm">{t("components.shared.noActivity", "Todavía no hay actividad registrada.")}</p>

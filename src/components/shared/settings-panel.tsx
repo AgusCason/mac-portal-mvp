@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Settings, Sun, Moon, Laptop, Check, Languages } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import {
   Sheet,
@@ -97,13 +98,14 @@ export function SettingsPanel() {
           <Settings />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-sm">
+      <SheetContent side="right" className="flex flex-col">
         <SheetHeader>
           <SheetTitle>{t("settings.title", "Preferencias")}</SheetTitle>
           <SheetDescription>
             {t("settings.description", "Personalizá tu experiencia en la plataforma.")}
           </SheetDescription>
         </SheetHeader>
+        <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col gap-4 px-6 pb-6">
           <div>
             <p className="mb-2 text-sm font-medium">{t("settings.theme", "Tema")}</p>
@@ -174,6 +176,7 @@ export function SettingsPanel() {
             </div>
           </div>
         </div>
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );

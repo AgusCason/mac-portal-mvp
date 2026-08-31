@@ -117,12 +117,12 @@ export function NotificationsPanel({
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-sm">
+      <SheetContent side="right" className="flex flex-col">
         <SheetHeader>
           <SheetTitle>{t("components.shared.sectionNotifications", "Notificaciones")}</SheetTitle>
           <SheetDescription>{t("components.shared.notificationsPanelDesc", "Menciones, aprobaciones y avisos importantes.")}</SheetDescription>
         </SheetHeader>
-        <ScrollArea className="h-[calc(100dvh-10rem)] px-6">
+        <ScrollArea className="min-h-0 flex-1 px-6">
           <div className="flex flex-col gap-2 pb-6">
             {notifications.length === 0 && (
               <p className="text-muted-foreground text-sm">{t("components.shared.noNotifications", "No tenés notificaciones.")}</p>

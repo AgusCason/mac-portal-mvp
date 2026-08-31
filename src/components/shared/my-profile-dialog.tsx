@@ -359,9 +359,9 @@ export function MyProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="grid max-w-2xl grid-cols-[200px_1fr] gap-0 p-0 sm:max-w-2xl">
+      <DialogContent className="grid max-h-[85vh] max-w-3xl grid-cols-[220px_1fr] gap-0 overflow-hidden p-0 sm:max-w-3xl">
         <DialogTitle className="sr-only">{t("components.shared.sectionProfile", "Perfil de Cuenta")}</DialogTitle>
-        <div className="bg-muted/40 space-y-0.5 rounded-l-lg border-r border-border p-3">
+        <div className="bg-muted/40 space-y-0.5 rounded-l-3xl border-r border-border p-4">
           {SECTIONS.map((s) => {
             const Icon = s.icon;
             const active = section === s.key;
@@ -381,7 +381,7 @@ export function MyProfileDialog({
             );
           })}
         </div>
-        <div className="max-h-[70vh] overflow-y-auto p-6">
+        <div className="max-h-[85vh] overflow-y-auto p-8">
           {section === "perfil" && <ProfileTab profile={profile} />}
           {section === "preferencias" && <PreferencesTab profile={profile} />}
           {section === "notificaciones" && <NotificationsTab profile={profile} />}
