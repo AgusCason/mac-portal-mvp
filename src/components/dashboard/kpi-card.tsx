@@ -8,15 +8,22 @@ interface KpiCardProps {
   icon: LucideIcon;
   hint?: string;
   className?: string;
-  /** Color del ícono/chip — cada tono usa los mismos tokens semánticos que las badges de estado. */
+  /**
+   * Antes cada tono pintaba el chip de un color distinto (info/warning/...).
+   * Se dejó de usar: el acento de marca (verde) queda reservado solo para lo
+   * activo/seleccionado (ver nav), así que el chip del KPI es siempre neutro
+   * — el color real de "estado" sigue viviendo en las badges (aprobado,
+   * requiere cambios, etc.), no acá. La prop se mantiene por compatibilidad
+   * con los call-sites existentes, pero ya no cambia el estilo.
+   */
   tone?: "primary" | "info" | "warning" | "success";
 }
 
 const TONE_CLASSES: Record<NonNullable<KpiCardProps["tone"]>, string> = {
-  primary: "bg-primary/10 text-primary",
-  info: "bg-info/15 text-info",
-  warning: "bg-warning/15 text-warning",
-  success: "bg-success/15 text-success",
+  primary: "bg-accent text-muted-foreground",
+  info: "bg-accent text-muted-foreground",
+  warning: "bg-accent text-muted-foreground",
+  success: "bg-accent text-muted-foreground",
 };
 
 /** Card de KPI reutilizable: label en mayúsculas + valor grande tabular-nums + ícono. */

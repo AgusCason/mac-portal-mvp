@@ -93,7 +93,7 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
                 key={item.id}
                 className="flex items-center gap-3 rounded-lg border border-border px-3 py-2"
               >
-                <span className="bg-info/15 text-info flex size-8 shrink-0 items-center justify-center rounded-full">
+                <span className="bg-accent text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
                   <Clock className="size-4" strokeWidth={1.75} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -122,7 +122,7 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
                 href={`/admin/clientes/${c.id}`}
                 className="hover:bg-accent -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors duration-150"
               >
-                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                <span className="bg-accent text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
                   <Building2 className="size-4" strokeWidth={1.75} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -165,7 +165,7 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
               className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <span className="bg-destructive/15 text-destructive flex size-8 shrink-0 items-center justify-center rounded-full">
+                <span className="bg-accent text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
                   <TrendingDown className="size-4" strokeWidth={1.75} />
                 </span>
                 <div className="min-w-0">

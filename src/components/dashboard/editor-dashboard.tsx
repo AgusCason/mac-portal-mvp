@@ -63,7 +63,7 @@ export function EditorDashboard({ data, profile }: { data: EditorDashboardData; 
                 key={item.id}
                 className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm"
               >
-                <span className="bg-warning/15 text-warning flex size-8 shrink-0 items-center justify-center rounded-full">
+                <span className="bg-accent text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
                   <MessageCircleWarning className="size-4" strokeWidth={1.75} />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -87,7 +87,7 @@ export function EditorDashboard({ data, profile }: { data: EditorDashboardData; 
                 key={c.client_id}
                 className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-sm"
               >
-                <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                <span className="bg-accent text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
                   <Users className="size-4" strokeWidth={1.75} />
                 </span>
                 <span className="flex-1 truncate font-medium">{c.name}</span>
@@ -116,7 +116,7 @@ export function EditorDashboard({ data, profile }: { data: EditorDashboardData; 
           )}
           {data.upcoming.map((item) => (
             <div key={item.id} className="flex items-center gap-3 text-sm">
-              <span className="bg-info/15 text-info flex size-8 shrink-0 items-center justify-center rounded-full">
+              <span className="bg-accent text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-full">
                 <CalendarClock className="size-4" strokeWidth={1.75} />
               </span>
               <div className="min-w-0 flex-1">

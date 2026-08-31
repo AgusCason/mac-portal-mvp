@@ -94,7 +94,7 @@ function NavLink({
         indented && "py-1.5 pl-9 text-[13px]",
         collapsed && "justify-center px-0",
         active
-          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          ? "bg-primary/15 text-primary"
           : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >

@@ -141,7 +141,7 @@ export function ClientDashboard({
                 href={`/client/calendario?item=${item.id}`}
                 className="hover:bg-accent -mx-2 flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-colors duration-150"
               >
-                <div className="bg-info/15 text-info flex size-9 shrink-0 items-center justify-center rounded-full">
+                <div className="bg-accent text-muted-foreground flex size-9 shrink-0 items-center justify-center rounded-full">
                   <ImageIcon className="size-4" strokeWidth={1.75} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -189,7 +189,7 @@ export function ClientDashboard({
             </CardContent>
           </Card>
 
-          <Card className="border-primary/30 bg-primary/10">
+          <Card className="border-l-primary/60 border-l-2">
             <CardContent className="space-y-2 pt-6">
               <div className="flex items-center gap-2">
                 <Sparkles className="text-primary size-4" strokeWidth={1.75} />
