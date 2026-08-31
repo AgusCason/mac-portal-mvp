@@ -20,7 +20,7 @@ export type Locale = "es" | "en";
 
 const es = {
   nav: {
-    dashboard: "Dashboard",
+    dashboard: "Inicio",
     cuentas: "Cuentas",
     equipo: "Equipo",
     calendario: "Calendario",
@@ -153,6 +153,8 @@ const es = {
     markPaymentReceived: "Marcar pago recibido",
     cancelInvoiceTitle: "Cancelar factura",
     downloadPdfTitle: "Descargar PDF",
+    colDownload: "Descargar",
+    downloadStarted: "Descargando factura…",
     methodMercadopagoAuto: "Mercado Pago (automático)",
     methodPaypalAuto: "PayPal (automático)",
     methodTransfer: "Transferencia",
@@ -504,6 +506,8 @@ const es = {
       viewSwitchAriaLabel: "Formato de vista",
       searchPlaceholder: "Buscar por título...",
       noMatchFilter: "No hay piezas que coincidan con el filtro.",
+      focusBannerPrefix: "Te trajimos directo a:",
+      focusBannerClear: "Ver todas",
     },
     planner: {
       searchPlaceholder: "Buscar posts...",
@@ -1084,6 +1088,7 @@ const es = {
       senderClient: "Cliente",
       senderAgency: "Agencia",
       messagePlaceholder: "Escribí un mensaje...",
+      sendButton: "Enviar",
     },
     aiAssistant: {
       emptyStatePrefix: "Preguntale a",
@@ -1107,6 +1112,15 @@ const es = {
       proposalRejected: "Rechazado — no se aplicó ningún cambio",
       confirmButton: "Confirmar",
       rejectButton: "Rechazar",
+    },
+    portalAssistant: {
+      openButton: "Asistente del portal",
+      title: "Asistente del portal",
+      disclaimer:
+        "Te ayudo a usar el portal — no veo tus datos ni los de otros clientes. Para lo demás, escribile a la agencia por Chat.",
+      emptyState: 'Preguntame cosas como "¿cómo apruebo un video?" o "¿dónde pago mi factura?".',
+      inputPlaceholder: "Escribí tu pregunta…",
+      thinking: "Pensando…",
     },
     contentStudio: {
       typeSerieSocial: "Serie Social",
@@ -1150,10 +1164,10 @@ const es = {
       dragToChangeColumnAriaLabel: "Arrastrar para cambiar de columna",
     },
     webProjects: {
-      stageBrief: "Brief",
+      stageBrief: "Relevamiento inicial",
       stageDiseno: "Diseño",
       stageDesarrollo: "Desarrollo",
-      stageQa: "QA",
+      stageQa: "Control de calidad",
       stageLanzamiento: "Lanzamiento",
       stageMantenimiento: "Mantenimiento",
       stagePausado: "Pausado",
@@ -1222,6 +1236,10 @@ const es = {
       tabCrudos: "Crudos",
       tabEnEdicion: "En Edición",
       tabEntregablesFinales: "Entregables Finales",
+      tabCrudosHint: "El material original, tal como lo subiste o lo subió la agencia — todavía sin editar.",
+      tabEnEdicionHint: "Lo que el equipo está editando ahora mismo — borradores de trabajo.",
+      tabEntregablesFinalesHint: "El contenido terminado y listo para publicar o descargar.",
+      downloadButton: "Descargar",
       viewButton: "Ver",
       emptyFolder: "Todavía no hay archivos en esta carpeta.",
     },
@@ -1631,6 +1649,8 @@ const en: typeof es = {
     markPaymentReceived: "Mark payment received",
     cancelInvoiceTitle: "Cancel invoice",
     downloadPdfTitle: "Download PDF",
+    colDownload: "Download",
+    downloadStarted: "Downloading invoice…",
     methodMercadopagoAuto: "Mercado Pago (automatic)",
     methodPaypalAuto: "PayPal (automatic)",
     methodTransfer: "Bank transfer",
@@ -1981,6 +2001,8 @@ const en: typeof es = {
       viewSwitchAriaLabel: "View format",
       searchPlaceholder: "Search by title...",
       noMatchFilter: "No pieces match the filter.",
+      focusBannerPrefix: "We brought you straight to:",
+      focusBannerClear: "See all",
     },
     planner: {
       searchPlaceholder: "Search posts...",
@@ -2560,6 +2582,7 @@ const en: typeof es = {
       senderClient: "Client",
       senderAgency: "Agency",
       messagePlaceholder: "Write a message...",
+      sendButton: "Send",
     },
     aiAssistant: {
       emptyStatePrefix: "Ask",
@@ -2583,6 +2606,15 @@ const en: typeof es = {
       proposalRejected: "Rejected — no change was applied",
       confirmButton: "Confirm",
       rejectButton: "Reject",
+    },
+    portalAssistant: {
+      openButton: "Portal assistant",
+      title: "Portal assistant",
+      disclaimer:
+        "I can help you use the portal — I can't see your data or other clients'. For anything else, message the agency via Chat.",
+      emptyState: 'Ask me things like "how do I approve a video?" or "where do I pay my invoice?".',
+      inputPlaceholder: "Type your question…",
+      thinking: "Thinking…",
     },
     contentStudio: {
       typeSerieSocial: "Social Series",
@@ -2698,6 +2730,10 @@ const en: typeof es = {
       tabCrudos: "Raw Files",
       tabEnEdicion: "In Editing",
       tabEntregablesFinales: "Final Deliverables",
+      tabCrudosHint: "The original material, as you or the agency uploaded it — not edited yet.",
+      tabEnEdicionHint: "What the team is editing right now — work-in-progress drafts.",
+      tabEntregablesFinalesHint: "The finished content, ready to publish or download.",
+      downloadButton: "Download",
       viewButton: "View",
       emptyFolder: "No files in this folder yet.",
     },

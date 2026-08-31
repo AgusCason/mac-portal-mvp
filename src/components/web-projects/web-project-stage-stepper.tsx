@@ -55,18 +55,18 @@ export function WebProjectStageStepper({ stage }: { stage: WebProjectStage }) {
             <div className="flex shrink-0 items-center gap-1.5">
               <div
                 className={cn(
-                  "flex size-5 items-center justify-center rounded-full text-[10px] font-medium",
+                  "flex size-6 items-center justify-center rounded-full text-xs font-medium",
                   done && "bg-primary text-primary-foreground",
                   active && "ring-primary ring-2 ring-offset-2 ring-offset-background",
                   active && !done && "bg-primary/15 text-primary",
                   !done && !active && "bg-muted text-muted-foreground"
                 )}
               >
-                {done ? <Check className="size-3" /> : i + 1}
+                {done ? <Check className="size-3.5" /> : i + 1}
               </div>
               <span
                 className={cn(
-                  "text-xs whitespace-nowrap",
+                  "text-sm whitespace-nowrap",
                   active ? "text-foreground font-medium" : "text-muted-foreground"
                 )}
               >

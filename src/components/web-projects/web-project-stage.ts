@@ -5,10 +5,10 @@ import type { WebAssetStatus, WebProjectStage } from "@/types/database";
 type TFunc = (path: string, fallback?: string) => string;
 
 const WEB_PROJECT_STAGE_META: Record<WebProjectStage, { labelKey: string; fallback: string }> = {
-  brief: { labelKey: "components.webProjects.stageBrief", fallback: "Brief" },
+  brief: { labelKey: "components.webProjects.stageBrief", fallback: "Relevamiento inicial" },
   diseno: { labelKey: "components.webProjects.stageDiseno", fallback: "Diseño" },
   desarrollo: { labelKey: "components.webProjects.stageDesarrollo", fallback: "Desarrollo" },
-  qa: { labelKey: "components.webProjects.stageQa", fallback: "QA" },
+  qa: { labelKey: "components.webProjects.stageQa", fallback: "Control de calidad" },
   lanzamiento: { labelKey: "components.webProjects.stageLanzamiento", fallback: "Lanzamiento" },
   mantenimiento: { labelKey: "components.webProjects.stageMantenimiento", fallback: "Mantenimiento" },
   pausado: { labelKey: "components.webProjects.stagePausado", fallback: "Pausado" },

@@ -114,7 +114,12 @@ export function ChatThread({
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
         />
-        <Button type="submit" size="icon" disabled={isPending}>
+        <Button
+          type="submit"
+          size="icon"
+          disabled={isPending}
+          aria-label={t("components.chat.sendButton", "Enviar")}
+        >
           {isPending ? <Loader2 className="animate-spin" /> : <Send />}
         </Button>
       </form>

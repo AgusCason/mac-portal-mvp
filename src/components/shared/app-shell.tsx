@@ -27,6 +27,7 @@ import { ActivityPanel } from "@/components/shared/activity-panel";
 import { NotificationsPanel } from "@/components/shared/notifications-panel";
 import { SettingsPanel } from "@/components/shared/settings-panel";
 import { MyProfileDialog } from "@/components/shared/my-profile-dialog";
+import { PortalHelpAssistant } from "@/components/shared/portal-help-assistant";
 import type { ActivityEventWithClient } from "@/lib/queries/activity";
 import type { AppNotification } from "@/types/database";
 
@@ -371,6 +372,10 @@ function AppShellInner({
           <main className="flex-1 p-4 md:p-6">{children}</main>
         </div>
       </div>
+      {/* Solo el portal de clientes tiene el asistente de ayuda flotante —
+          admin/editor ya tienen su propio "Asistente IA" (MAX) en el sidebar,
+          con acceso a datos reales. Este es deliberadamente más simple. */}
+      {profile.role === "client" && <PortalHelpAssistant />}
     </div>
   );
 }

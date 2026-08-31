@@ -24,7 +24,9 @@ const buttonVariants = cva(
         default: "h-9 px-4 py-2",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-lg px-6",
-        icon: "h-9 w-9",
+        // 40px en vez de 36px — el mínimo recomendado de tap target táctil,
+        // más cómodo para usuarios mayores en botones que suelen ser icon-only.
+        icon: "h-10 w-10",
       },
     },
     defaultVariants: {

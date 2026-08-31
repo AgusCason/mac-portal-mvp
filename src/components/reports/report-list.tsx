@@ -84,12 +84,12 @@ export function ReportList({
             {(report.period_label || report.platforms.length > 0) && (
               <div className="flex flex-wrap items-center gap-1.5">
                 {report.period_label && (
-                  <Badge variant="outline" className="text-[11px]">
+                  <Badge variant="outline" className="text-xs">
                     {report.period_label}
                   </Badge>
                 )}
                 {report.platforms.map((platform) => (
-                  <Badge key={platform} variant="secondary" className="text-[11px] capitalize">
+                  <Badge key={platform} variant="secondary" className="text-xs capitalize">
                     {platform}
                   </Badge>
                 ))}

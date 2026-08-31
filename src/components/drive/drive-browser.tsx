@@ -13,10 +13,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n/locale-context";
 
-const FOLDER_TABS: { value: DriveFolderType; labelKey: string; fallback: string }[] = [
-  { value: "crudos", labelKey: "components.drive.tabCrudos", fallback: "Crudos" },
-  { value: "en_edicion", labelKey: "components.drive.tabEnEdicion", fallback: "En Edición" },
-  { value: "entregables_finales", labelKey: "components.drive.tabEntregablesFinales", fallback: "Entregables Finales" },
+const FOLDER_TABS: {
+  value: DriveFolderType;
+  labelKey: string;
+  fallback: string;
+  hintKey: string;
+  hintFallback: string;
+}[] = [
+  {
+    value: "crudos",
+    labelKey: "components.drive.tabCrudos",
+    fallback: "Crudos",
+    hintKey: "components.drive.tabCrudosHint",
+    hintFallback: "El material original, tal como lo subiste o lo subió la agencia — todavía sin editar.",
+  },
+  {
+    value: "en_edicion",
+    labelKey: "components.drive.tabEnEdicion",
+    fallback: "En Edición",
+    hintKey: "components.drive.tabEnEdicionHint",
+    hintFallback: "Lo que el equipo está editando ahora mismo — borradores de trabajo.",
+  },
+  {
+    value: "entregables_finales",
+    labelKey: "components.drive.tabEntregablesFinales",
+    fallback: "Entregables Finales",
+    hintKey: "components.drive.tabEntregablesFinalesHint",
+    hintFallback: "El contenido terminado y listo para publicar o descargar.",
+  },
 ];
 
 // Nota: no guardamos el ícono en una variable tipo componente (`const Icon = ...`)
@@ -59,11 +83,12 @@ function FileCard({ file }: { file: DriveFileSummary }) {
             </Button>
           )}
           {file.webViewLink && (
-            <Button asChild size="sm" variant="ghost">
+            <Button asChild size="icon" variant="ghost" aria-label={t("components.drive.downloadButton", "Descargar")}>
               <a
                 href={`https://drive.google.com/uc?export=download&id=${file.id}`}
                 target="_blank"
                 rel="noreferrer"
+                title={t("components.drive.downloadButton", "Descargar")}
               >
                 <Download />
               </a>
@@ -108,7 +133,8 @@ export function DriveBrowser({ clientId }: { clientId: string }) {
         ))}
       </TabsList>
       {FOLDER_TABS.map((tab) => (
-        <TabsContent key={tab.value} value={tab.value} className="mt-4">
+        <TabsContent key={tab.value} value={tab.value} className="mt-4 space-y-3">
+          <p className="text-muted-foreground text-sm">{t(tab.hintKey, tab.hintFallback)}</p>
           {isPending && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (

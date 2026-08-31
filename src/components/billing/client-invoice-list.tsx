@@ -64,6 +64,7 @@ export function ClientInvoiceList({
       const res = await getInvoicePdfAction(id);
       if (res.ok) {
         downloadBase64File(res.base64, res.filename, "application/pdf");
+        toast.success(t("billing.downloadStarted", "Descargando factura…"));
       } else {
         toast.error(res.error);
       }
@@ -88,7 +89,7 @@ export function ClientInvoiceList({
             <TableHead>{t("billing.colDueDate", "Vencimiento")}</TableHead>
             <TableHead>{t("billing.colStatus", "Estado")}</TableHead>
             <TableHead className="text-right">{t("billing.payNow", "Pagar")}</TableHead>
-            <TableHead className="text-right"></TableHead>
+            <TableHead className="text-right">{t("billing.colDownload", "Descargar")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -109,13 +110,14 @@ export function ClientInvoiceList({
               </TableCell>
               <TableCell className="text-right">
                 <Button
-                  size="icon"
+                  size="sm"
                   variant="ghost"
                   disabled={isPending}
                   onClick={() => downloadPdf(inv.id)}
-                  title={t("billing.downloadPdfTitle", "Descargar PDF")}
+                  aria-label={t("billing.downloadPdfTitle", "Descargar PDF")}
                 >
                   {isPending ? <Loader2 className="animate-spin" /> : <Download />}
+                  {t("billing.colDownload", "Descargar")}
                 </Button>
               </TableCell>
             </TableRow>

@@ -50,7 +50,13 @@ function CopyField({
         <p className="text-muted-foreground text-xs">{label}</p>
         <p className="truncate font-medium">{value}</p>
       </div>
-      <Button type="button" size="icon" variant="ghost" onClick={handleCopy}>
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        onClick={handleCopy}
+        aria-label={`${t("billing.copy", "Copiar")} ${label}`}
+      >
         <Copy className="size-3.5" />
       </Button>
     </div>

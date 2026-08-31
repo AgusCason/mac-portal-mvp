@@ -42,9 +42,17 @@ const MONTH_FORMAT_LOCALE: Record<string, string> = { es: "es-AR", en: "en-US" }
 export function ContentCalendarView({
   items,
   role,
+  focusItemId,
 }: {
   items: ContentItemWithClient[];
   role: UserRole;
+  /**
+   * Id de una pieza puntual a la que hay que llevar al usuario directo —
+   * viene del deep-link "Revisar" del dashboard (`/client/calendario?item=`).
+   * Se queda en Panel (ahí viven los botones de Aprobar/Pedir cambios) pero
+   * filtra la vista a solo esa pieza, con un aviso para volver a ver todo.
+   */
+  focusItemId?: string;
 }) {
   const { t, locale } = useLocale();
   const [view, setView] = React.useState<ViewMode>("panel");
@@ -55,6 +63,8 @@ export function ContentCalendarView({
   const [search, setSearch] = React.useState("");
   const [clientFilter, setClientFilter] = React.useState("all");
   const [networkFilter, setNetworkFilter] = React.useState("all");
+  const [focusId, setFocusId] = React.useState(focusItemId);
+  const focusedItem = focusId ? items.find((i) => i.id === focusId) : undefined;
 
   const clientOptions = React.useMemo(() => {
     const map = new Map<string, string>();
@@ -69,6 +79,7 @@ export function ContentCalendarView({
   }, [items]);
 
   const filteredItems = React.useMemo(() => {
+    if (focusId) return items.filter((item) => item.id === focusId);
     const q = search.trim().toLowerCase();
     return items.filter(
       (item) =>
@@ -76,7 +87,7 @@ export function ContentCalendarView({
         (clientFilter === "all" || item.client_id === clientFilter) &&
         (networkFilter === "all" || item.network === networkFilter)
     );
-  }, [items, search, clientFilter, networkFilter]);
+  }, [items, search, clientFilter, networkFilter, focusId]);
 
   const monthLabel = React.useMemo(
     () =>
@@ -96,6 +107,17 @@ export function ContentCalendarView({
 
   return (
     <div className="space-y-3">
+      {focusedItem && (
+        <div className="border-primary/40 bg-primary/10 flex flex-wrap items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
+          <span>
+            {t("components.content.focusBannerPrefix", "Te trajimos directo a:")}{" "}
+            <span className="font-medium">{focusedItem.title}</span>
+          </span>
+          <Button type="button" size="sm" variant="outline" onClick={() => setFocusId(undefined)}>
+            {t("components.content.focusBannerClear", "Ver todas")}
+          </Button>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-48 flex-1">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
@@ -192,9 +214,14 @@ export function ContentCalendarView({
               size="sm"
               className="gap-1.5"
               onClick={() => setView(opt.value)}
+              aria-label={opt.label}
             >
               <opt.icon className="size-4" />
-              <span className="hidden sm:inline">{opt.label}</span>
+              {/* Sin ocultar en mobile: 3 íconos sin texto son ambiguos para
+                  alguien no familiarizado con la app — el contenedor ya tiene
+                  flex-wrap, así que en pantallas angostas este grupo simplemente
+                  pasa a su propia línea en vez de perder la etiqueta. */}
+              <span>{opt.label}</span>
             </Button>
           ))}
         </div>
