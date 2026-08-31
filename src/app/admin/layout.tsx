@@ -11,19 +11,22 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const profile = await requireRole(["admin"]);
-  const [activity, notifications, unreadCount, branding, moduleFlags] = await Promise.all([
-    getRecentActivity(),
-    getNotifications(),
-    getUnreadNotificationCount(),
-    getBranding(),
-    getModuleFlags(),
-  ]);
+  // Actividad/Notificaciones son secundarias (viven en paneles deslizables,
+  // no hacen falta para pintar el sidebar) — se disparan pero NO se esperan
+  // acá, así no bloquean el render del resto del layout ni de la página.
+  // AppShell las resuelve adentro con `use()`, cada una en su <Suspense>.
+  // branding/moduleFlags sí se esperan: el sidebar los necesita ya
+  // resueltos para no parpadear con el nav incorrecto.
+  const activityPromise = getRecentActivity();
+  const notificationsPromise = getNotifications();
+  const unreadCountPromise = getUnreadNotificationCount();
+  const [branding, moduleFlags] = await Promise.all([getBranding(), getModuleFlags()]);
   return (
     <AppShell
       profile={profile}
-      activity={activity}
-      notifications={notifications}
-      unreadCount={unreadCount}
+      activity={activityPromise}
+      notifications={notificationsPromise}
+      unreadCount={unreadCountPromise}
       branding={branding}
       moduleFlags={moduleFlags}
     >

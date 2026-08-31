@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, ChevronDown, UserCircle } from "lucide-react";
+import { Menu, ChevronDown, UserCircle, Activity, Bell } from "lucide-react";
 
 import { NAV_CONFIG, ROLE_LABELS, filterNavItems, type NavItem } from "@/lib/nav-config";
 import type { Profile, AgencyBranding, ModuleFlag } from "@/types/database";
@@ -34,11 +34,37 @@ import type { AppNotification } from "@/types/database";
 interface AppShellProps {
   profile: Profile;
   children: React.ReactNode;
-  activity: ActivityEventWithClient[];
-  notifications: AppNotification[];
-  unreadCount: number;
+  /**
+   * Se reciben SIN await desde el layout (que sigue siendo dinámico por el
+   * chequeo de auth) y se resuelven acá adentro, cada una en su propio
+   * <Suspense> — así "Actividad" y "Notificaciones" no bloquean el render
+   * del resto del shell ni de la página mientras esas dos consultas
+   * (secundarias, no hacen falta para pintar el nav/sidebar) todavía están
+   * en vuelo. Ver node_modules/next/dist/docs/01-app/02-guides/streaming.md.
+   */
+  activity: Promise<ActivityEventWithClient[]>;
+  notifications: Promise<AppNotification[]>;
+  unreadCount: Promise<number>;
   branding: AgencyBranding;
   moduleFlags: Record<string, ModuleFlag>;
+}
+
+/**
+ * Fallback del <Suspense> de Actividad/Notificaciones — mismo tamaño y
+ * posición que el botón real (icon button ghost), sin badge de contador
+ * (todavía no lo sabemos) para que no haya salto de layout cuando la
+ * consulta resuelve y el botón real lo reemplaza.
+ */
+function TopbarIconFallback({ icon: Icon, label }: { icon: LucideIconType; label: string }) {
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      className="text-muted-foreground/50 inline-flex size-10 items-center justify-center rounded-lg"
+    >
+      <Icon className="size-4" strokeWidth={1.75} />
+    </span>
+  );
 }
 
 function isItemActive(pathname: string, href: string, role: string) {
@@ -92,7 +118,11 @@ function NavLink({
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
         indented && "py-1.5 pl-9 text-[13px]",
-        collapsed && "justify-center px-0",
+        // Colapsado: botón cuadrado de tamaño fijo (no el ícono solo achicado
+        // por `items-center` del contenedor) — así el highlight de activo/hover
+        // es un chip prolijo del mismo tamaño para todos los ítems, no un
+        // recuadro angosto pegado al ícono.
+        collapsed && "size-10 justify-center px-0 py-0",
         active
           ? "bg-primary/15 text-primary"
           : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -154,7 +184,7 @@ function NavGroup({
         aria-expanded={open}
         className={cn(
           "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150",
-          collapsed && "justify-center px-0",
+          collapsed && "size-10 justify-center px-0 py-0",
           hasActiveChild
             ? "text-foreground"
             : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -422,8 +452,12 @@ function AppShellInner({
             </div>
 
             <div className="flex items-center gap-1">
-              <ActivityPanel events={activity} />
-              <NotificationsPanel notifications={notifications} unreadCount={unreadCount} />
+              <React.Suspense fallback={<TopbarIconFallback icon={Activity} label={t("components.shared.activity", "Actividad")} />}>
+                <ActivityPanel eventsPromise={activity} />
+              </React.Suspense>
+              <React.Suspense fallback={<TopbarIconFallback icon={Bell} label={t("components.shared.sectionNotifications", "Notificaciones")} />}>
+                <NotificationsPanel notificationsPromise={notifications} unreadCountPromise={unreadCount} />
+              </React.Suspense>
               <SettingsPanel />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

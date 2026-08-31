@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -82,12 +83,17 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
  * usuario logueado (campana del navbar, equivalente al de MB Suite).
  */
 export function NotificationsPanel({
-  notifications,
-  unreadCount,
+  notificationsPromise,
+  unreadCountPromise,
 }: {
-  notifications: AppNotification[];
-  unreadCount: number;
+  notificationsPromise: Promise<AppNotification[]>;
+  unreadCountPromise: Promise<number>;
 }) {
+  // `use()` desenvuelve las promesas acá adentro, dentro del <Suspense> que
+  // pone AppShell — así esta consulta no bloquea el resto del shell/página
+  // mientras está en vuelo (ver app-shell.tsx).
+  const notifications = use(notificationsPromise);
+  const unreadCount = use(unreadCountPromise);
   const { t } = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();

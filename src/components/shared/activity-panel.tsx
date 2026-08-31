@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { use } from "react";
 import { Activity as ActivityIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { es, enUS } from "date-fns/locale";
@@ -32,7 +33,11 @@ const EVENT_META_KEY: Record<string, { key: string; fallback: string }> = {
  * ícono de "nota con rayo" del navbar de MB Suite. Se alimenta de
  * `activity_events` (ver migración 0009), poblada por triggers de negocio.
  */
-export function ActivityPanel({ events }: { events: ActivityEventWithClient[] }) {
+export function ActivityPanel({ eventsPromise }: { eventsPromise: Promise<ActivityEventWithClient[]> }) {
+  // `use()` desenvuelve la promesa acá adentro, dentro del <Suspense> que
+  // pone AppShell — así esta consulta no bloquea el resto del shell/página
+  // mientras está en vuelo (ver app-shell.tsx).
+  const events = use(eventsPromise);
   const { t, locale } = useLocale();
   const dateLocale = locale === "en" ? enUS : es;
 

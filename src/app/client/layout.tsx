@@ -14,10 +14,16 @@ export default async function ClientLayout({
   children: React.ReactNode;
 }) {
   const profile = await requireRole(["client"]);
-  const [activity, notifications, unreadCount, branding, moduleFlags, clientId] = await Promise.all([
-    getRecentActivity(),
-    getNotifications(),
-    getUnreadNotificationCount(),
+  // Actividad/Notificaciones son secundarias (viven en paneles deslizables,
+  // no hacen falta para pintar el sidebar) — se disparan pero NO se esperan
+  // acá, así no bloquean el render del resto del layout ni de la página.
+  // AppShell las resuelve adentro con `use()`, cada una en su <Suspense>.
+  const activityPromise = getRecentActivity();
+  const notificationsPromise = getNotifications();
+  const unreadCountPromise = getUnreadNotificationCount();
+  // branding/moduleFlags/overrides sí se esperan: el sidebar los necesita
+  // ya resueltos para no parpadear con el nav incorrecto.
+  const [branding, moduleFlags, clientId] = await Promise.all([
     getBranding(),
     getModuleFlags(),
     getPrimaryClientId(profile.id),
@@ -29,9 +35,9 @@ export default async function ClientLayout({
   return (
     <AppShell
       profile={profile}
-      activity={activity}
-      notifications={notifications}
-      unreadCount={unreadCount}
+      activity={activityPromise}
+      notifications={notificationsPromise}
+      unreadCount={unreadCountPromise}
       branding={branding}
       moduleFlags={effectiveFlags}
     >
