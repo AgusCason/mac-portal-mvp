@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -56,7 +57,12 @@ export function LoginForm() {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password">Contraseña</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Contraseña</Label>
+          <Link href="/login/olvide-password" className="text-muted-foreground hover:text-foreground text-xs">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
         <Input
           id="password"
           type="password"
