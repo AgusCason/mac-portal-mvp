@@ -57,8 +57,8 @@ export function WebProjectStageStepper({ stage }: { stage: WebProjectStage }) {
                 className={cn(
                   "flex size-6 items-center justify-center rounded-full text-xs font-medium",
                   done && "bg-primary text-primary-foreground",
-                  active && "ring-primary ring-2 ring-offset-2 ring-offset-background",
-                  active && !done && "bg-primary/15 text-primary",
+                  active && "ring-primary-strong ring-2 ring-offset-2 ring-offset-background",
+                  active && !done && "bg-primary-strong/10 text-primary-strong",
                   !done && !active && "bg-muted text-muted-foreground"
                 )}
               >

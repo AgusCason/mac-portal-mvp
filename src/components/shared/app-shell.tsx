@@ -124,7 +124,7 @@ function NavLink({
         // recuadro angosto pegado al ícono.
         collapsed && "size-10 justify-center px-0 py-0",
         active
-          ? "bg-primary/15 text-primary"
+          ? "bg-primary-strong/10 text-primary-strong"
           : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
       )}
     >

@@ -243,7 +243,7 @@ function PreferencesTab({ profile }: { profile: Profile }) {
                 onClick={() => setThemeChoice(card.value)}
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors duration-150",
-                  active ? "border-primary bg-primary/5" : "border-border hover:bg-accent"
+                  active ? "border-primary-strong bg-primary-strong/5" : "border-border hover:bg-accent"
                 )}
               >
                 <span
@@ -258,7 +258,7 @@ function PreferencesTab({ profile }: { profile: Profile }) {
                   <span className="block text-sm font-medium">{card.label}</span>
                   <span className="text-muted-foreground block text-xs">{card.tagline}</span>
                 </span>
-                {active && <Check className="text-primary size-4 shrink-0" />}
+                {active && <Check className="text-primary-strong size-4 shrink-0" />}
               </button>
             );
           })}

@@ -42,7 +42,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background/85 supports-[backdrop-filter]:bg-background/70 backdrop-blur-xl fixed top-[50%] left-[50%] z-50 grid w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-xl border border-border p-6 max-h-[calc(100%-2rem)] overflow-y-auto",
+          "bg-background/85 supports-[backdrop-filter]:bg-background/70 backdrop-blur-xl fixed top-[50%] left-[50%] z-50 grid w-[calc(100%-2rem)] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 rounded-xl border border-border p-8 max-h-[calc(100%-2rem)] overflow-y-auto",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
           className
         )}
@@ -50,7 +50,7 @@ function DialogContent({
       >
         {children}
         {showCloseButton && (
-          <DialogPrimitive.Close className="ring-offset-background focus:ring-ring absolute top-4 right-4 rounded-sm opacity-70 transition-opacity duration-150 hover:opacity-100 focus:ring-2 focus:outline-none disabled:pointer-events-none">
+          <DialogPrimitive.Close className="ring-offset-background focus:ring-ring text-muted-foreground absolute top-5 right-5 rounded-lg p-1.5 opacity-70 transition-all duration-150 hover:bg-accent hover:text-foreground hover:opacity-100 focus:ring-2 focus:outline-none disabled:pointer-events-none">
             <XIcon className="size-4" />
             <span className="sr-only">Cerrar</span>
           </DialogPrimitive.Close>
@@ -64,7 +64,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      className={cn("flex flex-col gap-3 text-center sm:text-left", className)}
       {...props}
     />
   );
@@ -75,7 +75,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        "flex flex-col-reverse gap-3 sm:flex-row sm:justify-end",
         className
       )}
       {...props}

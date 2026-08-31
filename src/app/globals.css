@@ -31,6 +31,13 @@
   /* Acento de marca: lima, reservado (botones primarios, links, activos) */
   --primary: oklch(0.918 0.217 129.6);
   --primary-foreground: oklch(0.12 0.02 130);
+  /* Variante "fuerte" del verde de marca, para texto/íconos sobre fondos
+     claros (ítem de sidebar activo, checkmarks de selección, steppers).
+     El lima de --primary es demasiado claro para leerse como texto sobre
+     blanco — acá baja la luminosidad manteniendo el mismo hue, así el
+     estado "activo" se sigue viendo en modo claro. En oscuro es igual a
+     --primary (ya contrasta bien contra el fondo casi negro). */
+  --primary-strong: oklch(0.5 0.19 129.6);
 
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.145 0 0);
@@ -84,6 +91,7 @@
 
   --primary: oklch(0.918 0.217 129.6);
   --primary-foreground: oklch(0.12 0.02 130);
+  --primary-strong: var(--primary);
 
   --secondary: oklch(1 0 0 / 8%);
   --secondary-foreground: oklch(0.95 0 0);
@@ -136,6 +144,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-strong: var(--primary-strong);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);

@@ -104,7 +104,7 @@ export function SettingsPanel() {
             {t("settings.description", "Personalizá tu experiencia en la plataforma.")}
           </SheetDescription>
         </SheetHeader>
-        <div className="flex flex-col gap-4 px-4 pb-6">
+        <div className="flex flex-col gap-4 px-6 pb-6">
           <div>
             <p className="mb-2 text-sm font-medium">{t("settings.theme", "Tema")}</p>
             <div className="flex flex-col gap-2">
@@ -119,7 +119,7 @@ export function SettingsPanel() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors duration-150",
                       active
-                        ? "border-primary bg-primary/5"
+                        ? "border-primary-strong bg-primary-strong/5"
                         : "border-border hover:bg-accent"
                     )}
                   >
@@ -132,7 +132,7 @@ export function SettingsPanel() {
                         {t(opt.taglineKey, opt.tagline)}
                       </span>
                     </span>
-                    {active && <Check className="text-primary size-4 shrink-0" />}
+                    {active && <Check className="text-primary-strong size-4 shrink-0" />}
                   </button>
                 );
               })}
@@ -152,7 +152,7 @@ export function SettingsPanel() {
                     className={cn(
                       "flex items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors duration-150 disabled:opacity-60",
                       active
-                        ? "border-primary bg-primary/5"
+                        ? "border-primary-strong bg-primary-strong/5"
                         : "border-border hover:bg-accent"
                     )}
                   >
@@ -167,7 +167,7 @@ export function SettingsPanel() {
                         {t(opt.taglineKey, opt.tagline)}
                       </span>
                     </span>
-                    {active && <Check className="text-primary size-4 shrink-0" />}
+                    {active && <Check className="text-primary-strong size-4 shrink-0" />}
                   </button>
                 );
               })}

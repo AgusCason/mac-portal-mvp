@@ -122,7 +122,7 @@ export function NotificationsPanel({
           <SheetTitle>{t("components.shared.sectionNotifications", "Notificaciones")}</SheetTitle>
           <SheetDescription>{t("components.shared.notificationsPanelDesc", "Menciones, aprobaciones y avisos importantes.")}</SheetDescription>
         </SheetHeader>
-        <ScrollArea className="h-[calc(100dvh-10rem)] px-4">
+        <ScrollArea className="h-[calc(100dvh-10rem)] px-6">
           <div className="flex flex-col gap-2 pb-6">
             {notifications.length === 0 && (
               <p className="text-muted-foreground text-sm">{t("components.shared.noNotifications", "No tenés notificaciones.")}</p>
