@@ -135,7 +135,7 @@ export function NewClientDialog({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="flex max-h-[85vh] flex-col overflow-hidden"
+        className="flex h-[85vh] max-h-[85vh] flex-col overflow-hidden"
       >
         {/*
           Antes: DialogContent (overflow-y-auto) + este form (max-h-[80vh]) +
@@ -147,6 +147,14 @@ export function NewClientDialog({
           también, así el layout reparte la altura exacta entre
           header/footer/contenido y un solo scroll (el de la ScrollArea) se
           lleva el sobrante.
+
+          IMPORTANTE: es "h-[85vh]" (alto explícito), no solo "max-h-[85vh]".
+          Con solo max-height, cuando el contenido interno queda afuera del
+          flujo (ver ScrollArea de abajo), el diálogo se encoge al alto de lo
+          que sí sigue en flujo (header+footer) en vez de ocupar el 85vh, y
+          entonces el flex-1 del medio no tiene sobrante que repartir (queda
+          en 0 y el formulario se ve "sin contenido"). Con alto explícito el
+          diálogo siempre mide 85vh y el flex-1 sí tiene ese espacio real.
         */}
         <form action={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <DialogHeader>
@@ -159,8 +167,25 @@ export function NewClientDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="min-h-0 flex-1 pr-4">
-            <div className="space-y-4 py-2">
+          {/*
+            <ScrollAreaPrimitive.Root> de Radix fija position:relative por
+            INLINE style (no por clase), así que una clase "absolute" en la
+            propia ScrollArea nunca gana esa pulseada — sigue relative y su
+            altura queda "auto" (no definida) dentro de un padre flex-1, y
+            entonces el <div data-slot="scroll-area-viewport"> (height:100%
+            interno de Radix) no tiene contra qué resolver ese 100% y crece
+            al alto de su contenido en vez de quedar acotado (no scrollea, el
+            footer queda superpuesto con contenido sin cortar).
+            Solución: un div PLANO (no de Radix) es el que va absolute
+            inset-0 — eso sí puede tener position:absolute, y al fijar
+            top/bottom en 0 su alto queda definido explícitamente (no auto),
+            así que la ScrollArea adentro (con h-full) y su Viewport interno
+            (height:100%) sí resuelven en cascada.
+          */}
+          <div className="relative min-h-0 flex-1">
+            <div className="absolute inset-0">
+              <ScrollArea className="h-full pr-4">
+                <div className="space-y-4 py-2">
               {contacts.length > 0 && (
                 <div className="space-y-1.5">
                   <Label htmlFor="fromContact">
@@ -342,7 +367,9 @@ export function NewClientDialog({
                 </div>
               )}
             </div>
-          </ScrollArea>
+              </ScrollArea>
+            </div>
+          </div>
 
           <DialogFooter className="pt-2">
             <Button type="submit" disabled={isPending}>

@@ -23,7 +23,13 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "border-input data-[placeholder]:text-muted-foreground flex w-fit items-center justify-between gap-2 rounded-lg border bg-transparent px-3 py-2 text-sm whitespace-nowrap transition-colors duration-150 outline-none",
+        // Antes el texto de SelectValue no truncaba: con un ancho fijo (ej.
+        // w-40) y una etiqueta larga ("Todas las plataformas"), el texto se
+        // desbordaba por afuera del botón en vez de achicarse, tapando/
+        // pisando al filtro de al lado en la fila. min-w-0 en el trigger deja
+        // que el span de adentro (truncate) realmente pueda achicarse por
+        // debajo de su ancho de contenido.
+        "border-input data-[placeholder]:text-muted-foreground flex w-fit min-w-0 items-center justify-between gap-2 overflow-hidden rounded-lg border bg-transparent px-3 py-2 text-sm whitespace-nowrap transition-colors duration-150 outline-none",
         "focus-visible:ring-2 focus-visible:ring-ring",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "data-[size=default]:h-9 data-[size=sm]:h-8",
@@ -32,7 +38,7 @@ function SelectTrigger({
       )}
       {...props}
     >
-      {children}
+      <span className="min-w-0 truncate">{children}</span>
       <SelectPrimitive.Icon asChild>
         <ChevronDownIcon className="size-4 opacity-50" />
       </SelectPrimitive.Icon>

@@ -41,7 +41,7 @@ export function ExplorerFilters({ clients }: { clients: { id: string; name: stri
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select value={currentClient} onValueChange={(v) => setParam("cliente", v)}>
-        <SelectTrigger className="w-44" size="sm">
+        <SelectTrigger className="w-48" size="sm">
           <SelectValue placeholder={t("components.analytics.clientFilterPlaceholder", "Cliente")} />
         </SelectTrigger>
         <SelectContent>
@@ -55,7 +55,7 @@ export function ExplorerFilters({ clients }: { clients: { id: string; name: stri
       </Select>
 
       <Select value={currentPlatform} onValueChange={(v) => setParam("plataforma", v)}>
-        <SelectTrigger className="w-40" size="sm">
+        <SelectTrigger className="w-52" size="sm">
           <SelectValue placeholder={t("components.analytics.platformFilterPlaceholder", "Plataforma")} />
         </SelectTrigger>
         <SelectContent>

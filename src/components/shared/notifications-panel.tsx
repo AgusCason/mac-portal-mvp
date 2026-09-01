@@ -122,16 +122,27 @@ export function NotificationsPanel({
           <SheetTitle>{t("components.shared.sectionNotifications", "Notificaciones")}</SheetTitle>
           <SheetDescription>{t("components.shared.notificationsPanelDesc", "Menciones, aprobaciones y avisos importantes.")}</SheetDescription>
         </SheetHeader>
-        <ScrollArea className="min-h-0 flex-1 px-6">
-          <div className="flex flex-col gap-2 pb-6">
-            {notifications.length === 0 && (
-              <p className="text-muted-foreground text-sm">{t("components.shared.noNotifications", "No tenés notificaciones.")}</p>
-            )}
-            {notifications.map((n) => (
-              <NotificationRow key={n.id} notification={n} />
-            ))}
+        {/* <ScrollAreaPrimitive.Root> de Radix fija position:relative por
+            INLINE style, así que una clase "absolute" en la propia
+            ScrollArea nunca gana esa pulseada (sigue relative). El wrapper
+            PLANO de acá abajo sí puede ser absolute inset-0 — con top/bottom
+            en 0 su alto queda definido explícitamente, y la ScrollArea
+            adentro (h-full) y su viewport interno (height:100%) resuelven en
+            cascada. Ver new-client-dialog.tsx para el diagnóstico completo. */}
+        <div className="relative min-h-0 flex-1">
+          <div className="absolute inset-0">
+            <ScrollArea className="h-full px-6">
+              <div className="flex flex-col gap-2 pb-6">
+                {notifications.length === 0 && (
+                  <p className="text-muted-foreground text-sm">{t("components.shared.noNotifications", "No tenés notificaciones.")}</p>
+                )}
+                {notifications.map((n) => (
+                  <NotificationRow key={n.id} notification={n} />
+                ))}
+              </div>
+            </ScrollArea>
           </div>
-        </ScrollArea>
+        </div>
         {unreadCount > 0 && (
           <SheetFooter>
             <Button variant="outline" size="sm" onClick={markAll} disabled={isPending}>

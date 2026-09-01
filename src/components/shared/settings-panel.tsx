@@ -105,7 +105,16 @@ export function SettingsPanel() {
             {t("settings.description", "Personalizá tu experiencia en la plataforma.")}
           </SheetDescription>
         </SheetHeader>
-        <ScrollArea className="min-h-0 flex-1">
+        {/* <ScrollAreaPrimitive.Root> de Radix fija position:relative por
+            INLINE style, así que una clase "absolute" en la propia
+            ScrollArea nunca gana esa pulseada (sigue relative). El wrapper
+            PLANO de acá abajo sí puede ser absolute inset-0 — con top/bottom
+            en 0 su alto queda definido explícitamente, y la ScrollArea
+            adentro (h-full) y su viewport interno (height:100%) resuelven en
+            cascada. Ver new-client-dialog.tsx para el diagnóstico completo. */}
+        <div className="relative min-h-0 flex-1">
+        <div className="absolute inset-0">
+        <ScrollArea className="h-full">
         <div className="flex flex-col gap-4 px-6 pb-6">
           <div>
             <p className="mb-2 text-sm font-medium">{t("settings.theme", "Tema")}</p>
@@ -177,6 +186,8 @@ export function SettingsPanel() {
           </div>
         </div>
         </ScrollArea>
+        </div>
+        </div>
       </SheetContent>
     </Sheet>
   );

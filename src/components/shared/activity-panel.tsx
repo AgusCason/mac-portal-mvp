@@ -53,30 +53,41 @@ export function ActivityPanel({ eventsPromise }: { eventsPromise: Promise<Activi
           <SheetTitle>{t("components.shared.activity", "Actividad")}</SheetTitle>
           <SheetDescription>{t("components.shared.activityDesc", "Lo último que pasó en el workspace.")}</SheetDescription>
         </SheetHeader>
-        <ScrollArea className="min-h-0 flex-1 px-6">
-          <div className="flex flex-col gap-3 pb-6">
-            {events.length === 0 && (
-              <p className="text-muted-foreground text-sm">{t("components.shared.noActivity", "Todavía no hay actividad registrada.")}</p>
-            )}
-            {events.map((event) => {
-              const meta = EVENT_META_KEY[event.event_type];
-              return (
-                <div key={event.id} className="rounded-lg border border-border px-3 py-2.5 text-sm">
-                  <div className="text-muted-foreground flex items-center justify-between gap-2 text-[11px] uppercase tracking-wide">
-                    <span>{meta ? t(meta.key, meta.fallback) : event.event_type}</span>
-                    <span>
-                      {formatDistanceToNow(new Date(event.created_at), { addSuffix: true, locale: dateLocale })}
-                    </span>
+        {/* <ScrollAreaPrimitive.Root> de Radix fija position:relative por
+            INLINE style, así que una clase "absolute" en la propia
+            ScrollArea nunca gana esa pulseada (sigue relative). El wrapper
+            PLANO de acá abajo sí puede ser absolute inset-0 — con top/bottom
+            en 0 su alto queda definido explícitamente, y la ScrollArea
+            adentro (h-full) y su viewport interno (height:100%) resuelven en
+            cascada. Ver new-client-dialog.tsx para el diagnóstico completo. */}
+        <div className="relative min-h-0 flex-1">
+          <div className="absolute inset-0">
+            <ScrollArea className="h-full px-6">
+              <div className="flex flex-col gap-3 pb-6">
+              {events.length === 0 && (
+                <p className="text-muted-foreground text-sm">{t("components.shared.noActivity", "Todavía no hay actividad registrada.")}</p>
+              )}
+              {events.map((event) => {
+                const meta = EVENT_META_KEY[event.event_type];
+                return (
+                  <div key={event.id} className="rounded-lg border border-border px-3 py-2.5 text-sm">
+                    <div className="text-muted-foreground flex items-center justify-between gap-2 text-[11px] uppercase tracking-wide">
+                      <span>{meta ? t(meta.key, meta.fallback) : event.event_type}</span>
+                      <span>
+                        {formatDistanceToNow(new Date(event.created_at), { addSuffix: true, locale: dateLocale })}
+                      </span>
+                    </div>
+                    <p className="mt-1">{event.summary}</p>
+                    {event.client_name && (
+                      <p className="text-muted-foreground mt-0.5 truncate text-xs">{event.client_name}</p>
+                    )}
                   </div>
-                  <p className="mt-1">{event.summary}</p>
-                  {event.client_name && (
-                    <p className="text-muted-foreground mt-0.5 truncate text-xs">{event.client_name}</p>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            </ScrollArea>
           </div>
-        </ScrollArea>
+        </div>
       </SheetContent>
     </Sheet>
   );
