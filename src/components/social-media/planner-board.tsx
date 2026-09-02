@@ -167,7 +167,7 @@ function PlannerColumn({ status, items }: { status: ContentStatus; items: Conten
   const label = getStatusLabel(status, t);
 
   return (
-    <div className="w-72 shrink-0 space-y-2">
+    <div className="min-w-0 space-y-2 lg:w-72 lg:shrink-0">
       <div className={cn("rounded-xl px-4 py-3 text-center", colorMeta.header)}>
         <p className="text-2xl font-bold tabular-nums">{items.length}</p>
         <p className="text-xs font-medium">{label}</p>
@@ -243,7 +243,12 @@ export function PlannerBoard({ items }: { items: ContentItemWithClient[] }) {
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="flex gap-4 overflow-x-auto pb-2">
+      {/* Debajo de "lg" (donde tampoco entra bien un drag horizontal con el
+          dedo) las columnas se apilan en una grilla normal — mismo patrón que
+          ya usa CrmBoard. El botón "avanzar" de cada tarjeta (PlannerCard)
+          sigue moviendo el estado sin necesitar arrastrar, así que ningún
+          touch-user pierde funcionalidad acá. */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:flex lg:gap-4 lg:overflow-x-auto lg:pb-2">
         {COLUMN_ORDER.map((status) => (
           <PlannerColumn key={status} status={status} items={grouped.get(status) ?? []} />
         ))}

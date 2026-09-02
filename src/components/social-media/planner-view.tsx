@@ -268,7 +268,19 @@ export function PlannerView({
         ) : (
           <>
             {view === "tablero" && <PlannerBoard items={filteredItems} />}
-            {view === "calendario" && <PlannerCalendar month={month} items={calendarItems} />}
+            {view === "calendario" && (
+              // Mismo criterio que content-calendar-view.tsx: 7 columnas con
+              // mini-tarjetas (miniatura + título) nunca entran legibles en
+              // un ancho de celular real — en vez de achicar el contenido de
+              // cada celda hasta hacerlo ilegible, se deja un ancho mínimo
+              // razonable y se scrollea horizontal (como cualquier calendario
+              // mensual "de verdad" en mobile).
+              <div className="w-full overflow-x-auto">
+                <div className="min-w-[560px]">
+                  <PlannerCalendar month={month} items={calendarItems} />
+                </div>
+              </div>
+            )}
             {view === "lista" && <PlannerList items={filteredItems} />}
           </>
         )}
