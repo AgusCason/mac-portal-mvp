@@ -1,8 +1,15 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkRateLimit, getClientIp } from "@/lib/security/rate-limit";
+import {
+  CACHE_COOKIE,
+  ROLE_CACHE_COOKIE_OPTIONS,
+  buildRoleCache,
+  resolveRoleAndFlagsFromDb,
+} from "@/lib/role-cache";
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -16,7 +23,15 @@ const loginSchema = z.object({
 // TODOS los logins y es buena parte de la demora reportada ("tarda en
 // entrar"). Si no se pudo resolver el rol por algún motivo, se cae a null y
 // el cliente sigue yendo a "/dashboard" como antes (nunca rompe el login).
-export type LoginResult = { ok: true; role: string | null } | { ok: false; error: string };
+//
+// `mfaFactorId` viene puesto solo si la cuenta tiene 2FA verificado y hace
+// falta un segundo paso — se resuelve ACÁ (server) en vez de que
+// login-form.tsx le pregunte a Supabase Auth desde el browser después de
+// recibir esta respuesta, que era un viaje de ida y vuelta más en TODOS los
+// logins (el 99% sin 2FA incluido) solo para enterarse de que no hacía falta.
+export type LoginResult =
+  | { ok: true; role: string | null; mfaFactorId?: string }
+  | { ok: false; error: string };
 
 /**
  * Login server-side (reemplaza el `supabase.auth.signInWithPassword` que
@@ -82,17 +97,41 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
     if (logError) console.error("[log_login_event]", logError.message);
   });
 
-  // Resuelve el rol ACÁ (un solo round-trip extra, dentro de la misma
-  // llamada al server action) para que login-form.tsx pueda navegar directo
-  // a la home del rol. Si esto falla por lo que sea, no rompe el login —
-  // simplemente el cliente cae al viejo camino vía "/dashboard".
-  const { data: profileRow } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .single();
+  // Todo lo que sigue depende solo de la sesión ya creada por
+  // signInWithPassword, así que corre EN PARALELO (antes eran 2-3 vueltas
+  // seguidas: rol, y aparte — ya en el browser — el chequeo de 2FA):
+  // - rol + module_flags (con overrides de cliente), para navegar directo a
+  //   la home del rol Y para pre-calentar la cookie de cache que lee
+  //   proxy.ts (mac_rc) — así el primer request post-login (esa misma
+  //   navegación) encuentra la cookie puesta y no repite estas consultas.
+  // - nivel de verificación (AAL): si la cuenta tiene 2FA verificado,
+  //   Supabase exige un segundo factor antes de que la sesión sirva para
+  //   algo — antes esto se chequeaba desde login-form.tsx con un round-trip
+  //   extra directo del browser a Supabase Auth, en TODOS los logins.
+  const [{ role, flags }, { data: aal }] = await Promise.all([
+    resolveRoleAndFlagsFromDb(supabase, data.user.id),
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+  ]);
 
-  return { ok: true, role: profileRow?.role ?? null };
+  // listFactors() solo hace falta para el subconjunto de cuentas con 2FA
+  // verificado (poquísimas, está apagado por defecto) — no vale la pena
+  // sumarlo al Promise.all de arriba para todo el mundo.
+  let mfaFactorId: string | undefined;
+  if (aal && aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
+    const { data: factors } = await supabase.auth.mfa.listFactors();
+    mfaFactorId = factors?.totp.find((f) => f.status === "verified")?.id;
+  }
+
+  if (role) {
+    const cookieStore = await cookies();
+    cookieStore.set(
+      CACHE_COOKIE,
+      JSON.stringify(buildRoleCache(data.user.id, role, flags)),
+      ROLE_CACHE_COOKIE_OPTIONS
+    );
+  }
+
+  return { ok: true, role, mfaFactorId };
 }
 
 const resetRequestSchema = z.object({ email: z.string().email() });

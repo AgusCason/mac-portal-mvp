@@ -206,3 +206,50 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/*
+ * Animaciones del fondo de /login (LoginCosmicBackground) — nunca colores
+ * sueltos, todo sale de --primary/--foreground (branding dinámico, ver
+ * layout.tsx). `prefers-reduced-motion` se maneja en el JSX con la variante
+ * `motion-reduce:animate-none` de Tailwind en cada elemento animado.
+ */
+@keyframes cosmic-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.08); }
+}
+
+@keyframes cosmic-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 1; }
+}
+
+@keyframes cosmic-drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(0, -14px) rotate(8deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes cosmic-badge-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--primary) 35%, transparent); }
+  50% { box-shadow: 0 0 32px 6px color-mix(in oklch, var(--primary) 35%, transparent); }
+}
+
+/*
+ * Las duraciones/delays de cada estrella/destello son distintos por elemento
+ * (vienen de un array, ver STARS/SPARKLES en login/page.tsx), así que se
+ * setean con `style={{ animation: ... }}` inline en vez de clases de
+ * Tailwind — un valor arbitrario con interpolación de JS dentro de la
+ * className (`` `animate-[...${x}...]` ``) no lo puede levantar el scanner
+ * estático de Tailwind, que necesita ver el string completo tal cual en el
+ * código fuente. El problema: un inline `style` de por sí ya gana contra
+ * cualquier utilidad de Tailwind (`motion-reduce:animate-none` incluida) en
+ * la cascada de CSS. `!important` en una regla de stylesheet SÍ le gana a un
+ * inline style normal — por eso esta regla (con `.cosmic-anim` puesto en
+ * cada elemento animado) es la única forma de respetar
+ * `prefers-reduced-motion` acá.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .cosmic-anim {
+    animation: none !important;
+  }
+}

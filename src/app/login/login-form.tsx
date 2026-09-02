@@ -3,13 +3,32 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck, Sparkles } from "lucide-react";
 
 import { loginAction } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+/**
+ * Overlay breve "verificando" mientras loginAction (o el 2° paso de 2FA)
+ * están en curso — pedido explícito además del rediseño: el login ya tarda
+ * poco (ver optimizaciones en loginAction), pero un estado vacío de "nada
+ * pasa" durante esos ~1-2s se siente más pesado que mostrar qué está
+ * pasando. Se re-monta con `key` en cada submit para que la animación de
+ * entrada corra de nuevo si el usuario reintenta.
+ */
+function VerifyingOverlay({ message }: { message: string }) {
+  return (
+    <div className="bg-card/90 animate-in fade-in absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-3xl backdrop-blur-sm duration-200">
+      <div className="bg-primary/10 border-primary/25 flex size-14 items-center justify-center rounded-2xl border">
+        <Loader2 className="text-primary size-6 animate-spin" />
+      </div>
+      <p className="text-foreground text-sm font-medium">{message}</p>
+    </div>
+  );
+}
 
 export function LoginForm() {
   const router = useRouter();
@@ -25,7 +44,9 @@ export function LoginForm() {
   // sesión ya creada por signInWithPassword sirva para algo — esto lo decide
   // Supabase por cuenta, no nuestro flag de Configuración > Módulos (ese
   // flag solo controla si alguien puede EMPEZAR a activarlo desde Mi Perfil,
-  // nunca desactiva retroactivamente a quien ya lo tiene andando).
+  // nunca desactiva retroactivamente a quien ya lo tiene andando). Si hace
+  // falta, loginAction ya lo resuelve del lado del servidor y devuelve
+  // `mfaFactorId` directo — ver src/app/actions/auth.ts.
   const [awaitingMfa, setAwaitingMfa] = useState<{ factorId: string } | null>(null);
   const [mfaCode, setMfaCode] = useState("");
   const [nextPath, setNextPath] = useState<string | null>(null);
@@ -59,22 +80,27 @@ export function LoginForm() {
     // una página real, existe solo para que proxy.ts la redirija a la home
     // del rol, así que ir directo ahorra una vuelta completa de más por el
     // servidor (con su propio middleware) en CADA login.
-    setNextPath(searchParams.get("next") ?? (result.role ? `/${result.role}` : "/dashboard"));
+    //
+    // OJO: acá abajo se usa la variable LOCAL `resolvedNext`, no el estado
+    // `nextPath` — `setNextPath` recién arriba no actualizó todavía ese
+    // estado en este mismo render (setState es asíncrono), así que navegar
+    // con el estado en este punto siempre terminaba cayendo al fallback
+    // "/dashboard" pese al comentario de arriba, el extra viaje por el
+    // servidor que se supone que esto evita. `nextPath` (estado) sigue
+    // existiendo para que `goToNext()` lo use en el paso de 2FA, un ciclo de
+    // render distinto donde sí ya está actualizado.
+    const resolvedNext = searchParams.get("next") ?? (result.role ? `/${result.role}` : "/dashboard");
+    setNextPath(resolvedNext);
 
-    const supabase = createClient();
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aal && aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      const factorId = factors?.totp.find((f) => f.status === "verified")?.id;
-      if (factorId) {
-        setLoading(false);
-        setAwaitingMfa({ factorId });
-        return;
-      }
+    if (result.mfaFactorId) {
+      setLoading(false);
+      setAwaitingMfa({ factorId: result.mfaFactorId });
+      return;
     }
 
     setLoading(false);
-    goToNext();
+    router.replace(resolvedNext);
+    router.refresh();
   }
 
   async function handleMfaSubmit(e: React.FormEvent) {
@@ -99,9 +125,12 @@ export function LoginForm() {
 
   if (awaitingMfa) {
     return (
-      <form onSubmit={handleMfaSubmit} className="space-y-4">
+      <form onSubmit={handleMfaSubmit} className="relative space-y-4">
+        {loading && <VerifyingOverlay message="Verificando código..." />}
         <div className="space-y-1.5">
-          <Label htmlFor="mfaCode">Código de verificación</Label>
+          <Label htmlFor="mfaCode" className="text-foreground">
+            <ShieldCheck className="text-primary size-3.5" /> Código de verificación
+          </Label>
           <Input
             id="mfaCode"
             inputMode="numeric"
@@ -111,6 +140,7 @@ export function LoginForm() {
             required
             value={mfaCode}
             onChange={(e) => setMfaCode(e.target.value)}
+            className="bg-input/30 border-input text-foreground placeholder:text-muted-foreground/70 text-center text-lg tracking-[0.3em]"
           />
           <p className="text-muted-foreground text-xs">
             Abrí tu app de autenticación (Google Authenticator, Authy, etc.) e ingresá el código de 6 dígitos.
@@ -126,9 +156,12 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="relative space-y-4">
+      {loading && <VerifyingOverlay message="Verificando tus datos..." />}
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-foreground">
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
@@ -136,12 +169,15 @@ export function LoginForm() {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          className="bg-input/30 border-input text-foreground placeholder:text-muted-foreground/70"
         />
       </div>
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">Contraseña</Label>
-          <Link href="/login/olvide-password" className="text-muted-foreground hover:text-foreground text-xs">
+          <Label htmlFor="password" className="text-foreground">
+            Contraseña
+          </Label>
+          <Link href="/login/olvide-password" className="text-muted-foreground hover:text-primary text-xs">
             ¿Olvidaste tu contraseña?
           </Link>
         </div>
@@ -152,11 +188,12 @@ export function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          className="bg-input/30 border-input text-foreground placeholder:text-muted-foreground/70"
         />
       </div>
       {error && <p className="text-destructive text-sm">{error}</p>}
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading && <Loader2 className="animate-spin" />}
+      <Button type="submit" className="w-full gap-2" disabled={loading}>
+        {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
         Ingresar
       </Button>
     </form>
