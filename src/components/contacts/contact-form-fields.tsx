@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { PHONE_INPUT_PATTERN } from "@/lib/validation";
 import type { ContactWithClient } from "@/lib/queries/contacts";
 
 export function ContactFormFields({
@@ -46,7 +47,15 @@ export function ContactFormFields({
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="phone">{t("components.contacts.phoneLabel", "Teléfono")}</Label>
-          <Input id="phone" name="phone" defaultValue={contact?.phone ?? ""} />
+          <Input
+            id="phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            pattern={PHONE_INPUT_PATTERN}
+            title={t("components.contacts.phoneInvalidTitle", "Solo números, espacios, +, - y paréntesis")}
+            defaultValue={contact?.phone ?? ""}
+          />
         </div>
       </div>
       <div className="space-y-1.5">

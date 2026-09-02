@@ -38,7 +38,12 @@ export function LoginForm() {
       return;
     }
 
-    const next = searchParams.get("next") ?? "/dashboard";
+    // Si vino de un link a una página puntual (?next=), respeta eso. Si no,
+    // va directo a la home del rol en vez de a "/dashboard" — ese path no es
+    // una página real, existe solo para que proxy.ts la redirija a la home
+    // del rol, así que ir directo ahorra una vuelta completa de más por el
+    // servidor (con su propio middleware) en CADA login.
+    const next = searchParams.get("next") ?? (result.role ? `/${result.role}` : "/dashboard");
     router.replace(next);
     router.refresh();
   }

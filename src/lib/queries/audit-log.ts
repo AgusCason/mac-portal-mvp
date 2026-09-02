@@ -14,6 +14,8 @@ export interface AuditLogFilters {
   /** Fecha "yyyy-mm-dd" inclusive. */
   dateTo?: string;
   actionType?: string;
+  /** Filtra por quién hizo la acción (profiles.id) — ver `idx_audit_log_actor`. */
+  actorId?: string;
 }
 
 /**
@@ -21,10 +23,11 @@ export interface AuditLogFilters {
  * en 0026_audit_log.sql). Se llena sola vía triggers/funciones, nunca desde
  * un Server Action de la app. Los filtros son opcionales (por defecto trae
  * las últimas 300 sin filtrar, igual que antes) — `idx_audit_log_action_type`
- * (0027_security_hardening.sql) sostiene el filtro por tipo de acción.
+ * (0027_security_hardening.sql) sostiene el filtro por tipo de acción,
+ * `idx_audit_log_actor` (0026_audit_log.sql) sostiene el filtro por usuario.
  */
 export async function getAuditLog(filters: AuditLogFilters = {}): Promise<AuditLogEntryWithRelations[]> {
-  const { limit = 300, dateFrom, dateTo, actionType } = filters;
+  const { limit = 300, dateFrom, dateTo, actionType, actorId } = filters;
   const supabase = await createClient();
   let query = supabase
     .from("audit_log")
@@ -35,6 +38,7 @@ export async function getAuditLog(filters: AuditLogFilters = {}): Promise<AuditL
   if (dateFrom) query = query.gte("created_at", `${dateFrom}T00:00:00`);
   if (dateTo) query = query.lte("created_at", `${dateTo}T23:59:59`);
   if (actionType) query = query.eq("action_type", actionType);
+  if (actorId) query = query.eq("actor_id", actorId);
 
   const { data, error } = await query;
 

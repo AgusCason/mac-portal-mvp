@@ -4,11 +4,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { optionalPhoneSchema } from "@/lib/validation";
 
 const profileSchema = z.object({
   fullName: z.string().min(2, "El nombre es obligatorio"),
   jobTitle: z.string().optional(),
-  phone: z.string().optional(),
+  phone: optionalPhoneSchema,
   location: z.string().optional(),
   bio: z.string().optional(),
 });

@@ -9,7 +9,14 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
-export type LoginResult = { ok: true } | { ok: false; error: string };
+// `role` va SOLO en la respuesta ok:true, y solo sirve para que el cliente
+// salte directo a "/admin"|"/editor"|"/client" en vez de pasar por
+// "/dashboard" (que igual termina redirigiendo ahí, ver proxy.ts) — un viaje
+// de ida y vuelta al server + otra pasada de middleware que hoy se paga en
+// TODOS los logins y es buena parte de la demora reportada ("tarda en
+// entrar"). Si no se pudo resolver el rol por algún motivo, se cae a null y
+// el cliente sigue yendo a "/dashboard" como antes (nunca rompe el login).
+export type LoginResult = { ok: true; role: string | null } | { ok: false; error: string };
 
 /**
  * Login server-side (reemplaza el `supabase.auth.signInWithPassword` que
@@ -37,34 +44,46 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
   // Doble ventana: por IP sola (frena a alguien probando muchos emails
   // distintos desde la misma máquina) y por email+IP (frena fuerza bruta
   // sobre una cuenta puntual sin afectar a otros usuarios de la misma red).
-  const ipAllowed = await checkRateLimit(supabase, `login:ip:${ip}`, {
-    maxHits: 20,
-    windowSeconds: 15 * 60,
-    blockMinutes: 30,
-  });
-  if (!ipAllowed) {
+  // En paralelo (antes era secuencial: 2 round-trips a la base uno atrás del
+  // otro solo para el caso común de login válido, donde los dos SIEMPRE
+  // terminan pasando) — mismo chequeo, misma cuenta de intentos en los dos
+  // casos, nada más rápido para el 99% de los logins que sí son válidos.
+  const [ipAllowed, emailAllowed] = await Promise.all([
+    checkRateLimit(supabase, `login:ip:${ip}`, {
+      maxHits: 20,
+      windowSeconds: 15 * 60,
+      blockMinutes: 30,
+    }),
+    checkRateLimit(supabase, `login:email:${parsed.data.email.toLowerCase()}:${ip}`, {
+      maxHits: 5,
+      windowSeconds: 15 * 60,
+      blockMinutes: 30,
+    }),
+  ]);
+  if (!ipAllowed || !emailAllowed) {
     return { ok: false, error: "Demasiados intentos de inicio de sesión. Esperá unos minutos e intentá de nuevo." };
   }
 
-  const emailAllowed = await checkRateLimit(supabase, `login:email:${parsed.data.email.toLowerCase()}:${ip}`, {
-    maxHits: 5,
-    windowSeconds: 15 * 60,
-    blockMinutes: 30,
-  });
-  if (!emailAllowed) {
-    return { ok: false, error: "Demasiados intentos de inicio de sesión. Esperá unos minutos e intentá de nuevo." };
-  }
-
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   });
 
-  if (error) {
+  if (error || !data.user) {
     return { ok: false, error: "Email o contraseña incorrectos." };
   }
 
-  return { ok: true };
+  // Resuelve el rol ACÁ (un solo round-trip extra, dentro de la misma
+  // llamada al server action) para que login-form.tsx pueda navegar directo
+  // a la home del rol. Si esto falla por lo que sea, no rompe el login —
+  // simplemente el cliente cae al viejo camino vía "/dashboard".
+  const { data: profileRow } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+
+  return { ok: true, role: profileRow?.role ?? null };
 }
 
 const resetRequestSchema = z.object({ email: z.string().email() });

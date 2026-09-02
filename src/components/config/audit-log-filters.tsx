@@ -9,8 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AUDIT_ACTION_LABELS, getAuditActionLabel } from "@/lib/audit-labels";
 import { useLocale } from "@/lib/i18n/locale-context";
 
-/** Filtros de Configuración > Auditoría: fecha desde/hasta + tipo de acción, como query params (misma idea que TaskFilters). */
-export function AuditLogFiltersBar() {
+export interface AuditLogUserOption {
+  id: string;
+  label: string;
+}
+
+/** Filtros de Configuración > Auditoría: fecha desde/hasta + tipo de acción + usuario, como query params (misma idea que TaskFilters). */
+export function AuditLogFiltersBar({ users }: { users: AuditLogUserOption[] }) {
   const { t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -19,6 +24,7 @@ export function AuditLogFiltersBar() {
   const from = searchParams.get("desde") ?? "";
   const to = searchParams.get("hasta") ?? "";
   const action = searchParams.get("accion") ?? "all";
+  const usuario = searchParams.get("usuario") ?? "all";
 
   function setParam(name: string, value: string) {
     const params = new URLSearchParams(searchParams);
@@ -27,7 +33,7 @@ export function AuditLogFiltersBar() {
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  const hasFilters = Boolean(from) || Boolean(to) || action !== "all";
+  const hasFilters = Boolean(from) || Boolean(to) || action !== "all" || usuario !== "all";
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -56,6 +62,20 @@ export function AuditLogFiltersBar() {
           {Object.keys(AUDIT_ACTION_LABELS).map((type) => (
             <SelectItem key={type} value={type}>
               {getAuditActionLabel(type, t)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={usuario} onValueChange={(v) => setParam("usuario", v)}>
+        <SelectTrigger className="w-56" size="sm">
+          <SelectValue placeholder={t("components.config.userFilterPlaceholder", "Usuario")} />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t("components.config.allUsers", "Todos los usuarios")}</SelectItem>
+          {users.map((u) => (
+            <SelectItem key={u.id} value={u.id}>
+              {u.label}
             </SelectItem>
           ))}
         </SelectContent>

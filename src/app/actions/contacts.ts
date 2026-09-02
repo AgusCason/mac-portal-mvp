@@ -4,14 +4,15 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { optionalPhoneSchema } from "@/lib/validation";
 
 const CONTACTS_PATH = "/admin/contactos";
 
 const contactSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
   roleTitle: z.string().optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().optional(),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  phone: optionalPhoneSchema,
   tags: z.string().optional(),
   clientId: z.string().uuid().optional().or(z.literal("")),
   notes: z.string().optional(),

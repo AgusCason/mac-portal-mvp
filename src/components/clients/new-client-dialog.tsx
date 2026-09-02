@@ -31,6 +31,7 @@ import { CountrySelect } from "@/components/shared/country-select";
 import { HandleInput } from "@/components/shared/handle-input";
 import { COUNTRIES } from "@/lib/countries";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { PHONE_INPUT_PATTERN } from "@/lib/validation";
 import type { Plan } from "@/types/database";
 import type { ContactWithClient } from "@/lib/queries/contacts";
 
@@ -262,6 +263,10 @@ export function NewClientDialog({
                   <Input
                     id="contactPhone"
                     name="contactPhone"
+                    type="tel"
+                    inputMode="tel"
+                    pattern={PHONE_INPUT_PATTERN}
+                    title={t("components.clients.phoneInvalidTitle", "Solo números, espacios, +, - y paréntesis")}
                     placeholder={t("components.clients.phonePlaceholder", "+549...")}
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}

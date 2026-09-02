@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { optionalPhoneSchema } from "@/lib/validation";
 import type { CrmLeadStage } from "@/types/database";
 
 const STAGES: [CrmLeadStage, ...CrmLeadStage[]] = [
@@ -19,7 +20,7 @@ const leadSchema = z.object({
   name: z.string().min(1, "Ponele un nombre al prospecto"),
   contactName: z.string().optional(),
   contactEmail: z.string().email("Email inválido").optional().or(z.literal("")),
-  contactPhone: z.string().optional(),
+  contactPhone: optionalPhoneSchema,
   source: z.string().optional(),
   estimatedValue: z.coerce.number().nonnegative().optional().or(z.nan()),
   notes: z.string().optional(),

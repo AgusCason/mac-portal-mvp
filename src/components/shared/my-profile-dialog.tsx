@@ -29,6 +29,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { getInitials, cn } from "@/lib/utils";
+import { PHONE_INPUT_PATTERN } from "@/lib/validation";
 import type { Profile, ProfileTheme } from "@/types/database";
 
 type SectionKey = "perfil" | "preferencias" | "notificaciones";
@@ -155,7 +156,16 @@ function ProfileTab({ profile }: { profile: Profile }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <Label htmlFor="phone">{t("components.shared.phoneLabel", "Teléfono")}</Label>
-            <Input id="phone" name="phone" placeholder="+54 11 ..." defaultValue={profile.phone} />
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              inputMode="tel"
+              pattern={PHONE_INPUT_PATTERN}
+              title={t("components.shared.phoneInvalidTitle", "Solo números, espacios, +, - y paréntesis")}
+              placeholder="+54 11 ..."
+              defaultValue={profile.phone}
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="location">{t("components.shared.locationLabel", "Ubicación")}</Label>
@@ -359,9 +369,17 @@ export function MyProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="grid max-h-[85vh] max-w-3xl grid-cols-[220px_1fr] gap-0 overflow-hidden p-0 sm:max-w-3xl">
+      <DialogContent className="flex max-h-[85vh] max-w-3xl flex-col gap-0 overflow-hidden p-0 sm:grid sm:grid-cols-[220px_1fr] sm:max-w-3xl">
         <DialogTitle className="sr-only">{t("components.shared.sectionProfile", "Perfil de Cuenta")}</DialogTitle>
-        <div className="bg-muted/40 space-y-0.5 rounded-l-3xl border-r border-border p-4">
+        {/*
+          Antes esto era SIEMPRE una grilla de 220px + contenido — en mobile
+          (~360-400px de ancho real) esos 220px fijos de sidebar dejaban la
+          columna de contenido aplastada en menos de 150px, imposible de
+          usar. Abajo de "sm" pasa a ser una franja de tabs horizontal
+          (scrolleable si no entran) arriba del contenido; desde "sm" vuelve
+          a ser la grilla sidebar+contenido de siempre.
+        */}
+        <div className="bg-muted/40 flex shrink-0 gap-1 overflow-x-auto rounded-t-3xl border-b border-border p-2 sm:flex-col sm:gap-0.5 sm:overflow-visible sm:rounded-l-3xl sm:rounded-tr-none sm:border-b-0 sm:border-r sm:p-4">
           {SECTIONS.map((s) => {
             const Icon = s.icon;
             const active = section === s.key;
@@ -371,7 +389,7 @@ export function MyProfileDialog({
                 type="button"
                 onClick={() => setSection(s.key)}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors duration-150",
+                  "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 sm:w-full",
                   active ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60"
                 )}
               >
@@ -381,7 +399,7 @@ export function MyProfileDialog({
             );
           })}
         </div>
-        <div className="max-h-[85vh] overflow-y-auto p-8">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:min-h-[auto] sm:max-h-[85vh] sm:p-8">
           {section === "perfil" && <ProfileTab profile={profile} />}
           {section === "preferencias" && <PreferencesTab profile={profile} />}
           {section === "notificaciones" && <NotificationsTab profile={profile} />}

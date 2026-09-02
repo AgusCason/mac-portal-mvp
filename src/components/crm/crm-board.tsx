@@ -52,6 +52,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatCurrency } from "@/lib/utils";
+import { PHONE_INPUT_PATTERN } from "@/lib/validation";
 
 const STAGE_ORDER: CrmLeadStage[] = [
   "nuevo",
@@ -125,7 +126,15 @@ function LeadFormFields({ lead }: { lead?: CrmLead }) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="contactPhone">{t("components.crm.phoneLabel", "Teléfono")}</Label>
-          <Input id="contactPhone" name="contactPhone" defaultValue={lead?.contact_phone ?? ""} />
+          <Input
+            id="contactPhone"
+            name="contactPhone"
+            type="tel"
+            inputMode="tel"
+            pattern={PHONE_INPUT_PATTERN}
+            title={t("components.crm.phoneInvalidTitle", "Solo números, espacios, +, - y paréntesis")}
+            defaultValue={lead?.contact_phone ?? ""}
+          />
         </div>
       </div>
       <div className="space-y-1.5">

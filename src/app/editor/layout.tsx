@@ -10,17 +10,24 @@ export default async function EditorLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const profile = await requireRole(["editor"]);
   // Actividad/Notificaciones son secundarias (viven en paneles deslizables,
   // no hacen falta para pintar el sidebar) — se disparan pero NO se esperan
   // acá, así no bloquean el render del resto del layout ni de la página.
   // AppShell las resuelve adentro con `use()`, cada una en su <Suspense>.
   // branding/moduleFlags sí se esperan: el sidebar los necesita ya
-  // resueltos para no parpadear con el nav incorrecto.
+  // resueltos para no parpadear con el nav incorrecto. requireRole() va en
+  // el mismo Promise.all (no antes, esperado aparte) — ni branding ni
+  // moduleFlags necesitan el profile, así que no hay motivo para hacerlos
+  // esperar a que termine el chequeo de rol (que ya de por sí pega contra
+  // Supabase Auth + la tabla profiles) — se solapan en vez de sumarse.
   const activityPromise = getRecentActivity();
   const notificationsPromise = getNotifications();
   const unreadCountPromise = getUnreadNotificationCount();
-  const [branding, moduleFlags] = await Promise.all([getBranding(), getModuleFlags()]);
+  const [profile, branding, moduleFlags] = await Promise.all([
+    requireRole(["editor"]),
+    getBranding(),
+    getModuleFlags(),
+  ]);
   return (
     <AppShell
       profile={profile}

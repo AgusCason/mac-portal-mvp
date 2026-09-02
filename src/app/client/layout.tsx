@@ -13,7 +13,6 @@ export default async function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const profile = await requireRole(["client"]);
   // Actividad/Notificaciones son secundarias (viven en paneles deslizables,
   // no hacen falta para pintar el sidebar) — se disparan pero NO se esperan
   // acá, así no bloquean el render del resto del layout ni de la página.
@@ -21,13 +20,18 @@ export default async function ClientLayout({
   const activityPromise = getRecentActivity();
   const notificationsPromise = getNotifications();
   const unreadCountPromise = getUnreadNotificationCount();
-  // branding/moduleFlags/overrides sí se esperan: el sidebar los necesita
-  // ya resueltos para no parpadear con el nav incorrecto.
-  const [branding, moduleFlags, clientId] = await Promise.all([
+  // branding/moduleFlags sí se esperan: el sidebar los necesita ya
+  // resueltos para no parpadear con el nav incorrecto. requireRole() va acá
+  // mismo (no antes, esperado aparte) — ninguna de las dos depende del
+  // profile, así que se solapan con el chequeo de rol en vez de esperarlo.
+  // getPrimaryClientId sí necesita el profile.id ya resuelto, así que ese
+  // quedó afuera del Promise.all — no hay forma de adelantarlo.
+  const [profile, branding, moduleFlags] = await Promise.all([
+    requireRole(["client"]),
     getBranding(),
     getModuleFlags(),
-    getPrimaryClientId(profile.id),
   ]);
+  const clientId = await getPrimaryClientId(profile.id);
   // Acceso por cliente puntual (ficha de cliente > pestaña Accesos) — capa
   // fina sobre moduleFlags que decide qué ve ESTE cliente en su sidebar.
   const overrides = clientId ? await getClientModuleOverrides(clientId) : {};

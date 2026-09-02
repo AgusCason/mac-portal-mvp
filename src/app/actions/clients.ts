@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { createClientDriveStructure, linkExistingClientFolder } from "@/lib/google-drive";
 import { inviteOrReuseUser } from "@/lib/onboarding";
+import { optionalPhoneSchema } from "@/lib/validation";
 import type { DriveFolderType } from "@/types/database";
 
 const createClientSchema = z.object({
@@ -13,7 +14,7 @@ const createClientSchema = z.object({
   brandName: z.string().optional(),
   contactFullName: z.string().min(2, "Nombre y apellido del contacto es obligatorio"),
   contactEmail: z.string().email("Email inválido"),
-  contactPhone: z.string().optional(),
+  contactPhone: optionalPhoneSchema,
   country: z.string().optional(),
   socialInstagram: z.string().optional(),
   socialTiktok: z.string().optional(),
