@@ -48,3 +48,18 @@ export const optionalPhoneSchema = z
  * input ya valida bien — es la única combinación que probamos que funciona.
  */
 export const PHONE_INPUT_PATTERN = "[0-9+\\(\\)\\-. ]{6,20}";
+
+/**
+ * Requisito mínimo de contraseña nueva (único punto donde se crea/cambia
+ * hoy: /auth/actualizar-password, tanto para "olvidé mi contraseña" como
+ * para el primer ingreso vía invitación). Antes solo se pedía length >= 8 —
+ * eso deja pasar cosas como "aaaaaaaa". No pedimos mayúscula/símbolo (ya es
+ * bastante fricción para un portal interno con pocos usuarios) pero sí que
+ * combine letras y números, así se sale de "todo un mismo tipo de caracter".
+ */
+export function getPasswordStrengthError(password: string): string | null {
+  if (password.length < 8) return "La contraseña tiene que tener al menos 8 caracteres.";
+  if (!/[a-zA-Z]/.test(password)) return "La contraseña tiene que incluir al menos una letra.";
+  if (!/[0-9]/.test(password)) return "La contraseña tiene que incluir al menos un número.";
+  return null;
+}

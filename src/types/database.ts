@@ -1552,8 +1552,23 @@ export interface Database {
         Returns: null;
       };
       log_login_event: {
-        Args: Record<string, never>;
+        Args: { p_ip?: string | null };
         Returns: null;
+      };
+      notify_user: {
+        Args: { p_profile_id: string; p_title: string; p_body: string; p_link?: string | null };
+        Returns: null;
+      };
+      list_my_sessions: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          created_at: string;
+          updated_at: string;
+          user_agent: string | null;
+          ip: string | null;
+          is_current: boolean;
+        }[];
       };
       check_rate_limit: {
         Args: Flatten<{

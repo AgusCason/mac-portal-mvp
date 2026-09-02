@@ -73,10 +73,12 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
     return { ok: false, error: "Email o contraseña incorrectos." };
   }
 
-  // Registra el inicio de sesión en Auditoría (0033_activity_audit_expansion.sql).
-  // A propósito sin `await`: es un "best effort" que nunca debe demorar ni
+  // Registra el inicio de sesión en Auditoría Y le avisa al usuario por la
+  // campana de notificaciones (0034_login_security_notifications.sql — el
+  // switch "Alertas de Seguridad" de Mi Perfil, antes sin nada atrás). A
+  // propósito sin `await`: es un "best effort" que nunca debe demorar ni
   // romper un login que ya fue exitoso — si la RPC falla, solo se loguea acá.
-  supabase.rpc("log_login_event").then(({ error: logError }) => {
+  supabase.rpc("log_login_event", { p_ip: ip }).then(({ error: logError }) => {
     if (logError) console.error("[log_login_event]", logError.message);
   });
 

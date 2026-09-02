@@ -260,6 +260,13 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         status: "incluido",
       },
       {
+        key: "verificacion-2fa",
+        label: "Verificación en dos pasos (2FA)",
+        description:
+          "Apagado por defecto — a propósito. Al prenderlo, cualquier usuario puede activarlo para su propia cuenta desde Mi Perfil > Seguridad, con una app de autenticación (Google Authenticator, Authy, etc.): sin el código de esa app, ni sabiendo la contraseña se puede entrar. Manual rápido antes de prenderlo: (1) hoy no hay códigos de respaldo — si alguien pierde el dispositivo con la app, no hay forma de recuperar el acceso solo; (2) tampoco hay un botón para que un admin le resetee el 2FA a otro usuario trabado — la única salida hoy es recuperar el dispositivo o darlo de baja y crear el usuario de nuevo. Prendelo recién cuando el equipo esté al tanto de esto.",
+        status: "incluido",
+      },
+      {
         key: "actividad-notificaciones",
         label: "Actividad y Notificaciones",
         description: "Bitácora del workspace y avisos personales, en paneles deslizantes desde cualquier pantalla.",

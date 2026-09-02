@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
-import { getInvoices, getBillingSummary, computeBillingAnalytics } from "@/lib/queries/billing";
+import { getInvoices, getBillingSummary, computeBillingAnalytics, type InvoiceWithRelations } from "@/lib/queries/billing";
 import { getSelectableClients } from "@/lib/queries/content";
 import { getPaymentMethods } from "@/lib/queries/payment-methods";
 import { NewPlanDialog } from "@/components/plans/new-plan-dialog";
@@ -8,11 +8,32 @@ import { NewInvoiceDialog } from "@/components/billing/new-invoice-dialog";
 import { InvoiceList } from "@/components/billing/invoice-list";
 import { BillingDashboard } from "@/components/billing/billing-dashboard";
 import { PaymentMethodsPanel } from "@/components/billing/payment-methods-panel";
+import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import type { CsvColumn } from "@/lib/export-csv";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Plan } from "@/types/database";
 import { getT } from "@/lib/i18n/dictionary";
+
+const INVOICE_STATUS_LABEL: Record<string, string> = {
+  pending: "Pendiente",
+  paid: "Pagada",
+  overdue: "Vencida",
+  cancelled: "Cancelada",
+};
+
+const INVOICE_CSV_COLUMNS: CsvColumn<InvoiceWithRelations>[] = [
+  { header: "Cliente", value: (i) => i.client_name },
+  { header: "Plan", value: (i) => i.plan_name },
+  { header: "Proyecto web", value: (i) => i.web_project_title },
+  { header: "Monto", value: (i) => i.amount },
+  { header: "Moneda", value: (i) => i.currency },
+  { header: "Estado", value: (i) => INVOICE_STATUS_LABEL[i.status] ?? i.status },
+  { header: "Vencimiento", value: (i) => formatDate(i.due_date) },
+  { header: "Pagada el", value: (i) => (i.paid_at ? formatDate(i.paid_at) : "") },
+  { header: "Días de atraso", value: (i) => i.daysOverdue },
+];
 
 export default async function AdminPlanesPage() {
   const profile = await requireRole(["admin"]);
@@ -103,7 +124,8 @@ export default async function AdminPlanesPage() {
             </Card>
           </div>
 
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-2">
+            <ExportCsvButton filename="facturas.csv" columns={INVOICE_CSV_COLUMNS} rows={invoices} />
             <NewInvoiceDialog clients={clients} plans={planOptions} />
           </div>
 

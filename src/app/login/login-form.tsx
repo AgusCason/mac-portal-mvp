@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 import { loginAction } from "@/app/actions/auth";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,21 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Paso 2 (opcional): si la cuenta tiene verificación en dos pasos
+  // verificada, Supabase Auth exige un segundo factor (AAL2) ANTES de que la
+  // sesión ya creada por signInWithPassword sirva para algo — esto lo decide
+  // Supabase por cuenta, no nuestro flag de Configuración > Módulos (ese
+  // flag solo controla si alguien puede EMPEZAR a activarlo desde Mi Perfil,
+  // nunca desactiva retroactivamente a quien ya lo tiene andando).
+  const [awaitingMfa, setAwaitingMfa] = useState<{ factorId: string } | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [nextPath, setNextPath] = useState<string | null>(null);
+
+  function goToNext() {
+    router.replace(nextPath ?? "/dashboard");
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,9 +59,70 @@ export function LoginForm() {
     // una página real, existe solo para que proxy.ts la redirija a la home
     // del rol, así que ir directo ahorra una vuelta completa de más por el
     // servidor (con su propio middleware) en CADA login.
-    const next = searchParams.get("next") ?? (result.role ? `/${result.role}` : "/dashboard");
-    router.replace(next);
-    router.refresh();
+    setNextPath(searchParams.get("next") ?? (result.role ? `/${result.role}` : "/dashboard"));
+
+    const supabase = createClient();
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal && aal.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const factorId = factors?.totp.find((f) => f.status === "verified")?.id;
+      if (factorId) {
+        setLoading(false);
+        setAwaitingMfa({ factorId });
+        return;
+      }
+    }
+
+    setLoading(false);
+    goToNext();
+  }
+
+  async function handleMfaSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!awaitingMfa) return;
+    setLoading(true);
+    setError(null);
+
+    const supabase = createClient();
+    const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({
+      factorId: awaitingMfa.factorId,
+      code: mfaCode.trim(),
+    });
+    setLoading(false);
+
+    if (verifyError) {
+      setError("Código incorrecto. Probá de nuevo.");
+      return;
+    }
+    goToNext();
+  }
+
+  if (awaitingMfa) {
+    return (
+      <form onSubmit={handleMfaSubmit} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="mfaCode">Código de verificación</Label>
+          <Input
+            id="mfaCode"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="123456"
+            autoFocus
+            required
+            value={mfaCode}
+            onChange={(e) => setMfaCode(e.target.value)}
+          />
+          <p className="text-muted-foreground text-xs">
+            Abrí tu app de autenticación (Google Authenticator, Authy, etc.) e ingresá el código de 6 dígitos.
+          </p>
+        </div>
+        {error && <p className="text-destructive text-sm">{error}</p>}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading && <Loader2 className="animate-spin" />}
+          Verificar
+        </Button>
+      </form>
+    );
   }
 
   return (

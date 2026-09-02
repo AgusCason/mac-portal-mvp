@@ -5,7 +5,21 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
-import { User, Palette, Bell, Camera, Loader2, Check, Moon, Sun, Sparkles as SparklesIcon } from "lucide-react";
+import {
+  User,
+  Palette,
+  Bell,
+  ShieldCheck,
+  Camera,
+  Loader2,
+  Check,
+  Moon,
+  Sun,
+  Sparkles as SparklesIcon,
+  Smartphone,
+  ShieldOff,
+  KeyRound,
+} from "lucide-react";
 
 import {
   updateMyNotificationsAction,
@@ -27,12 +41,41 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { useLocale } from "@/lib/i18n/locale-context";
-import { getInitials, cn } from "@/lib/utils";
+import { getInitials, cn, formatDate, formatTime } from "@/lib/utils";
 import { PHONE_INPUT_PATTERN } from "@/lib/validation";
 import type { Profile, ProfileTheme } from "@/types/database";
 
-type SectionKey = "perfil" | "preferencias" | "notificaciones";
+type SectionKey = "perfil" | "preferencias" | "notificaciones" | "seguridad";
+
+interface MySession {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  user_agent: string | null;
+  ip: string | null;
+  is_current: boolean;
+}
+
+/** Bastante tosco a propósito — solo para no mostrar un user-agent crudo de
+ *  200 caracteres; no reemplaza una librería real de detección de UA. */
+function summarizeUserAgent(ua: string | null): string {
+  if (!ua) return "Dispositivo desconocido";
+  const isMobile = /Mobile|Android|iPhone/i.test(ua);
+  let os = "Desconocido";
+  if (/Windows/i.test(ua)) os = "Windows";
+  else if (/Mac OS X/i.test(ua)) os = "macOS";
+  else if (/Android/i.test(ua)) os = "Android";
+  else if (/iPhone|iPad/i.test(ua)) os = "iOS";
+  else if (/Linux/i.test(ua)) os = "Linux";
+  let browser = "Navegador";
+  if (/Edg\//i.test(ua)) browser = "Edge";
+  else if (/Chrome\//i.test(ua)) browser = "Chrome";
+  else if (/Firefox\//i.test(ua)) browser = "Firefox";
+  else if (/Safari\//i.test(ua)) browser = "Safari";
+  return `${browser} · ${os}${isMobile ? " (móvil)" : ""}`;
+}
 
 // Las 4 tarjetas de tema son nombres de producto (estilo MB Suite) — no se
 // traducen, se muestran igual en los dos idiomas.
@@ -349,14 +392,265 @@ function NotificationsTab({ profile }: { profile: Profile }) {
   );
 }
 
+/**
+ * Seguridad — sesiones activas (con "cerrar todas") siempre visible, y
+ * verificación en dos pasos SOLO si el admin la prendió en Configuración >
+ * Módulos ("verificacion-2fa", apagada por defecto — ver 0036_2fa_module.sql).
+ * El flag apagado esconde el botón de ACTIVAR acá, pero nunca desactiva a
+ * alguien que ya la tenía andando de antes (eso lo sigue exigiendo Supabase
+ * Auth en el login, ver login-form.tsx).
+ */
+function SecurityTab({ twoFactorEnabled }: { twoFactorEnabled: boolean }) {
+  const router = useRouter();
+
+  const [sessions, setSessions] = React.useState<MySession[] | null>(null);
+  const [loadingSessions, setLoadingSessions] = React.useState(true);
+  const [signingOutAll, setSigningOutAll] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
+    supabase
+      .rpc("list_my_sessions")
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) console.error("[list_my_sessions]", error.message);
+        setSessions(error ? [] : (data ?? []));
+        setLoadingSessions(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleSignOutEverywhere() {
+    setSigningOutAll(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signOut({ scope: "global" });
+    if (error) {
+      toast.error("No se pudieron cerrar las sesiones.");
+      setSigningOutAll(false);
+      return;
+    }
+    router.replace("/login");
+    router.refresh();
+  }
+
+  const [factor, setFactor] = React.useState<{ id: string; status: string } | null>(null);
+  const [loadingFactor, setLoadingFactor] = React.useState(twoFactorEnabled);
+  const [enrolling, setEnrolling] = React.useState<{ factorId: string; qrCode: string; secret: string } | null>(null);
+  const [mfaCode, setMfaCode] = React.useState("");
+  const [mfaBusy, setMfaBusy] = React.useState(false);
+
+  React.useEffect(() => {
+    // Si el módulo está apagado, `loadingFactor` ya arrancó en `false` (ver
+    // su useState de arriba, inicializado con `twoFactorEnabled`) — nada que
+    // pedirle a Supabase acá, así que ni corremos el effect.
+    if (!twoFactorEnabled) return;
+    let cancelled = false;
+    const supabase = createClient();
+    supabase.auth.mfa.listFactors().then(({ data, error }) => {
+      if (cancelled) return;
+      if (!error && data) {
+        const totp = data.totp[0] ?? null;
+        setFactor(totp ? { id: totp.id, status: totp.status } : null);
+      }
+      setLoadingFactor(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [twoFactorEnabled]);
+
+  async function handleStartEnroll() {
+    setMfaBusy(true);
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+    setMfaBusy(false);
+    if (error || !data) {
+      toast.error(error?.message ?? "No se pudo iniciar la activación.");
+      return;
+    }
+    setEnrolling({ factorId: data.id, qrCode: data.totp.qr_code, secret: data.totp.secret });
+  }
+
+  async function handleConfirmEnroll(e: React.FormEvent) {
+    e.preventDefault();
+    if (!enrolling) return;
+    setMfaBusy(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.mfa.challengeAndVerify({
+      factorId: enrolling.factorId,
+      code: mfaCode.trim(),
+    });
+    setMfaBusy(false);
+    if (error) {
+      toast.error("Código incorrecto. Probá de nuevo.");
+      return;
+    }
+    toast.success("Verificación en dos pasos activada.");
+    setFactor({ id: enrolling.factorId, status: "verified" });
+    setEnrolling(null);
+    setMfaCode("");
+  }
+
+  async function handleCancelEnroll() {
+    if (!enrolling) return;
+    const supabase = createClient();
+    await supabase.auth.mfa.unenroll({ factorId: enrolling.factorId });
+    setEnrolling(null);
+    setMfaCode("");
+  }
+
+  async function handleDisable() {
+    if (!factor) return;
+    setMfaBusy(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
+    setMfaBusy(false);
+    if (error) {
+      toast.error("No se pudo desactivar.");
+      return;
+    }
+    setFactor(null);
+    toast.success("Verificación en dos pasos desactivada.");
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold">Seguridad</h2>
+        <p className="text-muted-foreground text-sm">Sesiones activas y verificación en dos pasos.</p>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">Sesiones activas</h3>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleSignOutEverywhere}
+            disabled={signingOutAll || loadingSessions}
+          >
+            {signingOutAll && <Loader2 className="animate-spin" />}
+            Cerrar todas las sesiones
+          </Button>
+        </div>
+
+        {loadingSessions ? (
+          <div className="flex justify-center py-4">
+            <Loader2 className="text-muted-foreground size-4 animate-spin" />
+          </div>
+        ) : sessions && sessions.length > 0 ? (
+          <div className="space-y-2">
+            {sessions.map((s) => (
+              <div
+                key={s.id}
+                className="border-border flex items-center gap-3 rounded-lg border px-4 py-3"
+              >
+                <Smartphone className="text-muted-foreground size-4 shrink-0" />
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 text-sm font-medium">
+                    {summarizeUserAgent(s.user_agent)}
+                    {s.is_current && <Badge variant="secondary">Este dispositivo</Badge>}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {s.ip ? `${s.ip} · ` : ""}
+                    Activo desde {formatDate(s.updated_at)} {formatTime(s.updated_at)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-sm">No se pudo cargar la lista de sesiones.</p>
+        )}
+      </div>
+
+      {twoFactorEnabled && (
+        <div className="space-y-3 border-t border-border pt-5">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="size-4" />
+            <h3 className="text-sm font-medium">Verificación en dos pasos</h3>
+          </div>
+
+          {loadingFactor ? (
+            <div className="flex justify-center py-4">
+              <Loader2 className="text-muted-foreground size-4 animate-spin" />
+            </div>
+          ) : enrolling ? (
+            <form onSubmit={handleConfirmEnroll} className="border-border space-y-3 rounded-lg border p-4">
+              <p className="text-sm">
+                Escaneá este código con tu app de autenticación (Google Authenticator, Authy, etc.):
+              </p>
+              {/* eslint-disable-next-line @next/next/no-img-element -- data: URI de Supabase Auth, no un asset estático */}
+              <img src={enrolling.qrCode} alt="Código QR de verificación en dos pasos" className="size-40" />
+              <p className="text-muted-foreground text-xs">
+                ¿No podés escanear? Ingresá este código a mano:{" "}
+                <span className="font-mono">{enrolling.secret}</span>
+              </p>
+              <div className="space-y-1.5">
+                <Label htmlFor="enrollCode">Código de 6 dígitos</Label>
+                <Input
+                  id="enrollCode"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  required
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={mfaBusy}>
+                  {mfaBusy && <Loader2 className="animate-spin" />}
+                  Confirmar
+                </Button>
+                <Button type="button" variant="ghost" onClick={handleCancelEnroll} disabled={mfaBusy}>
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          ) : factor?.status === "verified" ? (
+            <div className="border-border flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="text-primary-strong size-4" />
+                <p className="text-sm">Activada para tu cuenta.</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={handleDisable} disabled={mfaBusy}>
+                {mfaBusy ? <Loader2 className="animate-spin" /> : <ShieldOff className="size-3.5" />}
+                Desactivar
+              </Button>
+            </div>
+          ) : (
+            <div className="border-border rounded-lg border border-dashed p-4">
+              <p className="text-muted-foreground mb-2 text-sm">
+                Sumá un segundo paso al iniciar sesión, con una app de autenticación (Google Authenticator, Authy,
+                etc.) — aunque alguien adivine tu contraseña, no va a poder entrar sin el código de tu teléfono.
+              </p>
+              <Button type="button" size="sm" onClick={handleStartEnroll} disabled={mfaBusy}>
+                {mfaBusy ? <Loader2 className="animate-spin" /> : <KeyRound className="size-3.5" />}
+                Activar verificación en dos pasos
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function MyProfileDialog({
   profile,
   open,
   onOpenChange,
+  twoFactorEnabled = false,
 }: {
   profile: Profile;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Configuración > Módulos > "Verificación en dos pasos" (apagado por defecto). */
+  twoFactorEnabled?: boolean;
 }) {
   const { t } = useLocale();
   const [section, setSection] = React.useState<SectionKey>("perfil");
@@ -365,6 +659,7 @@ export function MyProfileDialog({
     { key: "perfil", label: t("components.shared.sectionProfile", "Perfil de Cuenta"), icon: User },
     { key: "preferencias", label: t("settings.title", "Preferencias"), icon: Palette },
     { key: "notificaciones", label: t("components.shared.sectionNotifications", "Notificaciones"), icon: Bell },
+    { key: "seguridad", label: t("components.shared.sectionSecurity", "Seguridad"), icon: ShieldCheck },
   ];
 
   return (
@@ -382,13 +677,13 @@ export function MyProfileDialog({
           no entraban las 3 sin scroll.
           Ahora, debajo de "sm", es una barra de navegación fija ABAJO del
           contenido (ícono arriba, label abajo, como un bottom-nav de app),
-          con grid-cols-3: las 3 secciones entran siempre completas, nunca
+          con grid-cols-4: las secciones entran siempre completas, nunca
           hace falta scrollear ni hay nada escondido. Al estar abajo, nunca
           compite con el botón de cerrar de arriba. Desde "sm" vuelve a ser
           la grilla sidebar+contenido de siempre (mismo order-none = orden
           natural del DOM, sidebar primero).
         */}
-        <div className="bg-muted/40 order-2 grid shrink-0 grid-cols-3 gap-1 rounded-b-3xl border-t border-border p-2 sm:order-none sm:flex sm:flex-col sm:gap-0.5 sm:rounded-b-none sm:rounded-l-3xl sm:border-t-0 sm:border-r sm:p-4">
+        <div className="bg-muted/40 order-2 grid shrink-0 grid-cols-4 gap-1 rounded-b-3xl border-t border-border p-2 sm:order-none sm:flex sm:flex-col sm:gap-0.5 sm:rounded-b-none sm:rounded-l-3xl sm:border-t-0 sm:border-r sm:p-4">
           {SECTIONS.map((s) => {
             const Icon = s.icon;
             const active = section === s.key;
@@ -412,6 +707,7 @@ export function MyProfileDialog({
           {section === "perfil" && <ProfileTab profile={profile} />}
           {section === "preferencias" && <PreferencesTab profile={profile} />}
           {section === "notificaciones" && <NotificationsTab profile={profile} />}
+          {section === "seguridad" && <SecurityTab twoFactorEnabled={twoFactorEnabled} />}
         </div>
       </DialogContent>
     </Dialog>

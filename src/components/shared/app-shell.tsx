@@ -497,7 +497,12 @@ function AppShellInner({
                   <LogoutMenuItem />
                 </DropdownMenuContent>
               </DropdownMenu>
-              <MyProfileDialog profile={profile} open={profileOpen} onOpenChange={setProfileOpen} />
+              <MyProfileDialog
+                profile={profile}
+                open={profileOpen}
+                onOpenChange={setProfileOpen}
+                twoFactorEnabled={moduleFlags["verificacion-2fa"]?.enabled ?? false}
+              />
             </div>
           </header>
 

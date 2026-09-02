@@ -1,9 +1,21 @@
 import { requireRole } from "@/lib/auth";
-import { getAuditLog } from "@/lib/queries/audit-log";
+import { getAuditLog, type AuditLogEntryWithRelations } from "@/lib/queries/audit-log";
 import { getAllProfilesLite } from "@/lib/queries/team";
 import { AuditLogTable } from "@/components/config/audit-log-table";
 import { AuditLogFiltersBar, type AuditLogUserOption } from "@/components/config/audit-log-filters";
+import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import type { CsvColumn } from "@/lib/export-csv";
+import { AUDIT_ACTION_LABELS } from "@/lib/audit-labels";
+import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
+
+const AUDIT_CSV_COLUMNS: CsvColumn<AuditLogEntryWithRelations>[] = [
+  { header: "Fecha", value: (e) => formatDate(e.created_at) },
+  { header: "Acción", value: (e) => AUDIT_ACTION_LABELS[e.action_type] ?? e.action_type },
+  { header: "Usuario", value: (e) => e.actor_name },
+  { header: "Cliente", value: (e) => e.client_name },
+  { header: "Detalle", value: (e) => e.summary },
+];
 
 /**
  * Configuración > Auditoría — quién marcó facturas como pagadas, editó
@@ -41,16 +53,19 @@ export default async function AuditoriaPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">
-          {t("audit.pageTitle", "Auditoría")}
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {t(
-            "audit.pageDescription",
-            "Registro de acciones financieras y sensibles — quién marcó qué como pagado, quién editó los métodos de cobro, quién tocó una credencial de la Bóveda."
-          )}
-        </p>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">
+            {t("audit.pageTitle", "Auditoría")}
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {t(
+              "audit.pageDescription",
+              "Registro de acciones financieras y sensibles — quién marcó qué como pagado, quién editó los métodos de cobro, quién tocó una credencial de la Bóveda."
+            )}
+          </p>
+        </div>
+        <ExportCsvButton filename="auditoria.csv" columns={AUDIT_CSV_COLUMNS} rows={entries} />
       </div>
 
       <AuditLogFiltersBar users={userOptions} />

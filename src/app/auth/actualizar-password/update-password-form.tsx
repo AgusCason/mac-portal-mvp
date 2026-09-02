@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getPasswordStrengthError } from "@/lib/validation";
 
 /**
  * Paso final de "olvidé mi contraseña" — llega acá con una sesión real ya
@@ -37,8 +38,9 @@ export function UpdatePasswordForm() {
     e.preventDefault();
     setError(null);
 
-    if (password.length < 8) {
-      setError("La contraseña tiene que tener al menos 8 caracteres.");
+    const strengthError = getPasswordStrengthError(password);
+    if (strengthError) {
+      setError(strengthError);
       return;
     }
     if (password !== confirmPassword) {
@@ -93,6 +95,7 @@ export function UpdatePasswordForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <p className="text-muted-foreground text-xs">Al menos 8 caracteres, combinando letras y números.</p>
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="confirmPassword">Repetí la contraseña</Label>

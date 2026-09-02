@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { AccountCard } from "@/components/clients/account-card";
+import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { cn, formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { AccountCardData } from "@/lib/queries/clients";
+import type { CsvColumn } from "@/lib/export-csv";
 
 type StatusFilter = "active" | "all";
 type ViewMode = "grid" | "table";
@@ -54,6 +56,17 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
     }
     return true;
   });
+
+  // El export siempre respeta lo que está filtrado en pantalla (búsqueda,
+  // Activas/Todas, Favoritos) — no siempre "todas las cuentas".
+  const csvColumns: CsvColumn<AccountCardData>[] = [
+    { header: t("components.clients.colAccount", "Cuenta"), value: (a) => a.name },
+    { header: "Brand", value: (a) => a.brandName },
+    { header: t("components.clients.colStatus", "Estado"), value: (a) => STATUS_LABEL[a.status] ?? a.status },
+    { header: t("components.clients.colSubscription", "Suscripción"), value: (a) => a.planName },
+    { header: t("components.clients.colTeam", "Equipo"), value: (a) => a.team.map((m) => m.name).join(" / ") },
+    { header: t("components.clients.colSignedUp", "Alta"), value: (a) => formatDate(a.createdAt) },
+  ];
 
   return (
     <div className="space-y-4">
@@ -102,7 +115,14 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
           {t("components.clients.favorites", "Favoritos")}
         </Button>
 
-        <div className="ml-auto flex items-center gap-1 rounded-lg border border-border p-0.5">
+        <ExportCsvButton
+          className="ml-auto h-8"
+          filename="clientes.csv"
+          columns={csvColumns}
+          rows={filtered}
+        />
+
+        <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
           <button
             type="button"
             onClick={() => setView("grid")}

@@ -1,9 +1,20 @@
 import { requireRole } from "@/lib/auth";
-import { getContacts } from "@/lib/queries/contacts";
+import { getContacts, type ContactWithClient } from "@/lib/queries/contacts";
 import { getSelectableClients } from "@/lib/queries/content";
 import { NewContactDialog } from "@/components/contacts/new-contact-dialog";
 import { ContactsTable } from "@/components/contacts/contacts-table";
+import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import type { CsvColumn } from "@/lib/export-csv";
 import { getT } from "@/lib/i18n/dictionary";
+
+const CONTACT_CSV_COLUMNS: CsvColumn<ContactWithClient>[] = [
+  { header: "Nombre", value: (c) => c.name },
+  { header: "Cargo", value: (c) => c.role_title },
+  { header: "Email", value: (c) => c.email },
+  { header: "Teléfono", value: (c) => c.phone },
+  { header: "Cliente", value: (c) => c.client_name },
+  { header: "Tags", value: (c) => c.tags.join(" / ") },
+];
 
 /**
  * Management > Contactos — directorio de personas del workspace.
@@ -23,7 +34,10 @@ export default async function AdminContactosPage() {
             Directorio de personas y referentes vinculados a tus cuentas.
           </p>
         </div>
-        <NewContactDialog clients={clients} />
+        <div className="flex items-center gap-2">
+          <ExportCsvButton filename="contactos.csv" columns={CONTACT_CSV_COLUMNS} rows={contacts} />
+          <NewContactDialog clients={clients} />
+        </div>
       </div>
 
       <ContactsTable contacts={contacts} clients={clients} />
