@@ -253,3 +253,115 @@
     animation: none !important;
   }
 }
+
+/*
+ * Tratamiento "vidrio premium" del panel de /login (login/page.tsx) — nacido
+ * de iterar directo en v0 (ver charla) hasta encontrar la combinación de
+ * capas que da la sensación 3D/glow de la referencia. Todo construido sobre
+ * los tokens propios (--primary/--info/--card) vía color-mix, nunca hex
+ * sueltos — son reglas planas (no @layer utilities), así que ya ganan por
+ * cascada contra las utilidades de Tailwind que se les combinen en el mismo
+ * elemento (mismo mecanismo que --cosmic-anim más arriba), sin necesitar
+ * !important.
+ *
+ * - .login-shell + .login-panel: el "borde" luminoso no es un border real,
+ *   es un padding de 1px sobre un fondo degradado (.login-shell) con un
+ *   panel opaco encima (.login-panel) — así el borde brilla con su propio
+ *   gradiente en vez de un solid-color plano.
+ * - .login-orb: esfera de vidrio con luz entrando desde arriba-izquierda
+ *   (radial-gradient) + sombras internas simulando volumen + un brillo
+ *   (sheen) ovalado vía ::after.
+ * - .login-glass-input / .login-cta: mismo lenguaje "vidrio" aplicado a
+ *   input y botón principal, para que todo el panel se sienta de una pieza.
+ */
+.login-shell {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--primary) 85%, transparent),
+    color-mix(in oklch, var(--info) 26%, transparent) 45%,
+    color-mix(in oklch, white 16%, transparent)
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--primary) 8%, transparent),
+    0 22px 90px color-mix(in oklch, var(--primary) 10%, transparent),
+    0 0 150px color-mix(in oklch, var(--primary) 7%, transparent);
+}
+
+.login-panel {
+  background: linear-gradient(
+    145deg,
+    color-mix(in oklch, var(--card) 66%, transparent),
+    color-mix(in oklch, black 80%, transparent)
+  );
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, white 14%, transparent),
+    inset 0 -1px 0 color-mix(in oklch, black 55%, transparent);
+}
+
+.login-orb {
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(
+    circle at 30% 26%,
+    color-mix(in oklch, white 92%, var(--primary)) 0%,
+    color-mix(in oklch, var(--primary) 88%, white) 13%,
+    var(--primary) 37%,
+    color-mix(in oklch, var(--primary) 68%, black) 68%,
+    color-mix(in oklch, var(--primary) 25%, black) 100%
+  );
+  box-shadow:
+    inset -10px -14px 20px color-mix(in oklch, black 50%, transparent),
+    inset 7px 8px 13px color-mix(in oklch, white 60%, transparent),
+    0 0 0 1px color-mix(in oklch, white 33%, transparent),
+    0 10px 35px color-mix(in oklch, var(--primary) 28%, transparent);
+}
+
+.login-orb::after {
+  content: "";
+  position: absolute;
+  inset: 8px 13px auto 12px;
+  height: 19px;
+  border-radius: 50%;
+  transform: rotate(-30deg);
+  background: linear-gradient(100deg, color-mix(in oklch, white 70%, transparent), transparent);
+  filter: blur(3px);
+}
+
+.login-orb-halo {
+  background: color-mix(in oklch, var(--primary) 20%, transparent);
+  filter: blur(25px);
+}
+
+.login-glass-input {
+  border: 1px solid color-mix(in oklch, white 12%, transparent);
+  background: color-mix(in oklch, black 28%, transparent);
+  box-shadow:
+    inset 0 1px 2px color-mix(in oklch, black 35%, transparent),
+    0 1px 0 color-mix(in oklch, white 4%, transparent);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
+}
+
+.login-glass-input:focus {
+  border-color: color-mix(in oklch, var(--primary) 62%, transparent);
+  background: color-mix(in oklch, black 42%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in oklch, var(--primary) 10%, transparent),
+    inset 0 1px 2px color-mix(in oklch, black 35%, transparent);
+}
+
+.login-cta {
+  background: linear-gradient(
+    105deg,
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 55%, var(--info)) 45%,
+    var(--info) 100%
+  );
+  box-shadow:
+    0 7px 24px color-mix(in oklch, var(--primary) 22%, transparent),
+    inset 0 1px 0 color-mix(in oklch, white 38%, transparent);
+}

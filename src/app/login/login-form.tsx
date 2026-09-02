@@ -140,14 +140,18 @@ export function LoginForm() {
             required
             value={mfaCode}
             onChange={(e) => setMfaCode(e.target.value)}
-            className="bg-input/30 border-input text-foreground placeholder:text-muted-foreground/70 text-center text-lg tracking-[0.3em]"
+            className="login-glass-input text-foreground placeholder:text-muted-foreground/60 h-12 rounded-xl border-transparent bg-transparent text-center text-lg tracking-[0.3em] focus-visible:border-transparent focus-visible:ring-0"
           />
           <p className="text-muted-foreground text-xs">
             Abrí tu app de autenticación (Google Authenticator, Authy, etc.) e ingresá el código de 6 dígitos.
           </p>
         </div>
         {error && <p className="text-destructive text-sm">{error}</p>}
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button
+          type="submit"
+          className="login-cta text-primary-foreground h-12 w-full rounded-xl transition-transform hover:-translate-y-0.5 hover:shadow-none active:translate-y-0"
+          disabled={loading}
+        >
           {loading && <Loader2 className="animate-spin" />}
           Verificar
         </Button>
@@ -166,10 +170,11 @@ export function LoginForm() {
           id="email"
           type="email"
           autoComplete="email"
+          placeholder="tu@email.com"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="bg-input/30 border-input text-foreground placeholder:text-muted-foreground/70"
+          className="login-glass-input text-foreground placeholder:text-muted-foreground/60 h-12 rounded-xl border-transparent bg-transparent focus-visible:border-transparent focus-visible:ring-0"
         />
       </div>
       <div className="space-y-1.5">
@@ -185,14 +190,19 @@ export function LoginForm() {
           id="password"
           type="password"
           autoComplete="current-password"
+          placeholder="Ingresá tu contraseña"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="bg-input/30 border-input text-foreground placeholder:text-muted-foreground/70"
+          className="login-glass-input text-foreground placeholder:text-muted-foreground/60 h-12 rounded-xl border-transparent bg-transparent focus-visible:border-transparent focus-visible:ring-0"
         />
       </div>
       {error && <p className="text-destructive text-sm">{error}</p>}
-      <Button type="submit" className="w-full gap-2" disabled={loading}>
+      <Button
+        type="submit"
+        className="login-cta text-primary-foreground h-12 w-full gap-2 rounded-xl transition-transform hover:-translate-y-0.5 hover:shadow-none active:translate-y-0"
+        disabled={loading}
+      >
         {loading ? <Loader2 className="animate-spin" /> : <Sparkles />}
         Ingresar
       </Button>
