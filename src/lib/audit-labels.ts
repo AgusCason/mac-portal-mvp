@@ -18,6 +18,14 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "vault.credential_deleted": "Credencial eliminada de la Bóveda",
   "security.blocked": "Bloqueo automático temporal",
   "security.alert": "Alerta de monitoreo de seguridad",
+  "auth.login": "Inicio de sesión",
+  "content.created": "Pieza de contenido creada",
+  "content.status_changed": "Cambio de estado de contenido",
+  "content.comment_added": "Comentario en una pieza",
+  "web_asset.created": "Entregable web agregado",
+  "web_asset.status_changed": "Cambio de estado de entregable web",
+  "contract.created": "Contrato creado",
+  "contract.signed": "Contrato firmado",
 };
 
 type TFunc = (path: string, fallback?: string) => string;
@@ -37,6 +45,14 @@ const AUDIT_ACTION_KEY: Record<string, string> = {
   "vault.credential_deleted": "vaultCredentialDeleted",
   "security.blocked": "securityBlocked",
   "security.alert": "securityAlert",
+  "auth.login": "authLogin",
+  "content.created": "contentCreated",
+  "content.status_changed": "contentStatusChanged",
+  "content.comment_added": "contentCommentAdded",
+  "web_asset.created": "webAssetCreated",
+  "web_asset.status_changed": "webAssetStatusChanged",
+  "contract.created": "contractCreated",
+  "contract.signed": "contractSigned",
 };
 
 /** Versión traducible de AUDIT_ACTION_LABELS — usar esta en componentes nuevos. */

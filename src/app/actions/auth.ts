@@ -73,6 +73,13 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
     return { ok: false, error: "Email o contraseña incorrectos." };
   }
 
+  // Registra el inicio de sesión en Auditoría (0033_activity_audit_expansion.sql).
+  // A propósito sin `await`: es un "best effort" que nunca debe demorar ni
+  // romper un login que ya fue exitoso — si la RPC falla, solo se loguea acá.
+  supabase.rpc("log_login_event").then(({ error: logError }) => {
+    if (logError) console.error("[log_login_event]", logError.message);
+  });
+
   // Resuelve el rol ACÁ (un solo round-trip extra, dentro de la misma
   // llamada al server action) para que login-form.tsx pueda navegar directo
   // a la home del rol. Si esto falla por lo que sea, no rompe el login —

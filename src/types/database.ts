@@ -1551,6 +1551,10 @@ export interface Database {
         }>;
         Returns: null;
       };
+      log_login_event: {
+        Args: Record<string, never>;
+        Returns: null;
+      };
       check_rate_limit: {
         Args: Flatten<{
           p_key: string;

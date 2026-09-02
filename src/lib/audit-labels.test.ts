@@ -23,6 +23,14 @@ const KNOWN_ACTION_TYPES = [
   "vault.credential_deleted",
   "security.blocked",
   "security.alert",
+  "auth.login",
+  "content.created",
+  "content.status_changed",
+  "content.comment_added",
+  "web_asset.created",
+  "web_asset.status_changed",
+  "contract.created",
+  "contract.signed",
 ];
 
 describe("AUDIT_ACTION_LABELS", () => {
