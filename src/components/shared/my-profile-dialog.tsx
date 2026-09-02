@@ -375,11 +375,20 @@ export function MyProfileDialog({
           Antes esto era SIEMPRE una grilla de 220px + contenido — en mobile
           (~360-400px de ancho real) esos 220px fijos de sidebar dejaban la
           columna de contenido aplastada en menos de 150px, imposible de
-          usar. Abajo de "sm" pasa a ser una franja de tabs horizontal
-          (scrolleable si no entran) arriba del contenido; desde "sm" vuelve
-          a ser la grilla sidebar+contenido de siempre.
+          usar. Ese primer intento (franja de tabs horizontal scrolleable
+          arriba del contenido) resultó peor: el botón de cerrar (absolute
+          top-5 right-5, ver ui/dialog.tsx) flota siempre en esa esquina, y
+          quedaba tapando justo la última pestaña ("Notificaciones") cuando
+          no entraban las 3 sin scroll.
+          Ahora, debajo de "sm", es una barra de navegación fija ABAJO del
+          contenido (ícono arriba, label abajo, como un bottom-nav de app),
+          con grid-cols-3: las 3 secciones entran siempre completas, nunca
+          hace falta scrollear ni hay nada escondido. Al estar abajo, nunca
+          compite con el botón de cerrar de arriba. Desde "sm" vuelve a ser
+          la grilla sidebar+contenido de siempre (mismo order-none = orden
+          natural del DOM, sidebar primero).
         */}
-        <div className="bg-muted/40 flex shrink-0 gap-1 overflow-x-auto rounded-t-3xl border-b border-border p-2 sm:flex-col sm:gap-0.5 sm:overflow-visible sm:rounded-l-3xl sm:rounded-tr-none sm:border-b-0 sm:border-r sm:p-4">
+        <div className="bg-muted/40 order-2 grid shrink-0 grid-cols-3 gap-1 rounded-b-3xl border-t border-border p-2 sm:order-none sm:flex sm:flex-col sm:gap-0.5 sm:rounded-b-none sm:rounded-l-3xl sm:border-t-0 sm:border-r sm:p-4">
           {SECTIONS.map((s) => {
             const Icon = s.icon;
             const active = section === s.key;
@@ -389,17 +398,17 @@ export function MyProfileDialog({
                 type="button"
                 onClick={() => setSection(s.key)}
                 className={cn(
-                  "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-left text-sm transition-colors duration-150 sm:w-full",
+                  "flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-2 py-2 text-center text-[11px] leading-tight transition-colors duration-150 sm:w-full sm:flex-row sm:justify-start sm:gap-2 sm:px-3 sm:text-left sm:text-sm sm:whitespace-nowrap",
                   active ? "bg-background font-medium text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/60"
                 )}
               >
-                <Icon className="size-4" />
-                {s.label}
+                <Icon className="size-4 shrink-0" />
+                <span className="max-w-full truncate">{s.label}</span>
               </button>
             );
           })}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:min-h-[auto] sm:max-h-[85vh] sm:p-8">
+        <div className="order-1 min-h-0 flex-1 overflow-y-auto p-5 sm:order-none sm:min-h-[auto] sm:max-h-[85vh] sm:p-8">
           {section === "perfil" && <ProfileTab profile={profile} />}
           {section === "preferencias" && <PreferencesTab profile={profile} />}
           {section === "notificaciones" && <NotificationsTab profile={profile} />}
