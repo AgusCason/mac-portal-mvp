@@ -81,9 +81,9 @@
   --chart-4: oklch(0.75 0.15 75);
   --chart-5: oklch(0.58 0.22 25);
 
-  /* Sombra de las tarjetas "glass" (.glass-card, ver más abajo) — mucho más
-     sutil en claro (una sombra fuerte se ve sucia sobre blanco) que en
-     oscuro, donde puede llevar además un halo tenue del verde de marca. */
+  /* Sombra de las tarjetas "glass" (.glass-card, ver más abajo) — neutra en
+     los dos modos (sin tinte de --primary: el usuario lo pidió sacar, se
+     veía como un brillo verde pegado a cada card). */
   --shadow-elevated: 0 10px 30px -10px rgb(0 0 0 / 10%), 0 2px 8px -2px rgb(0 0 0 / 6%);
 }
 
@@ -139,9 +139,7 @@
   --chart-4: oklch(0.8 0.15 75);
   --chart-5: oklch(0.58 0.22 25);
 
-  --shadow-elevated:
-    0 20px 50px -12px rgb(0 0 0 / 55%),
-    0 0 40px -18px color-mix(in oklch, var(--primary) 30%, transparent);
+  --shadow-elevated: 0 20px 50px -12px rgb(0 0 0 / 55%);
 }
 
 @theme inline {
@@ -213,16 +211,6 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "cv11", "ss01";
-    /* Wash radial muy sutil de marca — sin esto, las tarjetas .glass-card de
-       abajo no tienen nada de fondo contra qué mostrar su blur/transparencia
-       (un blur sobre un fondo 100% plano no se nota). Deliberadamente tenue
-       (6%) para no competir con el contenido en pantallas densas de datos. */
-    background-image: radial-gradient(
-      circle at 92% -8%,
-      color-mix(in oklch, var(--primary) 6%, transparent),
-      transparent 40%
-    );
-    background-attachment: fixed;
   }
   .tabular-nums {
     font-variant-numeric: tabular-nums;
@@ -441,19 +429,11 @@
   border-color: color-mix(in oklch, var(--primary) 35%, var(--border));
 }
 
-/* El wash radial de `body` (ver más arriba) no llega a mostrarse en ninguna
-   pantalla de la app: el panel de contenido del AppShell pinta su propio
-   `bg-background` opaco encima, tapándolo — por eso las .glass-card de
-   cualquier dashboard se ven "planas" (blur sin nada de fondo contra qué
-   notarse), aunque /login sí se vea bien (no tiene ese wrapper opaco encima).
-   Mismo wash, repetido acá para el panel que sí es visible. */
+/* Panel de contenido del AppShell — fondo plano, sin el wash radial verde
+   que tenía antes (el usuario lo sacó: se veía como un brillo detrás de
+   las cards). */
 .portal-canvas {
   background-color: var(--background);
-  background-image: radial-gradient(
-    circle at 92% -8%,
-    color-mix(in oklch, var(--primary) 6%, transparent),
-    transparent 40%
-  );
 }
 
 /* Botón primario de marca — mismo degradé lima→info que la CTA de /login

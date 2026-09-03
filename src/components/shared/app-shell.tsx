@@ -297,10 +297,7 @@ function BrandHeader({
         collapsed && "justify-center px-0"
       )}
     >
-      {/* Halo lima tenue detrás del logo — mismo recurso que el badge de
-          /login, para que la marca "brille" un poco también acá. */}
       <div className="relative flex items-center justify-center">
-        <div className="bg-primary/25 absolute size-9 rounded-full blur-lg" aria-hidden="true" />
         {hasCustomLogo ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element -- URL de logo arbitraria configurada por el admin, no se puede allowlistar en next.config en runtime. */}
