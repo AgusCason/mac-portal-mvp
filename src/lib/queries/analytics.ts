@@ -75,6 +75,50 @@ export async function getAnalyticsOverview(): Promise<AnalyticsOverview> {
   };
 }
 
+/** Un punto del gráfico de tendencia de alcance en Analytics > Overview. */
+export interface ReachTrendPoint {
+  date: string;
+  reach: number;
+}
+
+/**
+ * Analytics > Overview — alcance total (suma de todas las cuentas) por día,
+ * últimos `days` días. Antes el Overview solo mostraba el alcance más
+ * reciente como número suelto; esto arma la serie para graficar la
+ * tendencia real en vez de una sola cifra estática.
+ */
+export async function getReachTrend(days = 14): Promise<ReachTrendPoint[]> {
+  const supabase = await createClient();
+  const since = new Date();
+  since.setDate(since.getDate() - (days - 1));
+  since.setHours(0, 0, 0, 0);
+  const sinceStr = since.toISOString().slice(0, 10);
+
+  const { data, error } = await supabase
+    .from("social_metrics")
+    .select("metric_date, reach")
+    .gte("metric_date", sinceStr);
+
+  if (error) {
+    console.error("[getReachTrend]", error.message);
+    return [];
+  }
+
+  const byDate = new Map<string, number>();
+  for (const row of data ?? []) {
+    byDate.set(row.metric_date, (byDate.get(row.metric_date) ?? 0) + (row.reach ?? 0));
+  }
+
+  const points: ReachTrendPoint[] = [];
+  for (let i = 0; i < days; i++) {
+    const d = new Date(since);
+    d.setDate(d.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    points.push({ date: key, reach: byDate.get(key) ?? 0 });
+  }
+  return points;
+}
+
 /** Una tarjeta de Analytics > Dashboards: resumen agregado por plataforma. */
 export interface PlatformDashboard {
   platform: SocialPlatform;

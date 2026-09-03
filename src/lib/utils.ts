@@ -45,6 +45,14 @@ export function formatCompactCurrency(value: number, currency: string = "ARS") {
   }).format(value);
 }
 
+/** Formatea números compactos para ejes/tooltips de gráficos: 12,3 K / 1,2 M */
+export function formatCompactNumber(value: number) {
+  return new Intl.NumberFormat("es-AR", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 /** Redondea un máximo hacia arriba a un número "lindo" (1/2/5 × 10^n) para ejes de gráficos. */
 export function niceScaleMax(value: number) {
   if (value <= 0) return 1;

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/auth";
-import { getAnalyticsOverview } from "@/lib/queries/analytics";
+import { getAnalyticsOverview, getPlatformDashboards, getReachTrend } from "@/lib/queries/analytics";
 import { KpiCard } from "@/components/dashboard/kpi-card";
+import { ReachTrendChart, FollowersDonutChart, EngagementBarChart } from "@/components/analytics/overview-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getT } from "@/lib/i18n/dictionary";
@@ -27,7 +28,11 @@ import {
 export default async function AdminAnalyticsPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
-  const overview = await getAnalyticsOverview();
+  const [overview, platforms, reachTrend] = await Promise.all([
+    getAnalyticsOverview(),
+    getPlatformDashboards(),
+    getReachTrend(14),
+  ]);
 
   const SHORTCUTS = [
     {
@@ -83,15 +88,51 @@ export default async function AdminAnalyticsPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard label={t("pages.analyticsOverview.connectedAccounts", "Cuentas conectadas")} value={overview.connectedAccounts} icon={Radar} />
-        <KpiCard label={t("pages.analyticsOverview.totalReach", "Alcance total")} value={overview.totalReach.toLocaleString("es-AR")} icon={Eye} />
         <KpiCard label={t("pages.analyticsOverview.totalFollowers", "Seguidores totales")} value={overview.totalFollowers.toLocaleString("es-AR")} icon={Users} />
         <KpiCard
           label={t("pages.analyticsOverview.avgEngagement", "Engagement promedio")}
           value={`${overview.avgEngagementRate.toFixed(2)}%`}
           icon={TrendingUp}
         />
+      </div>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm">
+            <Eye className="size-4" /> {t("pages.analyticsOverview.totalReach", "Alcance total")}
+            <span className="text-muted-foreground font-normal">
+              — {t("pages.analyticsOverview.last14Days", "últimos 14 días")}
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ReachTrendChart data={reachTrend} />
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Users className="size-4" /> {t("pages.analyticsOverview.followersByPlatform", "Seguidores por plataforma")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FollowersDonutChart data={platforms} />
+          </CardContent>
+        </Card>
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <TrendingUp className="size-4" /> {t("pages.analyticsOverview.engagementByPlatform", "Engagement promedio por plataforma")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EngagementBarChart data={platforms} />
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

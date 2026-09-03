@@ -24,9 +24,10 @@ import {
 import {
   getProjectStatusLabel,
   PROJECT_STATUS_VARIANT,
+  PROJECT_STATUS_ICON,
   PROJECT_STATUS_ORDER,
 } from "@/components/projects/project-status";
-import { Badge } from "@/components/ui/badge";
+import { COLUMN_ICON_TINT } from "@/components/content/content-board";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -161,12 +162,16 @@ function BoardColumn({
 }) {
   const { t } = useLocale();
   const { setNodeRef, isOver } = useDroppable({ id: status });
+  const Icon = PROJECT_STATUS_ICON[status];
 
   return (
     <div className="min-w-0 lg:w-64 lg:shrink-0">
-      <div className="mb-2 flex items-center justify-between px-1">
-        <Badge variant={PROJECT_STATUS_VARIANT[status]}>{getProjectStatusLabel(status, t)}</Badge>
-        <span className="text-muted-foreground tabular-nums text-xs">{items.length}</span>
+      <div className="mb-2 flex items-center gap-2 px-1">
+        <div className={cn("icon-chip !size-7 !rounded-md", COLUMN_ICON_TINT[PROJECT_STATUS_VARIANT[status] as string])}>
+          <Icon className="size-3.5" strokeWidth={1.75} />
+        </div>
+        <span className="text-sm font-medium">{getProjectStatusLabel(status, t)}</span>
+        <span className="text-muted-foreground ml-auto tabular-nums text-xs">{items.length}</span>
       </div>
       <div
         ref={setNodeRef}
