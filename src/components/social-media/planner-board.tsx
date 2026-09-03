@@ -17,8 +17,8 @@ import {
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
 import type { ContentStatus } from "@/types/database";
-import { getStatusLabel } from "@/components/dashboard/content-status-badge";
-import { COLUMN_ORDER, NEXT_STATUS } from "@/components/content/content-board";
+import { STATUS_META, getStatusLabel } from "@/components/dashboard/content-status-badge";
+import { COLUMN_ORDER, NEXT_STATUS, COLUMN_ICON_TINT } from "@/components/content/content-board";
 import { CATEGORY_META, getCategoryLabel } from "@/lib/content-category-meta";
 import { NETWORK_META } from "@/lib/network-meta";
 import { updateContentStatusAction } from "@/app/actions/content";
@@ -27,36 +27,13 @@ import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatTime } from "@/lib/utils";
 
-/** Fondo del stat-card grande y punto de color por columna — estilo MB Suite. */
-export const STATUS_COLUMN_META: Record<ContentStatus, { header: string; dot: string }> = {
-  borrador: {
-    header: "bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-300",
-    dot: "bg-slate-400",
-  },
-  en_edicion: {
-    header: "bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400",
-    dot: "bg-orange-500",
-  },
-  por_aprobar: {
-    header: "bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400",
-    dot: "bg-blue-500",
-  },
-  requiere_cambios: {
-    header: "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400",
-    dot: "bg-red-500",
-  },
-  aprobado: {
-    header: "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400",
-    dot: "bg-green-500",
-  },
-  programado: {
-    header: "bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-400",
-    dot: "bg-violet-500",
-  },
-  publicado: {
-    header: "bg-teal-100 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400",
-    dot: "bg-teal-500",
-  },
+/** Punto de color por columna, derivado del mismo mapeo de variant que los Badge de estado. */
+export const STATUS_DOT: Record<string, string> = {
+  secondary: "bg-muted-foreground",
+  info: "bg-info",
+  warning: "bg-warning",
+  destructive: "bg-destructive",
+  success: "bg-success",
 };
 
 function PlannerCard({ item }: { item: ContentItemWithClient }) {
@@ -97,7 +74,7 @@ function PlannerCard({ item }: { item: ContentItemWithClient }) {
       {...attributes}
       {...listeners}
       className={cn(
-        "border-border bg-card cursor-grab space-y-2.5 rounded-xl border p-3 shadow-sm transition-shadow active:cursor-grabbing",
+        "glass-card cursor-grab space-y-2.5 rounded-xl p-3 transition-shadow active:cursor-grabbing",
         isDragging && "z-50 opacity-60 shadow-lg"
       )}
     >
@@ -162,22 +139,18 @@ function PlannerCard({ item }: { item: ContentItemWithClient }) {
 
 function PlannerColumn({ status, items }: { status: ContentStatus; items: ContentItemWithClient[] }) {
   const { t } = useLocale();
-  const colorMeta = STATUS_COLUMN_META[status];
+  const meta = STATUS_META[status];
   const { setNodeRef, isOver } = useDroppable({ id: status });
   const label = getStatusLabel(status, t);
 
   return (
     <div className="min-w-0 space-y-2 lg:w-72 lg:shrink-0">
-      <div className={cn("rounded-xl px-4 py-3 text-center", colorMeta.header)}>
-        <p className="text-2xl font-bold tabular-nums">{items.length}</p>
-        <p className="text-xs font-medium">{label}</p>
-      </div>
-      <div className="flex items-center justify-between px-1">
-        <span className="flex items-center gap-1.5 text-xs font-medium">
-          <span className={cn("size-2 rounded-full", colorMeta.dot)} />
-          {label}
-        </span>
-        <span className="text-muted-foreground tabular-nums text-xs">{items.length}</span>
+      <div className="flex items-center gap-2 px-1">
+        <div className={cn("icon-chip !size-7 !rounded-md", COLUMN_ICON_TINT[meta.variant as string])}>
+          <meta.icon className="size-3.5" strokeWidth={1.75} />
+        </div>
+        <span className="text-sm font-medium">{label}</span>
+        <span className="text-muted-foreground ml-auto tabular-nums text-xs">{items.length}</span>
       </div>
       <div
         ref={setNodeRef}

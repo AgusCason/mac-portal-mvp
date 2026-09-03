@@ -82,7 +82,7 @@ export default async function AdminPlanesPage() {
 
         <TabsContent value="facturacion" className="space-y-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Card>
+            <Card className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
                   {t("billing.kpiOpenInvoices", "Facturas abiertas")}
@@ -92,7 +92,7 @@ export default async function AdminPlanesPage() {
                 {summary.pendingCount}
               </CardContent>
             </Card>
-            <Card>
+            <Card className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
                   {t("billing.kpiOverdueCount", "Atrasadas")}
@@ -102,7 +102,7 @@ export default async function AdminPlanesPage() {
                 {summary.overdueCount}
               </CardContent>
             </Card>
-            <Card>
+            <Card className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
                   {t("billing.kpiDelinquentCount", "Morosos (15d+)")}
@@ -112,7 +112,7 @@ export default async function AdminPlanesPage() {
                 {summary.delinquentCount}
               </CardContent>
             </Card>
-            <Card>
+            <Card className="glass-card">
               <CardHeader className="pb-2">
                 <CardTitle className="text-muted-foreground text-xs font-medium">
                   {t("billing.kpiPending", "Monto pendiente")}
@@ -129,7 +129,7 @@ export default async function AdminPlanesPage() {
             <NewInvoiceDialog clients={clients} plans={planOptions} />
           </div>
 
-          <Card>
+          <Card className="glass-card">
             <CardContent>
               <InvoiceList invoices={invoices} />
             </CardContent>
@@ -142,7 +142,7 @@ export default async function AdminPlanesPage() {
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(plans as Plan[] ?? []).map((plan) => (
-              <Card key={plan.id}>
+              <Card key={plan.id} className="glass-card">
                 <CardHeader>
                   <CardTitle className="flex items-baseline justify-between">
                     <span>{plan.name}</span>

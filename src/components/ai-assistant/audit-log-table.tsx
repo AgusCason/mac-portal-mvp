@@ -52,37 +52,39 @@ export function AuditLogTable({ entries }: { entries: AiAuditLog[] }) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t("components.aiAssistant.colDate", "Fecha")}</TableHead>
-          <TableHead>{t("components.aiAssistant.colAction", "Acción")}</TableHead>
-          <TableHead>{t("components.aiAssistant.colSummary", "Resumen")}</TableHead>
-          <TableHead>{t("components.aiAssistant.colStatus", "Estado")}</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {entries.map((entry) => (
-          <TableRow key={entry.id}>
-            <TableCell className="text-muted-foreground whitespace-nowrap text-xs">
-              {new Date(entry.created_at).toLocaleString(DATE_LOCALE[locale], {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}
-            </TableCell>
-            <TableCell className="whitespace-nowrap font-mono text-xs">{entry.action_type}</TableCell>
-            <TableCell className="max-w-md text-sm">
-              {entry.summary}
-              {entry.error && <p className="text-destructive mt-1 text-xs">{entry.error}</p>}
-            </TableCell>
-            <TableCell>
-              <Badge variant={STATUS_VARIANT[entry.status]}>
-                {t(STATUS_LABEL_KEY[entry.status].key, STATUS_LABEL_KEY[entry.status].fallback)}
-              </Badge>
-            </TableCell>
+    <div className="overflow-hidden rounded-xl border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("components.aiAssistant.colDate", "Fecha")}</TableHead>
+            <TableHead>{t("components.aiAssistant.colAction", "Acción")}</TableHead>
+            <TableHead>{t("components.aiAssistant.colSummary", "Resumen")}</TableHead>
+            <TableHead>{t("components.aiAssistant.colStatus", "Estado")}</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {entries.map((entry) => (
+            <TableRow key={entry.id}>
+              <TableCell className="text-muted-foreground whitespace-nowrap text-xs">
+                {new Date(entry.created_at).toLocaleString(DATE_LOCALE[locale], {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })}
+              </TableCell>
+              <TableCell className="whitespace-nowrap font-mono text-xs">{entry.action_type}</TableCell>
+              <TableCell className="max-w-md text-sm">
+                {entry.summary}
+                {entry.error && <p className="text-destructive mt-1 text-xs">{entry.error}</p>}
+              </TableCell>
+              <TableCell>
+                <Badge variant={STATUS_VARIANT[entry.status]}>
+                  {t(STATUS_LABEL_KEY[entry.status].key, STATUS_LABEL_KEY[entry.status].fallback)}
+                </Badge>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

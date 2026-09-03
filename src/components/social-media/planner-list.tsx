@@ -37,7 +37,7 @@ export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
   }
 
   return (
-    <div className="border-border rounded-xl border">
+    <div className="overflow-hidden rounded-xl border border-border">
       <Table>
         <TableHeader>
           <TableRow>

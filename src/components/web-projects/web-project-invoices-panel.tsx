@@ -63,7 +63,7 @@ export function WebProjectInvoicesPanel({
   const { t } = useLocale();
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm">{t("components.webProjects.invoices", "Facturación")}</CardTitle>
         {role === "admin" && (

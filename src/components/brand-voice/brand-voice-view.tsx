@@ -137,7 +137,7 @@ function BrandVoiceForm({
         </Button>
       </div>
 
-      <div className="border-border h-fit space-y-3 rounded-xl border p-4">
+      <div className="glass-card h-fit space-y-3 rounded-xl p-4">
         <p className="flex items-center gap-1.5 text-sm font-medium">
           <Sparkles className="size-4" /> {t("components.brandVoice.aiAgentTitle", "AI Agent")}
         </p>

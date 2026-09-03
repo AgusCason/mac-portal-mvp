@@ -38,7 +38,7 @@ export default async function AnalyticsDashboardsPage() {
       </div>
 
       {dashboards.length === 0 && (
-        <Card>
+        <Card className="glass-card">
           <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
             <LayoutDashboard className="text-muted-foreground size-8" strokeWidth={1.5} />
             <p className="text-sm font-medium">{t("pages.analyticsDashboards.empty", "Todavía no hay cuentas conectadas")}</p>
@@ -56,7 +56,7 @@ export default async function AnalyticsDashboardsPage() {
         {dashboards.map((d) => {
           const Icon = PLATFORM_ICON[d.platform];
           return (
-            <Card key={d.platform}>
+            <Card key={d.platform} className="glass-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm">
                   <Icon className="size-4" /> {PLATFORM_LABEL[d.platform]}

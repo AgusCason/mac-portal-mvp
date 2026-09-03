@@ -178,7 +178,7 @@ function AssetCard({
   }
 
   return (
-    <Card className="gap-2 py-3">
+    <Card className="glass-card gap-2 py-3">
       <CardHeader className="px-3">
         <CardTitle className="flex items-start justify-between gap-2 text-sm font-medium">
           <span className="line-clamp-2">{asset.title}</span>
@@ -235,7 +235,7 @@ export function WebProjectAssetsPanel({
   const { t } = useLocale();
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm">{t("components.webProjects.assets", "Entregables")}</CardTitle>
         {role === "admin" && <NewAssetDialog projectId={projectId} />}

@@ -296,7 +296,7 @@ export function PlannerView({
           {published.map((item) => {
             const network = NETWORK_META[item.network];
             return (
-              <div key={item.id} className="border-border flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5 text-sm">
+              <div key={item.id} className="glass-card flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{item.title}</p>
                   <p className="text-muted-foreground flex items-center gap-1.5 truncate text-xs">

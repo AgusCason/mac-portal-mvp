@@ -14,7 +14,7 @@ export default async function AdminConfiguracionPage() {
           {t("pages.configuracion.description", "Integraciones y datos generales de la agencia.")}
         </p>
       </div>
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>{t("pages.configuracion.integrationsTitle", "Integraciones")}</CardTitle>
           <CardDescription>

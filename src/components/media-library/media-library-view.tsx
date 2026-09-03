@@ -66,7 +66,7 @@ function AssetCard({ asset }: { asset: MediaAssetWithRelations }) {
   }
 
   return (
-    <div className="border-border flex flex-col gap-2 rounded-xl border p-3">
+    <div className="glass-card flex flex-col gap-2 rounded-xl p-3">
       <div className="bg-muted flex h-20 items-center justify-center rounded-lg">
         <AssetIcon mimeType={asset.mime_type} />
       </div>

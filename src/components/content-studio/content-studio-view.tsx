@@ -97,7 +97,7 @@ function IdeaCard({ idea, clients }: { idea: ContentIdeaWithClient; clients: { i
   const { t } = useLocale();
   const [editOpen, setEditOpen] = React.useState(false);
   return (
-    <div className="border-border space-y-1.5 rounded-xl border p-3">
+    <div className="glass-card space-y-1.5 rounded-xl p-3">
       <div className="flex items-start justify-between gap-2">
         <p className="text-sm font-medium">{idea.title}</p>
         <button

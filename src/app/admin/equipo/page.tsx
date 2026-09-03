@@ -3,10 +3,14 @@ import { getEditors } from "@/lib/queries/team";
 import { getEditorAssignedClients } from "@/lib/queries/editor";
 import { NewEditorDialog } from "@/components/team/new-editor-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { getInitials } from "@/lib/utils";
+import { INITIALS_GRADIENTS } from "@/components/dashboard/billing-hero-card";
+import { getInitials, cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
+
+// Cuántos chips de cliente se muestran antes de colapsar el resto en un
+// "+N más" — así todas las tarjetas de la grilla quedan con altura pareja
+// aunque un editor tenga muchos más clientes asignados que otro.
+const MAX_VISIBLE_CLIENTS = 5;
 
 export default async function AdminEquipoPage() {
   const profile = await requireRole(["admin"]);
@@ -29,29 +33,47 @@ export default async function AdminEquipoPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {editors.map((editor, i) => (
-          <Card key={editor.id}>
-            <CardHeader className="flex-row items-center gap-3 space-y-0">
-              <Avatar>
-                <AvatarFallback>{getInitials(editor.full_name || editor.email)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <CardTitle className="text-sm">{editor.full_name || t("pages.equipo.noName", "Sin nombre")}</CardTitle>
-                <p className="text-muted-foreground text-xs">{editor.email}</p>
-              </div>
-            </CardHeader>
-            <CardContent className="flex flex-wrap gap-1.5">
-              {assignmentsByEditor[i].length === 0 && (
-                <p className="text-muted-foreground text-xs">{t("pages.equipo.noClients", "Sin clientes asignados")}</p>
-              )}
-              {assignmentsByEditor[i].map((a) => (
-                <Badge key={a.client_id} variant="secondary">
-                  {a.name}
-                </Badge>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
+        {editors.map((editor, i) => {
+          const assignments = assignmentsByEditor[i];
+          const visible = assignments.slice(0, MAX_VISIBLE_CLIENTS);
+          const overflow = assignments.length - visible.length;
+          return (
+            <Card key={editor.id} className="glass-card">
+              <CardHeader className="flex-row items-center gap-3 space-y-0">
+                <span
+                  className={cn(
+                    "flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-xs font-extrabold",
+                    INITIALS_GRADIENTS[i % INITIALS_GRADIENTS.length]
+                  )}
+                >
+                  {getInitials(editor.full_name || editor.email)}
+                </span>
+                <div className="min-w-0">
+                  <CardTitle className="truncate text-sm">{editor.full_name || t("pages.equipo.noName", "Sin nombre")}</CardTitle>
+                  <p className="text-muted-foreground truncate text-xs">{editor.email}</p>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-wrap gap-1.5">
+                {assignments.length === 0 && (
+                  <p className="text-muted-foreground text-xs">{t("pages.equipo.noClients", "Sin clientes asignados")}</p>
+                )}
+                {visible.map((a) => (
+                  <span
+                    key={a.client_id}
+                    className="bg-accent/60 text-foreground/80 rounded-full px-2.5 py-1 text-xs font-medium"
+                  >
+                    {a.name}
+                  </span>
+                ))}
+                {overflow > 0 && (
+                  <span className="bg-accent/60 text-muted-foreground rounded-full px-2.5 py-1 text-xs font-medium">
+                    +{overflow} {t("pages.equipo.more", "más")}
+                  </span>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
         {editors.length === 0 && (
           <p className="text-muted-foreground text-sm">{t("pages.equipo.noEditors", "Todavía no invitaste editores.")}</p>
         )}

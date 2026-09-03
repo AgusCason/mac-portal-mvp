@@ -43,19 +43,19 @@ export default async function AdminSocialMediaPage() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium uppercase">{t("pages.socialOverview.totalPieces", "Piezas totales")}</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{overview.totalPieces}</CardContent>
         </Card>
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium uppercase">{t("pages.socialOverview.connectedAccounts", "Cuentas conectadas")}</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-semibold">{overview.connectedAccounts}</CardContent>
         </Card>
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-muted-foreground text-xs font-medium uppercase">{t("pages.socialOverview.scheduled", "Programadas")}</CardTitle>
           </CardHeader>
@@ -64,7 +64,7 @@ export default async function AdminSocialMediaPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
               <CalendarClock className="size-4" /> {t("pages.socialOverview.upcoming", "Próximas publicaciones")}
@@ -75,7 +75,7 @@ export default async function AdminSocialMediaPage() {
               <p className="text-muted-foreground text-sm">{t("pages.socialOverview.noScheduled", "No hay piezas programadas.")}</p>
             )}
             {overview.scheduledPieces.map((item) => (
-              <div key={item.id} className="border-border flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
+              <div key={item.id} className="bg-accent/40 flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{item.title}</p>
                   <p className="text-muted-foreground truncate text-xs">{item.client_name}</p>
@@ -86,7 +86,7 @@ export default async function AdminSocialMediaPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glass-card">
           <CardHeader>
             <CardTitle className="text-sm">{t("pages.socialOverview.byStatus", "Piezas por estado")}</CardTitle>
           </CardHeader>
@@ -111,9 +111,11 @@ export default async function AdminSocialMediaPage() {
           <Link
             key={s.href}
             href={s.href}
-            className="border-border hover:bg-accent/50 flex items-center gap-3 rounded-xl border p-4 transition-colors duration-150"
+            className="glass-card group flex items-center gap-3 rounded-xl p-4 transition-colors hover:border-primary/40"
           >
-            <s.icon className="text-muted-foreground size-5 shrink-0" />
+            <div className="icon-chip">
+              <s.icon className="size-4" strokeWidth={1.75} />
+            </div>
             <div className="min-w-0">
               <p className="text-sm font-medium">{s.label}</p>
               <p className="text-muted-foreground truncate text-xs">{s.description}</p>

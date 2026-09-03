@@ -56,7 +56,7 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
   }
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm">
           <Link2 className="size-4" /> {t("components.analytics.buildCampaignTitle", "Armar campaña")}

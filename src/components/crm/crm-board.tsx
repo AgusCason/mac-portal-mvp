@@ -54,6 +54,17 @@ import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatCurrency } from "@/lib/utils";
 import { PHONE_INPUT_PATTERN } from "@/lib/validation";
 
+// Tinte del icon-chip de cada columna, mismo mapeo que ya usa el board de
+// contenido (content-board.tsx) — el color vive en el ícono, no en un fondo
+// sólido de badge.
+const STAGE_ICON_TINT: Record<string, string> = {
+  secondary: "",
+  info: "!border-info/30 !bg-info/10 !text-info",
+  warning: "!border-warning/30 !bg-warning/10 !text-warning",
+  destructive: "!border-destructive/30 !bg-destructive/10 !text-destructive",
+  success: "!border-success/30 !bg-success/10 !text-success",
+};
+
 const STAGE_ORDER: CrmLeadStage[] = [
   "nuevo",
   "contactado",
@@ -282,7 +293,11 @@ function LeadCard({ lead }: { lead: CrmLead }) {
     : undefined;
 
   return (
-    <Card ref={setNodeRef} style={style} className={cn("gap-2 py-4", isDragging && "z-50 opacity-60 shadow-lg")}>
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={cn("glass-card gap-2 py-4", isDragging && "z-50 opacity-60 shadow-lg")}
+    >
       <CardHeader className="px-4">
         <CardTitle className="flex items-start justify-between gap-2 text-sm font-medium">
           <span className="line-clamp-2">{lead.name}</span>
@@ -332,11 +347,12 @@ function BoardColumn({ stage, leads }: { stage: CrmLeadStage; leads: CrmLead[] }
 
   return (
     <div className="min-w-0 lg:w-64 lg:shrink-0">
-      <div className="mb-2 flex items-center justify-between px-1">
-        <Badge variant={meta.variant}>
-          <meta.icon /> {stageLabel(stage, t)}
-        </Badge>
-        <span className="text-muted-foreground tabular-nums text-xs">{leads.length}</span>
+      <div className="mb-2 flex items-center gap-2 px-1">
+        <div className={cn("icon-chip !size-7 !rounded-md", STAGE_ICON_TINT[meta.variant as string])}>
+          <meta.icon className="size-3.5" strokeWidth={1.75} />
+        </div>
+        <span className="text-sm font-medium">{stageLabel(stage, t)}</span>
+        <span className="text-muted-foreground ml-auto tabular-nums text-xs">{leads.length}</span>
       </div>
       {total > 0 && (
         <p className="text-muted-foreground mb-2 px-1 text-xs tabular-nums">{formatCurrency(total)}</p>

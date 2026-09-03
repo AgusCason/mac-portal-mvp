@@ -1357,6 +1357,7 @@ const es = {
       noClients: "Sin clientes asignados",
       description: "Editores de la agencia y los clientes que tienen asignados.",
       noEditors: "Todavía no invitaste editores.",
+      more: "más",
     },
     clienteDetail: {
       noBrandName: "Sin nombre de marca",
@@ -2863,6 +2864,7 @@ const en: typeof es = {
       noClients: "No clients assigned",
       description: "Agency editors and the clients assigned to them.",
       noEditors: "You haven't invited any editors yet.",
+      more: "more",
     },
     clienteDetail: {
       noBrandName: "No brand name",

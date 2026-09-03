@@ -30,7 +30,7 @@ export default async function AdminRedesPage() {
       </div>
 
       {accounts.length === 0 && (
-        <Card>
+        <Card className="glass-card">
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
             <Radar className="text-muted-foreground size-8" strokeWidth={1.5} />
             <div>
@@ -56,7 +56,7 @@ export default async function AdminRedesPage() {
           {accounts.map((acc) => {
             const Icon = PLATFORM_ICON[acc.platform];
             return (
-              <Card key={acc.id}>
+              <Card key={acc.id} className="glass-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm">
                     <Icon className="size-4" /> {acc.display_name ?? acc.external_account_id}

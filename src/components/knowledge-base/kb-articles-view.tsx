@@ -12,9 +12,9 @@ import {
   toggleKbFavoriteAction,
   updateKbArticleAction,
 } from "@/app/actions/knowledge-base";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -127,7 +127,7 @@ function ArticleRow({ article }: { article: KbArticleWithFavorite }) {
   }
 
   return (
-    <div className="border-border rounded-xl border">
+    <div className="glass-card rounded-xl">
       <div className="flex items-center gap-2 px-4 py-3">
         <button type="button" onClick={handleToggle} className="flex min-w-0 flex-1 items-center gap-2 text-left">
           {article.is_pinned && <Pin className="text-primary size-3.5 shrink-0" />}
@@ -185,12 +185,15 @@ export function KbArticlesView({ articles }: { articles: KbArticleWithFavorite[]
         <button
           type="button"
           onClick={() => setOnlyFavorites((v) => !v)}
-          className="inline-flex"
           aria-pressed={onlyFavorites}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+            onlyFavorites
+              ? "bg-foreground text-background border-transparent"
+              : "bg-accent/60 border-border text-muted-foreground"
+          )}
         >
-          <Badge variant={onlyFavorites ? "default" : "secondary"} className="cursor-pointer gap-1">
-            <Star className="size-3" /> {t("components.knowledgeBase.favorites", "Favoritos")}
-          </Badge>
+          <Star className="size-3" /> {t("components.knowledgeBase.favorites", "Favoritos")}
         </button>
       </div>
 

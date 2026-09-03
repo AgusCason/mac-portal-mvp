@@ -95,7 +95,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2 text-sm">
               <AlertTriangle className="text-destructive size-4" /> {t("pages.analyticsOverview.metricAlerts", "Alertas de métricas")}
@@ -110,7 +110,7 @@ export default async function AdminAnalyticsPage() {
             </Button>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="glass-card">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2 text-sm">
               <FileText className="text-info size-4" /> {t("pages.analyticsOverview.reportsThisMonth", "Reportes este mes")}
@@ -134,9 +134,9 @@ export default async function AdminAnalyticsPage() {
             <Link
               key={s.href}
               href={s.href}
-              className="group flex items-start gap-3 rounded-xl border border-border p-4 transition-colors hover:border-primary/40 hover:bg-accent/40"
+              className="glass-card group flex items-start gap-3 rounded-xl p-4 transition-colors hover:border-primary/40"
             >
-              <div className="bg-primary/10 text-primary rounded-lg p-2">
+              <div className="icon-chip">
                 <s.icon className="size-4" strokeWidth={1.75} />
               </div>
               <div className="min-w-0">

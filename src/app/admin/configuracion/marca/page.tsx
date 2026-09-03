@@ -20,7 +20,7 @@ export default async function MarcaPage() {
           )}
         </p>
       </div>
-      <Card>
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>{t("pages.marca.identityTitle", "Identidad de marca")}</CardTitle>
           <CardDescription>{t("pages.marca.identityDesc", "Solo vos (admin) podés ver y editar esta pantalla.")}</CardDescription>

@@ -9,7 +9,6 @@ import { AiChatPanel } from "@/components/ai-assistant/ai-chat-panel";
 import { AuditLogTable } from "@/components/ai-assistant/audit-log-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { MAX_AGENT, getAgentRole, getAgentTagline } from "@/lib/ai/agents";
 import { getT } from "@/lib/i18n/dictionary";
@@ -58,23 +57,30 @@ export default async function AiAssistantPage({
         </TabsList>
 
         <TabsContent value="chat" className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Link
               href="/admin/asistente"
               className={cn(
-                "text-xs",
-                !activeConversationId ? "pointer-events-none" : "text-muted-foreground hover:text-foreground"
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors duration-150",
+                !activeConversationId
+                  ? "bg-foreground text-background pointer-events-none"
+                  : "bg-accent/60 text-muted-foreground hover:text-foreground"
               )}
             >
-              <Badge variant={activeConversationId ? "outline" : "secondary"}>
-                {t("pages.asistente.newConversation", "+ Nueva conversación")}
-              </Badge>
+              + {t("pages.asistente.newConversation", "Nueva conversación")}
             </Link>
             {conversations.map((c) => (
-              <Link key={c.id} href={`/admin/asistente?conv=${c.id}`}>
-                <Badge variant={c.id === activeConversationId ? "default" : "outline"}>
-                  {c.title}
-                </Badge>
+              <Link
+                key={c.id}
+                href={`/admin/asistente?conv=${c.id}`}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition-colors duration-150",
+                  c.id === activeConversationId
+                    ? "bg-foreground text-background"
+                    : "bg-accent/60 text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {c.title}
               </Link>
             ))}
           </div>

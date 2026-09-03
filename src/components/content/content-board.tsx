@@ -51,7 +51,7 @@ import { cn, formatDate } from "@/lib/utils";
 // Badge de estado (STATUS_META[status].variant), pero aplicado a un
 // icon-chip en vez de a un badge con fondo sólido: acá el ícono es lo único
 // que lleva color, el resto de la columna se mantiene neutro.
-const COLUMN_ICON_TINT: Record<string, string> = {
+export const COLUMN_ICON_TINT: Record<string, string> = {
   secondary: "",
   info: "!border-info/30 !bg-info/10 !text-info",
   warning: "!border-warning/30 !bg-warning/10 !text-warning",

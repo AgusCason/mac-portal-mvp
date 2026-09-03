@@ -171,7 +171,7 @@ export function ModulosPanel({ flags }: { flags: Record<string, ModuleFlag> }) {
         </div>
 
         {areas.map((area) => (
-          <Card key={area}>
+          <Card key={area} className="glass-card">
             <CardHeader>
               <CardTitle>{getModuleAreaLabel(area, t)}</CardTitle>
               <CardDescription>

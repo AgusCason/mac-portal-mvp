@@ -41,7 +41,7 @@ export default async function AnalyticsAlertasPage() {
       </div>
 
       {alerts.length === 0 && (
-        <Card>
+        <Card className="glass-card">
           <CardContent className="flex flex-col items-center gap-2 py-10 text-center">
             <TrendingDown className="text-muted-foreground size-8" strokeWidth={1.5} />
             <p className="text-sm font-medium">{t("pages.analyticsAlertas.empty", "Sin caídas detectadas por ahora")}</p>

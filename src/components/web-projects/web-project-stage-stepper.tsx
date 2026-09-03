@@ -50,15 +50,15 @@ export function WebProjectStageStepper({ stage }: { stage: WebProjectStage }) {
         return (
           <React.Fragment key={s}>
             {i > 0 && (
-              <div className={cn("h-px w-4 shrink-0 sm:w-8", done || active ? "bg-primary" : "bg-border")} />
+              <div className={cn("h-px w-4 shrink-0 sm:w-8", done || active ? "bg-foreground" : "bg-border")} />
             )}
             <div className="flex shrink-0 items-center gap-1.5">
               <div
                 className={cn(
                   "flex size-6 items-center justify-center rounded-full text-xs font-medium",
-                  done && "bg-primary text-primary-foreground",
-                  active && "ring-primary-strong ring-2 ring-offset-2 ring-offset-background",
-                  active && !done && "bg-primary-strong/10 text-primary-strong",
+                  done && "bg-foreground text-background",
+                  active && "ring-foreground/70 ring-2 ring-offset-2 ring-offset-background",
+                  active && !done && "bg-accent text-foreground",
                   !done && !active && "bg-muted text-muted-foreground"
                 )}
               >

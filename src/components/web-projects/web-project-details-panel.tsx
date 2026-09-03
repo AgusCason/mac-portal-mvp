@@ -53,7 +53,7 @@ export function WebProjectDetailsPanel({
     project.domain || project.staging_url || project.production_url || project.hosting_provider || project.tech_stack || project.launch_date;
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-sm">{t("components.webProjects.technicalDetails", "Detalles técnicos")}</CardTitle>
         {editable && <EditDetailsDialog project={project} />}

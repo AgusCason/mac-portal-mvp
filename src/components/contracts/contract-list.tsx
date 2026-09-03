@@ -45,12 +45,14 @@ export function ContractList({
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {contracts.map((contract) => (
-        <Card key={contract.id}>
+        <Card key={contract.id} className="glass-card">
           <CardContent className="space-y-3">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <FileSignature className="text-muted-foreground size-4" strokeWidth={1.75} />
-                <p className="text-sm font-medium">{contract.title}</p>
+              <div className="flex min-w-0 items-center gap-2.5">
+                <div className="icon-chip !size-8 !rounded-md">
+                  <FileSignature className="size-4" strokeWidth={1.75} />
+                </div>
+                <p className="truncate text-sm font-medium">{contract.title}</p>
               </div>
               <Badge variant={contract.status === "firmado" ? "success" : "warning"}>
                 {contract.status === "firmado" ? <CheckCircle2 /> : <Clock />}

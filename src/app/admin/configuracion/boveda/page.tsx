@@ -36,7 +36,7 @@ export default async function BovedaPage() {
           )}
         </p>
       </div>
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="flex flex-row items-start justify-between gap-2">
           <div>
             <CardTitle>{t("pages.boveda.savedCredentialsTitle", "Credenciales guardadas")}</CardTitle>

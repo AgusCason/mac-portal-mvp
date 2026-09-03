@@ -99,7 +99,7 @@ export function BillingKpiRow({
   const t = getT(language);
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground text-xs font-medium">
             {t("billing.kpiCurrentMonth", "Facturado este mes")}
@@ -114,7 +114,7 @@ export function BillingKpiRow({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground text-xs font-medium">
             {t("billing.kpiCollectionRate", "Tasa de cobro del mes")}
@@ -128,7 +128,7 @@ export function BillingKpiRow({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground text-xs font-medium">
             {t("billing.kpiPending", "Monto pendiente")}
@@ -140,7 +140,7 @@ export function BillingKpiRow({
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="glass-card">
         <CardHeader className="pb-2">
           <CardTitle className="text-muted-foreground text-xs font-medium">
             {t("billing.kpiOverdue", "Monto atrasado")}

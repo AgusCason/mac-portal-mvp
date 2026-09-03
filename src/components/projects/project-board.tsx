@@ -116,7 +116,7 @@ function ItemCard({ item, projectId }: { item: ProjectItemWithAssignee; projectI
   }
 
   return (
-    <Card ref={setNodeRef} style={style} className={cn("gap-2 py-3", isDragging && "z-50 opacity-60 shadow-lg")}>
+    <Card ref={setNodeRef} style={style} className={cn("glass-card gap-2 py-3", isDragging && "z-50 opacity-60 shadow-lg")}>
       <CardHeader className="px-3">
         <CardTitle className="flex items-start justify-between gap-2 text-sm font-medium">
           <span className="line-clamp-2">{item.title}</span>

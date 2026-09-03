@@ -4,8 +4,8 @@ import * as React from "react";
 import { ImageOff } from "lucide-react";
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
-import { getStatusLabel } from "@/components/dashboard/content-status-badge";
-import { STATUS_COLUMN_META } from "@/components/social-media/planner-board";
+import { STATUS_META, getStatusLabel } from "@/components/dashboard/content-status-badge";
+import { STATUS_DOT } from "@/components/social-media/planner-board";
 import { CATEGORY_META, getCategoryLabel } from "@/lib/content-category-meta";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatTime } from "@/lib/utils";
@@ -127,7 +127,7 @@ export function PlannerCalendar({
                             </span>
                           )}
                           <span className="inline-flex items-center gap-1">
-                            <span className={cn("size-1.5 rounded-full", STATUS_COLUMN_META[item.status].dot)} />
+                            <span className={cn("size-1.5 rounded-full", STATUS_DOT[STATUS_META[item.status].variant as string])} />
                             {label}
                           </span>
                         </div>

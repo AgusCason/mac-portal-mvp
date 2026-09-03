@@ -42,7 +42,7 @@ export default async function AdminActividadPage() {
           </p>
         )}
         {events.map((event) => (
-          <div key={event.id} className="border-border flex items-start justify-between gap-3 rounded-xl border px-4 py-3">
+          <div key={event.id} className="glass-card flex items-start justify-between gap-3 rounded-xl px-4 py-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-[10px] uppercase">

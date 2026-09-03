@@ -50,7 +50,7 @@ function LinkMethodCard({ config }: { config: PaymentMethodConfig }) {
   }
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <div>
           <CardTitle className="flex items-center gap-1.5 text-base">
@@ -104,7 +104,7 @@ function TransferAcctCard({ config }: { config: PaymentMethodConfig }) {
   }
 
   return (
-    <Card>
+    <Card className="glass-card">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <div>
           <CardTitle className="flex items-center gap-1.5 text-base">

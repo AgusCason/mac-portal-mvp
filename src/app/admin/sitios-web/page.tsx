@@ -44,7 +44,7 @@ export default async function AdminSitiosWebPage() {
           <Link
             key={project.id}
             href={`/admin/sitios-web/${project.id}`}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border p-4 transition-colors hover:border-primary/40 hover:bg-accent/40"
+            className="glass-card flex items-center justify-between gap-3 rounded-xl p-4 transition-colors hover:border-primary/40"
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{project.title}</p>

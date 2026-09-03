@@ -26,16 +26,16 @@ export function BillingDashboard({
   return (
     <div className="space-y-4">
       {analytics.length > 1 && (
-        <div className="flex items-center gap-1 rounded-lg border border-border bg-muted p-1 w-fit">
+        <div className="bg-accent/60 border-border inline-flex w-fit items-center gap-0.5 rounded-full border p-0.5">
           {analytics.map((a) => (
             <button
               key={a.currency}
               type="button"
               onClick={() => setCurrency(a.currency)}
               className={cn(
-                "rounded-md px-3 py-1 text-xs font-medium transition-colors",
+                "rounded-full px-3 py-1 text-xs font-medium transition-colors duration-150",
                 a.currency === currency
-                  ? "bg-card text-foreground shadow-sm"
+                  ? "bg-foreground text-background"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -46,7 +46,7 @@ export function BillingDashboard({
       )}
 
       {!current.hasData ? (
-        <Card>
+        <Card className="glass-card">
           <CardContent className="text-muted-foreground py-10 text-center text-sm">
             {t("billing.noInvoicesInCurrencyPrefix", "Todavía no hay facturas en")} {current.currency}.
           </CardContent>
@@ -55,7 +55,7 @@ export function BillingDashboard({
         <>
           <BillingKpiRow kpis={current.kpis} currency={current.currency} language={language} />
 
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t("billing.monthlyChartTitle", "Facturación mensual")}</CardTitle>
               <CardDescription>
@@ -68,7 +68,7 @@ export function BillingDashboard({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
               <CardTitle>{t("billing.methodChartTitle", "Método de pago")}</CardTitle>
               <CardDescription>{t("billing.methodChartDescription", "Monto total facturado por método, histórico.")}</CardDescription>
