@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { NETWORK_META } from "@/lib/network-meta";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { cn } from "@/lib/utils";
 
 type ViewMode = "panel" | "calendario" | "listado";
 
@@ -130,12 +131,12 @@ export function ContentCalendarView({
         </div>
 
         {view === "calendario" && (
-          <div className="border-border flex items-center gap-1 rounded-lg border px-1">
+          <div className="bg-accent/60 border-border flex items-center gap-1 rounded-full border px-1 py-0.5">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-7"
+              className="size-7 rounded-full"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
             >
               <ChevronLeft className="size-4" />
@@ -145,7 +146,7 @@ export function ContentCalendarView({
               type="button"
               variant="ghost"
               size="icon"
-              className="size-7"
+              className="size-7 rounded-full"
               onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
             >
               <ChevronRight className="size-4" />
@@ -204,25 +205,28 @@ export function ContentCalendarView({
         <div
           role="group"
           aria-label={t("components.content.viewSwitchAriaLabel", "Formato de vista")}
-          className="border-border ml-auto flex items-center gap-0.5 rounded-lg border p-0.5"
+          className="bg-accent/60 border-border ml-auto inline-flex items-center gap-0.5 rounded-full border p-0.5"
         >
           {VIEW_OPTIONS.map((opt) => (
-            <Button
+            <button
               key={opt.value}
               type="button"
-              variant={view === opt.value ? "secondary" : "ghost"}
-              size="sm"
-              className="gap-1.5"
               onClick={() => setView(opt.value)}
               aria-label={opt.label}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-150",
+                view === opt.value
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              <opt.icon className="size-4" />
+              <opt.icon className="size-3.5" strokeWidth={1.75} />
               {/* Sin ocultar en mobile: 3 íconos sin texto son ambiguos para
                   alguien no familiarizado con la app — el contenedor ya tiene
                   flex-wrap, así que en pantallas angostas este grupo simplemente
                   pasa a su propia línea en vez de perder la etiqueta. */}
               <span>{opt.label}</span>
-            </Button>
+            </button>
           ))}
         </div>
       </div>

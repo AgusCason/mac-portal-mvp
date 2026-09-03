@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { KpiCard } from "@/components/dashboard/kpi-card";
+import { INITIALS_GRADIENTS } from "@/components/dashboard/billing-hero-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CalendarDays,
@@ -36,8 +37,10 @@ import {
   Video,
   Globe,
   Music2,
+  UserCog,
+  Link as LinkIcon,
 } from "lucide-react";
-import { getInitials } from "@/lib/utils";
+import { getInitials, cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 import type { Plan } from "@/types/database";
 
@@ -162,7 +165,12 @@ export default async function AdminClientDetailPage({
         <TabsContent value="resumen" className="space-y-4">
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle>{t("pages.clienteDetail.assignedEditors", "Editores asignados")}</CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="icon-chip">
+                  <UserCog className="size-4" strokeWidth={1.75} />
+                </div>
+                <CardTitle>{t("pages.clienteDetail.assignedEditors", "Editores asignados")}</CardTitle>
+              </div>
               <AssignEditorDialog clientId={client.id} editors={editors} />
             </CardHeader>
             <CardContent className="space-y-2">
@@ -172,9 +180,19 @@ export default async function AdminClientDetailPage({
               {assignments.map((a) => (
                 <div
                   key={a.id}
-                  className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                  className="border-border/60 bg-accent/30 flex items-center justify-between rounded-xl border px-3.5 py-2.5 text-sm"
                 >
-                  <span className="font-medium">{a.editor_name}</span>
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className={cn(
+                        "flex size-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-[11px] font-extrabold",
+                        INITIALS_GRADIENTS[0]
+                      )}
+                    >
+                      {getInitials(a.editor_name)}
+                    </span>
+                    <span className="font-medium">{a.editor_name}</span>
+                  </div>
                   <div className="flex gap-1.5">
                     <Badge variant={a.can_view_drive ? "info" : "outline"}>Drive</Badge>
                     <Badge variant={a.can_view_chat ? "info" : "outline"}>Chat</Badge>
@@ -186,7 +204,12 @@ export default async function AdminClientDetailPage({
 
           <Card>
             <CardHeader className="flex-row items-center justify-between space-y-0">
-              <CardTitle>{t("pages.clienteDetail.portalUser", "Usuario del portal cliente")}</CardTitle>
+              <div className="flex items-center gap-3">
+                <div className="icon-chip">
+                  <LinkIcon className="size-4" strokeWidth={1.75} />
+                </div>
+                <CardTitle>{t("pages.clienteDetail.portalUser", "Usuario del portal cliente")}</CardTitle>
+              </div>
               <LinkClientMemberDialog clientId={client.id} candidates={unlinkedClientProfiles} />
             </CardHeader>
             <CardContent>
@@ -197,7 +220,10 @@ export default async function AdminClientDetailPage({
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <div className="icon-chip">
+                <FolderOpen className="size-4" strokeWidth={1.75} />
+              </div>
               <CardTitle>{t("pages.clienteDetail.drive", "Google Drive")}</CardTitle>
             </CardHeader>
             <CardContent>

@@ -44,51 +44,53 @@ export function ContentList({
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{t("components.content.tableHeaderPiece", "Pieza")}</TableHead>
-          {role !== "client" && <TableHead>{t("components.content.tableHeaderClient", "Cliente")}</TableHead>}
-          <TableHead>{t("components.content.tableHeaderNetwork", "Red")}</TableHead>
-          <TableHead>{t("components.content.tableHeaderDueDate", "Fecha límite")}</TableHead>
-          <TableHead>{t("components.content.tableHeaderStatus", "Estado")}</TableHead>
-          {canDeliver && <TableHead className="text-right">{t("components.content.tableHeaderAction", "Acción")}</TableHead>}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {sorted.map((item) => {
-          const meta = STATUS_META[item.status];
-          const network = NETWORK_META[item.network];
-          return (
-            <TableRow key={item.id}>
-              <TableCell className="max-w-[16rem] truncate font-medium">{item.title}</TableCell>
-              {role !== "client" && (
-                <TableCell className="text-muted-foreground">{item.client_name}</TableCell>
-              )}
-              <TableCell className="text-muted-foreground">{network.label}</TableCell>
-              <TableCell className="text-muted-foreground tabular-nums">
-                {item.scheduled_at ? formatDate(item.scheduled_at) : t("components.content.noDate", "Sin fecha")}
-              </TableCell>
-              <TableCell>
-                <Badge variant={meta.variant}>
-                  <meta.icon /> {getStatusLabel(item.status, t)}
-                </Badge>
-              </TableCell>
-              {canDeliver && (
-                <TableCell className="text-right">
-                  {item.status === "en_edicion" && (
-                    <DeliverContentDialog
-                      contentId={item.id}
-                      clientId={item.client_id}
-                      title={item.title}
-                    />
-                  )}
+    <div className="overflow-hidden rounded-xl border border-border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t("components.content.tableHeaderPiece", "Pieza")}</TableHead>
+            {role !== "client" && <TableHead>{t("components.content.tableHeaderClient", "Cliente")}</TableHead>}
+            <TableHead>{t("components.content.tableHeaderNetwork", "Red")}</TableHead>
+            <TableHead>{t("components.content.tableHeaderDueDate", "Fecha límite")}</TableHead>
+            <TableHead>{t("components.content.tableHeaderStatus", "Estado")}</TableHead>
+            {canDeliver && <TableHead className="text-right">{t("components.content.tableHeaderAction", "Acción")}</TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sorted.map((item) => {
+            const meta = STATUS_META[item.status];
+            const network = NETWORK_META[item.network];
+            return (
+              <TableRow key={item.id}>
+                <TableCell className="max-w-[16rem] truncate font-medium">{item.title}</TableCell>
+                {role !== "client" && (
+                  <TableCell className="text-muted-foreground">{item.client_name}</TableCell>
+                )}
+                <TableCell className="text-muted-foreground">{network.label}</TableCell>
+                <TableCell className="text-muted-foreground tabular-nums">
+                  {item.scheduled_at ? formatDate(item.scheduled_at) : t("components.content.noDate", "Sin fecha")}
                 </TableCell>
-              )}
-            </TableRow>
-          );
-        })}
-      </TableBody>
-    </Table>
+                <TableCell>
+                  <Badge variant={meta.variant}>
+                    <meta.icon /> {getStatusLabel(item.status, t)}
+                  </Badge>
+                </TableCell>
+                {canDeliver && (
+                  <TableCell className="text-right">
+                    {item.status === "en_edicion" && (
+                      <DeliverContentDialog
+                        contentId={item.id}
+                        clientId={item.client_id}
+                        title={item.title}
+                      />
+                    )}
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

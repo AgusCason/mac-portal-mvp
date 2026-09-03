@@ -65,7 +65,7 @@ export function PlannerCalendar({
   }, [month]);
 
   return (
-    <div className="border-border overflow-hidden rounded-xl border">
+    <div className="glass-card overflow-hidden rounded-2xl">
       <div className="grid grid-cols-7 border-b border-border">
         {weekdays.map((label) => (
           <div
@@ -92,7 +92,7 @@ export function PlannerCalendar({
                 <span
                   className={cn(
                     "inline-flex size-5 items-center justify-center rounded-full text-xs",
-                    isToday ? "bg-primary text-primary-foreground font-semibold" : "text-muted-foreground"
+                    isToday ? "bg-foreground text-background font-semibold" : "text-muted-foreground"
                   )}
                 >
                   {cell.day}
@@ -106,7 +106,7 @@ export function PlannerCalendar({
                   return (
                     <div
                       key={item.id}
-                      className="border-border bg-card flex items-start gap-1.5 rounded-md border p-1"
+                      className="border-border/60 bg-accent/30 flex items-start gap-1.5 rounded-md border p-1"
                     >
                       <div className="bg-muted relative size-6 shrink-0 overflow-hidden rounded">
                         {item.thumbnail_url ? (

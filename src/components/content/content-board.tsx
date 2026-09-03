@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { ArrowRight, Check, MessageSquareWarning, Loader2, GripVertical } from "lucide-react";
+import { ArrowRight, Check, MessageSquareWarning, Loader2, GripVertical, ImageOff } from "lucide-react";
 import {
   DndContext,
   PointerSensor,
@@ -25,7 +25,6 @@ import {
 } from "@/app/actions/content";
 import { DeliverContentDialog } from "@/components/content/deliver-content-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,6 +46,18 @@ import {
 } from "@/components/ui/select";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatDate } from "@/lib/utils";
+
+// Tinte del icon-chip de cada columna — mismo mapeo de color que ya usan los
+// Badge de estado (STATUS_META[status].variant), pero aplicado a un
+// icon-chip en vez de a un badge con fondo sólido: acá el ícono es lo único
+// que lleva color, el resto de la columna se mantiene neutro.
+const COLUMN_ICON_TINT: Record<string, string> = {
+  secondary: "",
+  info: "!border-info/30 !bg-info/10 !text-info",
+  warning: "!border-warning/30 !bg-warning/10 !text-warning",
+  destructive: "!border-destructive/30 !bg-destructive/10 !text-destructive",
+  success: "!border-success/30 !bg-success/10 !text-success",
+};
 
 export const COLUMN_ORDER: ContentStatus[] = [
   "borrador",
@@ -192,11 +203,21 @@ function ContentCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "gap-3 py-4 transition-shadow duration-150 hover:shadow-md",
+        "glass-card gap-3 py-4 transition-shadow duration-150 hover:shadow-md",
         isDragging && "z-50 opacity-60 shadow-lg"
       )}
     >
       <CardHeader className="px-4">
+        <div className="bg-muted relative mb-1 aspect-video w-full shrink-0 overflow-hidden rounded-lg">
+          {item.thumbnail_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.thumbnail_url} alt="" className="size-full object-cover" />
+          ) : (
+            <div className="flex size-full items-center justify-center">
+              <ImageOff className="text-muted-foreground size-5" strokeWidth={1.5} />
+            </div>
+          )}
+        </div>
         <CardTitle className="flex items-start justify-between gap-2 text-sm font-medium">
           <span className="line-clamp-2">{item.title}</span>
           {draggable && (
@@ -273,11 +294,12 @@ function BoardColumn({
 
   return (
     <div className="min-w-0 lg:w-64 lg:shrink-0">
-      <div className="mb-2 flex items-center justify-between px-1">
-        <Badge variant={meta.variant}>
-          <meta.icon /> {getStatusLabel(status, t)}
-        </Badge>
-        <span className="text-muted-foreground tabular-nums text-xs">{items.length}</span>
+      <div className="mb-2 flex items-center gap-2 px-1">
+        <div className={cn("icon-chip !size-7 !rounded-md", COLUMN_ICON_TINT[meta.variant as string])}>
+          <meta.icon className="size-3.5" strokeWidth={1.75} />
+        </div>
+        <span className="text-sm font-medium">{getStatusLabel(status, t)}</span>
+        <span className="text-muted-foreground ml-auto tabular-nums text-xs">{items.length}</span>
       </div>
       <div
         ref={setNodeRef}

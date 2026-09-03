@@ -58,12 +58,12 @@ export function AccountCard({ account }: { account: AccountCardData }) {
   return (
     <Link
       href={`/admin/clientes/${account.id}`}
-      className="group flex flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40"
+      className="glass-card group flex flex-col gap-3 rounded-2xl p-4 transition-colors duration-150 hover:border-primary/30"
     >
       <div className="flex items-start justify-between gap-2">
-        <Avatar className="size-11 rounded-lg">
+        <Avatar className="border-border size-11 rounded-xl border">
           <AvatarImage src={account.logoUrl ?? undefined} alt={account.name} />
-          <AvatarFallback className="rounded-lg bg-primary/10 text-sm font-semibold text-primary">
+          <AvatarFallback className="rounded-xl bg-primary/10 text-sm font-semibold text-primary">
             {getInitials(account.name)}
           </AvatarFallback>
         </Avatar>

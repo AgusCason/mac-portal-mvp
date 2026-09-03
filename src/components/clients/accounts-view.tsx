@@ -81,13 +81,13 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
           />
         </div>
 
-        <div className="flex items-center rounded-lg border border-border p-0.5 text-xs">
+        <div className="bg-accent/60 border-border inline-flex items-center gap-0.5 rounded-full border p-0.5 text-xs">
           <button
             type="button"
             onClick={() => setStatusFilter("active")}
             className={cn(
-              "rounded-md px-2.5 py-1 font-medium transition-colors",
-              statusFilter === "active" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              "rounded-full px-2.5 py-1 font-medium transition-colors duration-150",
+              statusFilter === "active" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
             )}
           >
             {t("components.clients.filterActive", "Activas")}
@@ -96,8 +96,8 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
             type="button"
             onClick={() => setStatusFilter("all")}
             className={cn(
-              "rounded-md px-2.5 py-1 font-medium transition-colors",
-              statusFilter === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              "rounded-full px-2.5 py-1 font-medium transition-colors duration-150",
+              statusFilter === "all" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
             )}
           >
             {t("components.clients.filterAll", "Todas")}
@@ -122,28 +122,28 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
           rows={filtered}
         />
 
-        <div className="flex items-center gap-1 rounded-lg border border-border p-0.5">
+        <div className="bg-accent/60 border-border inline-flex items-center gap-0.5 rounded-full border p-0.5">
           <button
             type="button"
             onClick={() => setView("grid")}
             aria-label={t("components.clients.viewAsGrid", "Ver como grilla")}
             className={cn(
-              "rounded-md p-1.5",
-              view === "grid" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
+              "flex size-7 items-center justify-center rounded-full transition-colors duration-150",
+              view === "grid" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <LayoutGrid className="size-4" />
+            <LayoutGrid className="size-3.5" strokeWidth={1.75} />
           </button>
           <button
             type="button"
             onClick={() => setView("table")}
             aria-label={t("components.clients.viewAsTable", "Ver como tabla")}
             className={cn(
-              "rounded-md p-1.5",
-              view === "table" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
+              "flex size-7 items-center justify-center rounded-full transition-colors duration-150",
+              view === "table" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <List className="size-4" />
+            <List className="size-3.5" strokeWidth={1.75} />
           </button>
         </div>
       </div>
