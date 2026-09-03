@@ -17,7 +17,10 @@
 */
 
 :root {
-  --radius: 0.625rem;
+  /* Bumpeado de 0.625rem: el rediseño "bento glass" (login + dashboards,
+     ver más abajo) usa esquinas más redondeadas que el sistema original —
+     un solo token acá cambia rounded-lg/xl en toda la app a la vez. */
+  --radius: 0.85rem;
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -77,6 +80,11 @@
   --chart-3: oklch(0.55 0.14 165);
   --chart-4: oklch(0.75 0.15 75);
   --chart-5: oklch(0.58 0.22 25);
+
+  /* Sombra de las tarjetas "glass" (.glass-card, ver más abajo) — mucho más
+     sutil en claro (una sombra fuerte se ve sucia sobre blanco) que en
+     oscuro, donde puede llevar además un halo tenue del verde de marca. */
+  --shadow-elevated: 0 10px 30px -10px rgb(0 0 0 / 10%), 0 2px 8px -2px rgb(0 0 0 / 6%);
 }
 
 .dark {
@@ -130,6 +138,10 @@
   --chart-3: oklch(0.75 0.15 165);
   --chart-4: oklch(0.8 0.15 75);
   --chart-5: oklch(0.58 0.22 25);
+
+  --shadow-elevated:
+    0 20px 50px -12px rgb(0 0 0 / 55%),
+    0 0 40px -18px color-mix(in oklch, var(--primary) 30%, transparent);
 }
 
 @theme inline {
@@ -201,6 +213,16 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "cv11", "ss01";
+    /* Wash radial muy sutil de marca — sin esto, las tarjetas .glass-card de
+       abajo no tienen nada de fondo contra qué mostrar su blur/transparencia
+       (un blur sobre un fondo 100% plano no se nota). Deliberadamente tenue
+       (6%) para no competir con el contenido en pantallas densas de datos. */
+    background-image: radial-gradient(
+      circle at 92% -8%,
+      color-mix(in oklch, var(--primary) 6%, transparent),
+      transparent 40%
+    );
+    background-attachment: fixed;
   }
   .tabular-nums {
     font-variant-numeric: tabular-nums;
@@ -364,4 +386,72 @@
   box-shadow:
     0 7px 24px color-mix(in oklch, var(--primary) 22%, transparent),
     inset 0 1px 0 color-mix(in oklch, white 38%, transparent);
+}
+
+/*
+ * Rediseño "bento glass" extendido a TODO el portal (no solo /login) — pedido
+ * explícito del usuario tras aprobar el mockup de dashboard (ver charla vía
+ * v0). Estas son las piezas reutilizables; se enchufan desde los componentes
+ * compartidos (Card en components/ui/card.tsx, KpiCard, AppShell) en vez de
+ * tocar cada página — así todo el portal hereda el look sin reescribir cada
+ * pantalla a mano. Reglas planas (no @layer), ganan por cascada contra las
+ * utilidades de Tailwind que se les combinen (mismo mecanismo que
+ * .cosmic-anim/.login-* más arriba), sin necesitar !important. Funcionan en
+ * claro Y oscuro porque solo usan color-mix() sobre tokens (--card,
+ * --border, --foreground, --primary) que ya cambian de valor entre modos.
+ */
+.glass-card {
+  background: color-mix(in oklch, var(--card) 88%, transparent);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Chip cuadrado de ícono (headers de KpiCard/tarjetas) — reemplaza el viejo
+   "bg-accent rounded-lg p-2" por un tratamiento con borde propio, consistente
+   con los ícono-chips del mockup de dashboard. */
+.icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: calc(var(--radius) - 4px);
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+/* Botón circular "de vidrio" — los íconos del topbar (actividad,
+   notificaciones, preferencias, menú mobile) pasan de ghost-transparente a
+   un chip circular con borde propio, como en el mockup. Solo pinta
+   fondo/borde/radio; el tamaño lo sigue dando el Button (size="icon"). */
+.circle-chip {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+.circle-chip:hover {
+  background: color-mix(in oklch, var(--foreground) 9%, transparent);
+  border-color: color-mix(in oklch, var(--primary) 35%, var(--border));
+}
+
+/* Botón primario de marca — mismo degradé lima→info que la CTA de /login
+   (.login-cta), reutilizado acá para que TODO botón primario del portal
+   (no solo el de login) lleve el mismo lenguaje. Sombra más discreta que la
+   de login: este mismo botón aparece también en contextos densos
+   (formularios, filas de tabla), no solo como CTA hero. */
+.brand-cta {
+  background: linear-gradient(
+    105deg,
+    var(--primary) 0%,
+    color-mix(in oklch, var(--primary) 55%, var(--info)) 45%,
+    var(--info) 100%
+  );
+  box-shadow: 0 4px 14px color-mix(in oklch, var(--primary) 18%, transparent);
 }

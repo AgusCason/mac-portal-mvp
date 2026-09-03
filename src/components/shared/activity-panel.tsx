@@ -44,7 +44,7 @@ export function ActivityPanel({ eventsPromise }: { eventsPromise: Promise<Activi
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("components.shared.activity", "Actividad")}>
+        <Button variant="ghost" size="icon" className="circle-chip" aria-label={t("components.shared.activity", "Actividad")}>
           <ActivityIcon />
         </Button>
       </SheetTrigger>

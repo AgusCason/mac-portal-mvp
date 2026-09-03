@@ -13,8 +13,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground hover:bg-primary/90",
+        // .brand-cta (globals.css): degradé lima→info compartido con la CTA
+        // de /login — el botón primario del portal entero, no solo el de
+        // login, lleva ahora ese mismo tratamiento de marca.
+        default: "brand-cta text-primary-foreground hover:opacity-90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:

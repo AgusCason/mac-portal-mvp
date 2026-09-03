@@ -108,7 +108,7 @@ export function NotificationsPanel({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("components.shared.sectionNotifications", "Notificaciones")} className="relative">
+        <Button variant="ghost" size="icon" aria-label={t("components.shared.sectionNotifications", "Notificaciones")} className="circle-chip relative">
           <Bell />
           {unreadCount > 0 && (
             <span className="bg-destructive text-destructive-foreground absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full text-[10px] font-medium">

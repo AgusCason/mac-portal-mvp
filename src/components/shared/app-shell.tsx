@@ -60,7 +60,7 @@ function TopbarIconFallback({ icon: Icon, label }: { icon: LucideIconType; label
     <span
       role="img"
       aria-label={label}
-      className="text-muted-foreground/50 inline-flex size-10 items-center justify-center rounded-lg"
+      className="circle-chip text-muted-foreground/50 inline-flex size-10 items-center justify-center"
     >
       <Icon className="size-4" strokeWidth={1.75} />
     </span>
@@ -296,33 +296,38 @@ function BrandHeader({
         collapsed && "justify-center px-0"
       )}
     >
-      {hasCustomLogo ? (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element -- URL de logo arbitraria configurada por el admin, no se puede allowlistar en next.config en runtime. */}
-          <img
-            src={branding.logo_light_url ?? branding.logo_dark_url ?? undefined}
+      {/* Halo lima tenue detrás del logo — mismo recurso que el badge de
+          /login, para que la marca "brille" un poco también acá. */}
+      <div className="relative flex items-center justify-center">
+        <div className="bg-primary/25 absolute size-9 rounded-full blur-lg" aria-hidden="true" />
+        {hasCustomLogo ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element -- URL de logo arbitraria configurada por el admin, no se puede allowlistar en next.config en runtime. */}
+            <img
+              src={branding.logo_light_url ?? branding.logo_dark_url ?? undefined}
+              alt={branding.app_name}
+              className="relative block size-7 rounded-md object-contain dark:hidden"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={branding.logo_dark_url ?? branding.logo_light_url ?? undefined}
+              alt={branding.app_name}
+              className="relative hidden size-7 rounded-md object-contain dark:block"
+            />
+          </>
+        ) : (
+          // El logo default (public/logo.png) ya trae la marca "MAC" + estrella
+          // en el propio archivo (fondo transparente) — un poco más alto que
+          // ancho lo deja legible tanto colapsado (rail angosto) como expandido.
+          <Image
+            src="/logo.png"
             alt={branding.app_name}
-            className="block size-7 rounded-md object-contain dark:hidden"
+            width={109}
+            height={40}
+            className={cn("relative", collapsed ? "h-5 w-auto" : "h-6 w-auto")}
           />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={branding.logo_dark_url ?? branding.logo_light_url ?? undefined}
-            alt={branding.app_name}
-            className="hidden size-7 rounded-md object-contain dark:block"
-          />
-        </>
-      ) : (
-        // El logo default (public/logo.png) ya trae la marca "MAC" + estrella
-        // en el propio archivo (fondo transparente) — un poco más alto que
-        // ancho lo deja legible tanto colapsado (rail angosto) como expandido.
-        <Image
-          src="/logo.png"
-          alt={branding.app_name}
-          width={109}
-          height={40}
-          className={collapsed ? "h-5 w-auto" : "h-6 w-auto"}
-        />
-      )}
+        )}
+      </div>
       {!hideAppName && !collapsed && (
         <span className="truncate text-sm font-semibold tracking-tight">{branding.app_name}</span>
       )}
@@ -392,10 +397,13 @@ function AppShellInner({
         {/* Sidebar desktop */}
         <aside
           className={cn(
-            "border-sidebar-border bg-sidebar hidden shrink-0 flex-col border-r transition-[width] duration-200 md:flex",
+            "border-sidebar-border bg-sidebar relative hidden shrink-0 flex-col border-r transition-[width] duration-200 md:flex",
             collapsed ? "w-[76px]" : "w-60"
           )}
         >
+          {/* Filo superior "de vidrio" — mismo recurso que /login, para que
+              el sidebar se sienta parte del mismo sistema "bento glass". */}
+          <div className="via-primary/50 absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />
           <BrandHeader branding={branding} collapsed={collapsed} hideAppName />
           <button
             type="button"
@@ -436,7 +444,7 @@ function AppShellInner({
               {/* Sidebar mobile */}
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="md:hidden">
+                  <Button variant="ghost" size="icon" className="circle-chip md:hidden">
                     <Menu />
                   </Button>
                 </SheetTrigger>
@@ -451,7 +459,7 @@ function AppShellInner({
               </Badge>
             </div>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <React.Suspense fallback={<TopbarIconFallback icon={Activity} label={t("components.shared.activity", "Actividad")} />}>
                 <ActivityPanel eventsPromise={activity} />
               </React.Suspense>

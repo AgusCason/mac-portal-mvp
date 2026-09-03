@@ -19,15 +19,8 @@ interface KpiCardProps {
   tone?: "primary" | "info" | "warning" | "success";
 }
 
-const TONE_CLASSES: Record<NonNullable<KpiCardProps["tone"]>, string> = {
-  primary: "bg-accent text-muted-foreground",
-  info: "bg-accent text-muted-foreground",
-  warning: "bg-accent text-muted-foreground",
-  success: "bg-accent text-muted-foreground",
-};
-
 /** Card de KPI reutilizable: label en mayúsculas + valor grande tabular-nums + ícono. */
-export function KpiCard({ label, value, icon: Icon, hint, className, tone = "primary" }: KpiCardProps) {
+export function KpiCard({ label, value, icon: Icon, hint, className }: KpiCardProps) {
   return (
     <Card className={cn(className)}>
       <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
@@ -35,9 +28,12 @@ export function KpiCard({ label, value, icon: Icon, hint, className, tone = "pri
           <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
             {label}
           </p>
-          <p className="tabular-nums text-2xl font-semibold">{value}</p>
+          <p className="tabular-nums text-3xl font-semibold tracking-tight">{value}</p>
         </div>
-        <div className={cn("rounded-lg p-2", TONE_CLASSES[tone])}>
+        {/* .icon-chip (globals.css) — mismo tratamiento en todas las
+            KpiCard del portal, ver comentario de `tone` arriba: ya no varía
+            por tono, así que no hace falta más que la clase fija. */}
+        <div className="icon-chip">
           <Icon className="size-4" strokeWidth={1.75} />
         </div>
       </CardHeader>

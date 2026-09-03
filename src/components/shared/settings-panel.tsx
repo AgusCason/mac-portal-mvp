@@ -94,7 +94,7 @@ export function SettingsPanel() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("settings.title", "Preferencias")}>
+        <Button variant="ghost" size="icon" className="circle-chip" aria-label={t("settings.title", "Preferencias")}>
           <Settings />
         </Button>
       </SheetTrigger>

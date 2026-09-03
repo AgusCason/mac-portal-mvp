@@ -7,7 +7,10 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border border-border py-6",
+        // .glass-card (globals.css) reemplaza bg-card + border por el
+        // tratamiento "vidrio" del rediseño de todo el portal — fondo
+        // semitransparente + blur + sombra, ya resuelto para claro/oscuro.
+        "glass-card text-card-foreground flex flex-col gap-6 rounded-2xl py-6",
         className
       )}
       {...props}
