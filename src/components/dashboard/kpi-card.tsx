@@ -19,29 +19,30 @@ interface KpiCardProps {
   tone?: "primary" | "info" | "warning" | "success";
 }
 
-/** Card de KPI reutilizable: label en mayúsculas + valor grande tabular-nums + ícono. */
+/**
+ * Card de KPI reutilizable — header con ícono a la izquierda + título en
+ * minúsculas (patrón "billing-card"/"accounts-card" del mockup de dashboard
+ * aprobado, ver charla) en vez del label chico en mayúsculas de antes. Valor
+ * grande (36px, tracking bien apretado) tabular-nums debajo.
+ */
 export function KpiCard({ label, value, icon: Icon, hint, className }: KpiCardProps) {
   return (
     <Card className={cn(className)}>
-      <CardHeader className="flex-row items-start justify-between gap-2 space-y-0">
-        <div className="space-y-1">
-          <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-            {label}
-          </p>
-          <p className="tabular-nums text-3xl font-semibold tracking-tight">{value}</p>
-        </div>
-        {/* .icon-chip (globals.css) — mismo tratamiento en todas las
-            KpiCard del portal, ver comentario de `tone` arriba: ya no varía
-            por tono, así que no hace falta más que la clase fija. */}
-        <div className="icon-chip">
-          <Icon className="size-4" strokeWidth={1.75} />
+      <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
+        <div className="flex items-center gap-3">
+          {/* .icon-chip (globals.css) — mismo tratamiento en todas las
+              KpiCard del portal, ver comentario de `tone` arriba: ya no varía
+              por tono, así que no hace falta más que la clase fija. */}
+          <div className="icon-chip">
+            <Icon className="size-4" strokeWidth={1.75} />
+          </div>
+          <p className="text-sm font-semibold tracking-tight">{label}</p>
         </div>
       </CardHeader>
-      {hint && (
-        <CardContent className="pt-0">
-          <p className="text-muted-foreground text-xs">{hint}</p>
-        </CardContent>
-      )}
+      <CardContent className="space-y-1 pt-0">
+        <p className="tabular-nums text-4xl font-bold tracking-tighter">{value}</p>
+        {hint && <p className="text-muted-foreground text-xs">{hint}</p>}
+      </CardContent>
     </Card>
   );
 }

@@ -26,6 +26,7 @@ import { LogoutMenuItem } from "@/components/shared/logout-button";
 import { ActivityPanel } from "@/components/shared/activity-panel";
 import { NotificationsPanel } from "@/components/shared/notifications-panel";
 import { SettingsPanel } from "@/components/shared/settings-panel";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { MyProfileDialog } from "@/components/shared/my-profile-dialog";
 import { PortalHelpAssistant } from "@/components/shared/portal-help-assistant";
 import type { ActivityEventWithClient } from "@/lib/queries/activity";
@@ -437,7 +438,7 @@ function AppShellInner({
           — topbar incluido, porque vive adentro — se estira más que el
           viewport y arrastra toda la página a un scroll lateral.
         */}
-        <div className="bg-background flex min-h-dvh min-w-0 flex-1 flex-col md:rounded-tl-xl md:border-l md:border-t md:border-border">
+        <div className="portal-canvas flex min-h-dvh min-w-0 flex-1 flex-col md:rounded-tl-xl md:border-l md:border-t md:border-border">
           {/* Topbar */}
           <header className="flex h-14 items-center justify-between gap-3 border-b border-border px-4">
             <div className="flex items-center gap-2">
@@ -460,6 +461,7 @@ function AppShellInner({
             </div>
 
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <React.Suspense fallback={<TopbarIconFallback icon={Activity} label={t("components.shared.activity", "Actividad")} />}>
                 <ActivityPanel eventsPromise={activity} />
               </React.Suspense>
@@ -469,10 +471,10 @@ function AppShellInner({
               <SettingsPanel />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors duration-150 hover:bg-accent">
-                    <Avatar className="size-7">
+                  <button className="flex items-center gap-2 rounded-full px-1.5 py-1.5 text-sm transition-colors duration-150 hover:bg-accent">
+                    <Avatar className="border-foreground/20 size-8 border">
                       <AvatarImage src={profile.avatar_url ?? undefined} />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-foreground/10 font-bold">
                         {getInitials(profile.full_name || profile.email)}
                       </AvatarFallback>
                     </Avatar>

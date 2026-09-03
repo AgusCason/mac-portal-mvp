@@ -431,7 +431,7 @@
 .circle-chip {
   border-radius: 999px;
   border: 1px solid var(--border);
-  background: color-mix(in oklch, var(--foreground) 4%, transparent);
+  background: color-mix(in oklch, var(--foreground) 6%, transparent);
   transition:
     background-color 0.15s,
     border-color 0.15s;
@@ -439,6 +439,21 @@
 .circle-chip:hover {
   background: color-mix(in oklch, var(--foreground) 9%, transparent);
   border-color: color-mix(in oklch, var(--primary) 35%, var(--border));
+}
+
+/* El wash radial de `body` (ver más arriba) no llega a mostrarse en ninguna
+   pantalla de la app: el panel de contenido del AppShell pinta su propio
+   `bg-background` opaco encima, tapándolo — por eso las .glass-card de
+   cualquier dashboard se ven "planas" (blur sin nada de fondo contra qué
+   notarse), aunque /login sí se vea bien (no tiene ese wrapper opaco encima).
+   Mismo wash, repetido acá para el panel que sí es visible. */
+.portal-canvas {
+  background-color: var(--background);
+  background-image: radial-gradient(
+    circle at 92% -8%,
+    color-mix(in oklch, var(--primary) 6%, transparent),
+    transparent 40%
+  );
 }
 
 /* Botón primario de marca — mismo degradé lima→info que la CTA de /login
