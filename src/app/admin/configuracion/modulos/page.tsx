@@ -2,6 +2,8 @@ import { requireRole } from "@/lib/auth";
 import { totalModulesCount, countModulesByStatus } from "@/lib/modules-catalog";
 import { getModuleFlags } from "@/lib/queries/module-flags";
 import { ModulosPanel } from "@/components/config/modulos-panel";
+import { Card } from "@/components/ui/card";
+import { ProgressRing } from "@/components/shared/mini-charts";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -28,6 +30,20 @@ export default async function AdminModulosPage() {
           {t("components.config.comingSoonSummary", "próximamente")}
         </p>
       </div>
+
+      {total > 0 && (
+        <Card className="flex-row items-center gap-3.5 p-4">
+          <ProgressRing value={incluidos} max={total} color="var(--success)" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold tracking-tight">
+              {t("pages.modulos.includedRatioTitle", "Módulos incluidos sobre el total")}
+            </p>
+            <p className="text-muted-foreground text-xs">
+              {incluidos} {t("pages.modulos.ofTotal", "de")} {total}
+            </p>
+          </div>
+        </Card>
+      )}
 
       <ModulosPanel flags={flags} />
     </div>

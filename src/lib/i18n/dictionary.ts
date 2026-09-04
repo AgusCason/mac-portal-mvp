@@ -1263,7 +1263,15 @@ const es = {
     },
   },
   pages: {
-    calendario: { title: "Calendario editorial" },
+    calendario: {
+      title: "Calendario editorial",
+      byStatusTitle: "Piezas por estado",
+      byStatusDesc: "Distribución de todo el contenido cargado, en cualquier fecha.",
+    },
+    modulos: {
+      includedRatioTitle: "Módulos incluidos sobre el total",
+      ofTotal: "de",
+    },
     configuracion: {
       title: "Configuración",
       description: "Integraciones y datos generales de la agencia.",
@@ -2823,7 +2831,15 @@ const en: typeof es = {
     },
   },
   pages: {
-    calendario: { title: "Editorial Calendar" },
+    calendario: {
+      title: "Editorial Calendar",
+      byStatusTitle: "Pieces by status",
+      byStatusDesc: "Distribution of all loaded content, on any date.",
+    },
+    modulos: {
+      includedRatioTitle: "Included modules out of the total",
+      ofTotal: "of",
+    },
     configuracion: {
       title: "Settings",
       description: "Integrations and general agency data.",
