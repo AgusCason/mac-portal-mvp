@@ -4,13 +4,14 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, MessageCircle } from "lucide-react";
 
 import { sendChatMessageAction } from "@/app/actions/chat";
 import type { ChatMessageWithSender } from "@/lib/queries/chat";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -69,11 +70,14 @@ export function ChatThread({
   return (
     <div className="border-border bg-card flex h-[32rem] flex-col overflow-hidden rounded-xl border">
       <ScrollArea className="flex-1 p-4">
-        <div className="flex flex-col gap-4">
+        <div className="flex h-full flex-col gap-4">
           {messages.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              {t("components.chat.noMessages", "Todavía no hay mensajes en este hilo.")}
-            </p>
+            <EmptyState
+              icon={MessageCircle}
+              title={t("components.chat.noMessages", "Todavía no hay mensajes en este hilo.")}
+              hint={t("components.chat.noMessagesHint", "Escribí el primer mensaje abajo para arrancar la conversación.")}
+              className="my-auto"
+            />
           )}
           {messages.map((m) => {
             const mine = m.sender_profile_id === currentProfileId;
