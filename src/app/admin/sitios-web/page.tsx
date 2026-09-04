@@ -6,10 +6,23 @@ import { NewWebProjectDialog } from "@/components/web-projects/new-web-project-d
 import {
   getWebProjectStageLabel,
   WEB_PROJECT_STAGE_VARIANT,
+  WEB_PROJECT_STAGE_ALL,
 } from "@/components/web-projects/web-project-stage";
 import { Badge } from "@/components/ui/badge";
-import { Paperclip } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DonutMini } from "@/components/shared/mini-charts";
+import { Paperclip, PieChart } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
+
+/** Mismo color que ya usa cada Badge de etapa (ver web-project-stage.ts),
+ *  traducido a token de CSS para el donut — nunca un color nuevo/inventado. */
+const WEB_STAGE_COLOR: Record<string, string> = {
+  secondary: "var(--muted-foreground)",
+  info: "var(--info)",
+  warning: "var(--warning)",
+  success: "var(--success)",
+  destructive: "var(--destructive)",
+};
 
 /**
  * Sitios Web — proyectos de diseño y desarrollo web por cliente, con sus
@@ -32,6 +45,44 @@ export default async function AdminSitiosWebPage() {
         </div>
         <NewWebProjectDialog clients={clients} />
       </div>
+
+      {projects.length > 0 && (
+        <Card className="glass-card">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <div className="icon-chip">
+              <PieChart className="size-4" strokeWidth={1.75} />
+            </div>
+            <CardTitle>{t("pages.sitiosWeb.statusOverviewTitle", "Sitios por etapa")}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:justify-around">
+            <DonutMini
+              segments={WEB_PROJECT_STAGE_ALL.map((stage) => ({
+                label: getWebProjectStageLabel(stage, t),
+                value: projects.filter((p) => p.stage === stage).length,
+                color: WEB_STAGE_COLOR[WEB_PROJECT_STAGE_VARIANT[stage] as string],
+              }))}
+              centerValue={projects.length}
+              centerLabel={t("pages.sitiosWeb.statusCenterLabel", "sitios")}
+            />
+            <div className="flex w-full flex-wrap justify-center gap-x-5 gap-y-2 sm:max-w-xs">
+              {WEB_PROJECT_STAGE_ALL.map((stage) => {
+                const count = projects.filter((p) => p.stage === stage).length;
+                if (count === 0) return null;
+                return (
+                  <div key={stage} className="flex items-center gap-2 text-xs">
+                    <span
+                      className="size-2 shrink-0 rounded-full"
+                      style={{ background: WEB_STAGE_COLOR[WEB_PROJECT_STAGE_VARIANT[stage] as string] }}
+                    />
+                    <span className="text-muted-foreground">{getWebProjectStageLabel(stage, t)}</span>
+                    <strong className="tabular-nums">{count}</strong>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {projects.length === 0 && (
         <p className="text-muted-foreground py-10 text-center text-sm">

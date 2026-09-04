@@ -1318,6 +1318,16 @@ const es = {
     webForms: {
       title: "Web Forms",
       description: "Formularios públicos para captar leads o respuestas.",
+      responsesByFormTitle: "Respuestas por formulario",
+    },
+    mediaLibrary: {
+      byTypeTitle: "Archivos por tipo",
+      centerLabel: "archivos",
+      totalSize: "Espacio usado",
+      categoryImage: "Imágenes",
+      categoryVideo: "Videos",
+      categoryDocument: "Documentos",
+      categoryOther: "Otros",
     },
     editorDrive: {
       description: "Solo ves clientes donde el admin activó tu acceso a Drive.",
@@ -1407,6 +1417,8 @@ const es = {
     },
     sitiosWeb: {
       description: "Proyectos de diseño y desarrollo web por cliente.",
+      statusOverviewTitle: "Sitios por etapa",
+      statusCenterLabel: "sitios",
     },
     actividad: {
       contentCreated: "Nueva pieza",
@@ -1417,6 +1429,7 @@ const es = {
       clientCreated: "Cliente nuevo",
       description: "Bitácora completa de lo que pasó en el workspace.",
       emptyState: "Todavía no hay actividad registrada.",
+      byTypeTitle: "Eventos por tipo",
     },
     socialPlanner: {
       description: "Calendario editorial, publicados y grilla de Instagram.",
@@ -2851,6 +2864,16 @@ const en: typeof es = {
     webForms: {
       title: "Web Forms",
       description: "Public forms to capture leads or responses.",
+      responsesByFormTitle: "Responses by form",
+    },
+    mediaLibrary: {
+      byTypeTitle: "Files by type",
+      centerLabel: "files",
+      totalSize: "Storage used",
+      categoryImage: "Images",
+      categoryVideo: "Videos",
+      categoryDocument: "Documents",
+      categoryOther: "Other",
     },
     editorDrive: {
       description: "You only see clients where the admin enabled your Drive access.",
@@ -2940,6 +2963,8 @@ const en: typeof es = {
     },
     sitiosWeb: {
       description: "Client website design and development projects.",
+      statusOverviewTitle: "Websites by stage",
+      statusCenterLabel: "websites",
     },
     actividad: {
       contentCreated: "New content piece",
@@ -2950,6 +2975,7 @@ const en: typeof es = {
       clientCreated: "New client",
       description: "Full log of what happened in the workspace.",
       emptyState: "No activity has been recorded yet.",
+      byTypeTitle: "Events by type",
     },
     socialPlanner: {
       description: "Editorial calendar, published pieces, and Instagram grid.",

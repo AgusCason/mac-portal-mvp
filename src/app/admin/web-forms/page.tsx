@@ -3,6 +3,8 @@ import { requireAdmin } from "@/lib/auth";
 import { getWebForms } from "@/lib/queries/web-forms";
 import { NewWebFormDialog } from "@/components/web-forms/new-web-form-dialog";
 import { WebFormsTable } from "@/components/web-forms/web-forms-table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3 } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -18,6 +20,10 @@ export default async function AdminWebFormsPage() {
   const protocol = host.startsWith("localhost") ? "http" : "https";
   const baseUrl = `${protocol}://${host}`;
 
+  const totalResponses = forms.reduce((sum, f) => sum + f.submission_count, 0);
+  const topForms = [...forms].sort((a, b) => b.submission_count - a.submission_count).slice(0, 6);
+  const maxResponses = Math.max(1, ...topForms.map((f) => f.submission_count));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
@@ -29,6 +35,34 @@ export default async function AdminWebFormsPage() {
         </div>
         <NewWebFormDialog />
       </div>
+
+      {totalResponses > 0 && (
+        <Card className="glass-card">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <div className="icon-chip">
+              <BarChart3 className="size-4" strokeWidth={1.75} />
+            </div>
+            <CardTitle>{t("pages.webForms.responsesByFormTitle", "Respuestas por formulario")}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2.5">
+            {topForms.map((form) => {
+              const widthPct = Math.max(4, Math.round((form.submission_count / maxResponses) * 100));
+              return (
+                <div key={form.id} className="flex items-center gap-3">
+                  <span className="w-28 shrink-0 truncate text-[11.5px] font-semibold">{form.name}</span>
+                  <div className="bg-accent/60 h-2 flex-1 overflow-hidden rounded-full">
+                    <span className="bg-primary/80 block h-full rounded-full" style={{ width: `${widthPct}%` }} />
+                  </div>
+                  <span className="w-6 shrink-0 text-right text-xs font-bold tabular-nums">
+                    {form.submission_count}
+                  </span>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       <WebFormsTable forms={forms} baseUrl={baseUrl} />
     </div>
   );

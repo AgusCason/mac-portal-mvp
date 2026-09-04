@@ -3,6 +3,8 @@ import { es, enUS } from "date-fns/locale";
 import { requireAdmin } from "@/lib/auth";
 import { getRecentActivity } from "@/lib/queries/activity";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3 } from "lucide-react";
 import { getT, resolveLocale } from "@/lib/i18n/dictionary";
 
 const DATE_FNS_LOCALE = { es, en: enUS } as const;
@@ -26,6 +28,13 @@ export default async function AdminActividadPage() {
     client_created: t("pages.actividad.clientCreated", "Cliente nuevo"),
   };
 
+  const eventCounts = new Map<string, number>();
+  for (const event of events) {
+    eventCounts.set(event.event_type, (eventCounts.get(event.event_type) ?? 0) + 1);
+  }
+  const eventTypesByCount = Array.from(eventCounts.entries()).sort((a, b) => b[1] - a[1]);
+  const maxEventCount = Math.max(1, ...eventTypesByCount.map(([, count]) => count));
+
   return (
     <div className="space-y-4">
       <div>
@@ -34,6 +43,33 @@ export default async function AdminActividadPage() {
           {t("pages.actividad.description", "Bitácora completa de lo que pasó en el workspace.")}
         </p>
       </div>
+
+      {eventTypesByCount.length > 0 && (
+        <Card className="glass-card">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <div className="icon-chip">
+              <BarChart3 className="size-4" strokeWidth={1.75} />
+            </div>
+            <CardTitle>{t("pages.actividad.byTypeTitle", "Eventos por tipo")}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2.5">
+            {eventTypesByCount.map(([type, count]) => {
+              const widthPct = Math.max(4, Math.round((count / maxEventCount) * 100));
+              return (
+                <div key={type} className="flex items-center gap-3">
+                  <span className="w-36 shrink-0 truncate text-[11.5px] font-semibold">
+                    {EVENT_META[type] ?? type}
+                  </span>
+                  <div className="bg-accent/60 h-2 flex-1 overflow-hidden rounded-full">
+                    <span className="bg-primary/80 block h-full rounded-full" style={{ width: `${widthPct}%` }} />
+                  </div>
+                  <span className="w-6 shrink-0 text-right text-xs font-bold tabular-nums">{count}</span>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex flex-col gap-2">
         {events.length === 0 && (
