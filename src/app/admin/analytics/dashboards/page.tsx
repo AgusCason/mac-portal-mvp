@@ -1,7 +1,8 @@
 import { requireRole } from "@/lib/auth";
 import { getPlatformDashboards } from "@/lib/queries/analytics";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Camera, Music2, PlaySquare, LayoutDashboard } from "lucide-react";
+import { FollowersDonutChart, EngagementBarChart } from "@/components/analytics/overview-charts";
+import { Camera, Music2, PlaySquare, LayoutDashboard, Users, Activity } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 import type { SocialPlatform } from "@/types/database";
 
@@ -36,6 +37,33 @@ export default async function AnalyticsDashboardsPage() {
           {t("pages.analyticsDashboards.description", "Vistas resumen por plataforma, con datos reales de las cuentas conectadas.")}
         </p>
       </div>
+
+      {dashboards.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Card className="glass-card">
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <div className="icon-chip">
+                <Users className="size-4" strokeWidth={1.75} />
+              </div>
+              <CardTitle>{t("pages.analyticsOverview.followersByPlatform", "Seguidores por plataforma")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FollowersDonutChart data={dashboards} />
+            </CardContent>
+          </Card>
+          <Card className="glass-card">
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <div className="icon-chip">
+                <Activity className="size-4" strokeWidth={1.75} />
+              </div>
+              <CardTitle>{t("pages.analyticsOverview.engagementByPlatform", "Engagement por plataforma")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EngagementBarChart data={dashboards} />
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {dashboards.length === 0 && (
         <Card className="glass-card">

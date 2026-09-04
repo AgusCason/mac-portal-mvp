@@ -4,6 +4,8 @@ import { getSelectableClients } from "@/lib/queries/content";
 import { ReportList } from "@/components/reports/report-list";
 import { NewReportDialog } from "@/components/reports/new-report-dialog";
 import { ReportFilters } from "@/components/reports/report-filters";
+import { Card } from "@/components/ui/card";
+import { ProgressRing } from "@/components/shared/mini-charts";
 import { getT } from "@/lib/i18n/dictionary";
 import type { ReportStatus } from "@/types/database";
 
@@ -36,6 +38,24 @@ export default async function AdminReportesPage({
         </div>
         <NewReportDialog clients={clients} />
       </div>
+
+      {reports.length > 0 && (() => {
+        const publishedCount = reports.filter((r) => r.status === "published").length;
+        return (
+          <Card className="flex-row items-center gap-3.5 p-4">
+            <ProgressRing value={publishedCount} max={reports.length} color="var(--success)" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold tracking-tight">
+                {t("pages.adminReportes.publishedRatioTitle", "Publicados sobre el total")}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {publishedCount} {t("pages.adminReportes.ofTotal", "de")} {reports.length}
+              </p>
+            </div>
+          </Card>
+        );
+      })()}
+
       <ReportFilters clients={clients} />
       <ReportList reports={reports} role="admin" />
     </div>

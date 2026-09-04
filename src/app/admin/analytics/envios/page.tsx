@@ -9,10 +9,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Send } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Send, BarChart3 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
+
+/** Últimos 6 meses calendario (incluye el actual), como "2026-09" -> "sep. 2026". */
+function lastSixMonths(): { key: string; label: string }[] {
+  const months: { key: string; label: string }[] = [];
+  const fmt = new Intl.DateTimeFormat("es-AR", { month: "short", year: "numeric" });
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, label: fmt.format(d) });
+  }
+  return months;
+}
 
 const PLATFORM_LABEL: Record<string, string> = {
   instagram: "Instagram",
@@ -43,6 +55,42 @@ export default async function AnalyticsEnviosPage() {
           {t("pages.analyticsEnvios.description", "Reportes publicados y entregados a cada cliente, en orden cronológico.")}
         </p>
       </div>
+
+      {reports.length > 0 && (() => {
+        const months = lastSixMonths();
+        const counts = new Map(months.map((m) => [m.key, 0]));
+        for (const r of reports) {
+          const date = r.published_at ?? r.created_at;
+          const key = date.slice(0, 7);
+          if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
+        }
+        const max = Math.max(1, ...Array.from(counts.values()));
+        return (
+          <Card className="glass-card">
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <div className="icon-chip">
+                <BarChart3 className="size-4" strokeWidth={1.75} />
+              </div>
+              <CardTitle>{t("pages.analyticsEnvios.byMonthTitle", "Envíos por mes")}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2.5">
+              {months.map((m) => {
+                const value = counts.get(m.key) ?? 0;
+                const widthPct = Math.max(4, Math.round((value / max) * 100));
+                return (
+                  <div key={m.key} className="flex items-center gap-3">
+                    <span className="w-20 shrink-0 text-[11.5px] font-semibold capitalize">{m.label}</span>
+                    <div className="bg-accent/60 h-2 flex-1 overflow-hidden rounded-full">
+                      <span className="bg-primary/80 block h-full rounded-full" style={{ width: `${widthPct}%` }} />
+                    </div>
+                    <span className="w-6 shrink-0 text-right text-xs font-bold tabular-nums">{value}</span>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {reports.length === 0 && (
         <Card className="glass-card">

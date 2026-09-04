@@ -9,8 +9,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { TrendingDown } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DonutMini } from "@/components/shared/mini-charts";
+import { TrendingDown, PieChart } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -39,6 +40,50 @@ export default async function AnalyticsAlertasPage() {
           )}
         </p>
       </div>
+
+      {alerts.length > 0 && (() => {
+        const reachCount = alerts.filter((a) => a.metricType === "reach").length;
+        const followersCount = alerts.filter((a) => a.metricType === "followers").length;
+        const avgDrop = Math.round(
+          (alerts.reduce((sum, a) => sum + a.dropPct, 0) / alerts.length) * 100
+        );
+        return (
+          <Card className="glass-card">
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <div className="icon-chip">
+                <PieChart className="size-4" strokeWidth={1.75} />
+              </div>
+              <CardTitle>{t("pages.analyticsAlertas.byMetricTitle", "Alertas por métrica")}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:justify-around">
+              <DonutMini
+                segments={[
+                  { label: t("pages.redes.reach", "Alcance"), value: reachCount, color: "var(--info)" },
+                  { label: t("pages.redes.followers", "Seguidores"), value: followersCount, color: "var(--destructive)" },
+                ]}
+                centerValue={alerts.length}
+                centerLabel={t("pages.analyticsAlertas.centerLabel", "alertas")}
+              />
+              <div className="flex w-full flex-col gap-2 sm:max-w-[220px]">
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="size-2 shrink-0 rounded-full" style={{ background: "var(--info)" }} />
+                  <span className="text-muted-foreground flex-1">{t("pages.redes.reach", "Alcance")}</span>
+                  <strong className="tabular-nums">{reachCount}</strong>
+                </div>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="size-2 shrink-0 rounded-full" style={{ background: "var(--destructive)" }} />
+                  <span className="text-muted-foreground flex-1">{t("pages.redes.followers", "Seguidores")}</span>
+                  <strong className="tabular-nums">{followersCount}</strong>
+                </div>
+                <div className="border-border/60 mt-2 flex items-center gap-2 border-t pt-2.5 text-xs">
+                  <span className="text-muted-foreground flex-1">{t("pages.analyticsAlertas.avgDrop", "Caída promedio")}</span>
+                  <strong className="tabular-nums">-{avgDrop}%</strong>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {alerts.length === 0 && (
         <Card className="glass-card">
