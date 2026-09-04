@@ -106,7 +106,7 @@ function CredentialFormFields({
   );
 }
 
-function NewCredentialDialog({ clients }: { clients: { id: string; name: string }[] }) {
+export function NewCredentialDialog({ clients }: { clients: { id: string; name: string }[] }) {
   const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
@@ -293,9 +293,6 @@ export function VaultList({
   const { t } = useLocale();
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
-        <NewCredentialDialog clients={clients} />
-      </div>
       <Table>
         <TableHeader>
           <TableRow>

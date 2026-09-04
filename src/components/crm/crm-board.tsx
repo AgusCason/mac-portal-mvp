@@ -167,7 +167,7 @@ function LeadFormFields({ lead }: { lead?: CrmLead }) {
   );
 }
 
-function NewLeadDialog() {
+export function NewLeadDialog() {
   const { t } = useLocale();
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = useTransition();
@@ -413,9 +413,6 @@ export function CrmBoard({ leads }: { leads: CrmLead[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
-        <NewLeadDialog />
-      </div>
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:flex lg:overflow-x-auto lg:pb-2">
           {STAGE_ORDER.map((stage) => (

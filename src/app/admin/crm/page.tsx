@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/auth";
 import { getCrmLeads } from "@/lib/queries/crm";
-import { CrmBoard } from "@/components/crm/crm-board";
+import { CrmBoard, NewLeadDialog } from "@/components/crm/crm-board";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { Card } from "@/components/ui/card";
@@ -55,7 +55,10 @@ export default async function CrmPage() {
             )}
           </p>
         </div>
-        <ExportCsvButton filename="crm.csv" csv={crmCsv} disabled={leads.length === 0} />
+        <div className="flex items-center gap-2">
+          <ExportCsvButton filename="crm.csv" csv={crmCsv} disabled={leads.length === 0} />
+          <NewLeadDialog />
+        </div>
       </div>
 
       {leads.length > 0 && (
