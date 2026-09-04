@@ -1,4 +1,4 @@
-import { Layers } from "lucide-react";
+import { Layers, Users } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { getEditors } from "@/lib/queries/team";
 import { getEditorAssignedClients } from "@/lib/queries/editor";
@@ -6,6 +6,7 @@ import { NewEditorDialog } from "@/components/team/new-editor-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { INITIALS_GRADIENTS } from "@/components/dashboard/billing-hero-card";
 import { ProgressRing } from "@/components/shared/mini-charts";
+import { EmptyState } from "@/components/shared/empty-state";
 import { getInitials, cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -108,7 +109,7 @@ export default async function AdminEquipoPage() {
           );
         })}
         {editors.length === 0 && (
-          <p className="text-muted-foreground text-sm">{t("pages.equipo.noEditors", "Todavía no invitaste editores.")}</p>
+          <EmptyState icon={Users} title={t("pages.equipo.noEditors", "Todavía no invitaste editores.")} className="sm:col-span-2" />
         )}
       </div>
     </div>

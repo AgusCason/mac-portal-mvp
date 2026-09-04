@@ -11,7 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
-import { ListChecks, PieChart } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
+import { ListChecks, PieChart, FolderKanban } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
 /** Mismo color que ya usa cada Badge de estado (ver project-status.ts),
@@ -46,9 +47,7 @@ export default async function AdminProyectosPage() {
       </div>
 
       {projects.length === 0 && (
-        <p className="text-muted-foreground py-10 text-center text-sm">
-          {t("pages.proyectos.noProjects", "Todavía no creaste ningún proyecto.")}
-        </p>
+        <EmptyState icon={FolderKanban} title={t("pages.proyectos.noProjects", "Todavía no creaste ningún proyecto.")} />
       )}
 
       {projects.length > 0 && (

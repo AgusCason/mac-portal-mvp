@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { LayoutGrid, List, Search, Star } from "lucide-react";
+import { LayoutGrid, List, Search, Star, Building2 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 import Link from "next/link";
 import { AccountCard } from "@/components/clients/account-card";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { cn, formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { AccountCardData } from "@/lib/queries/clients";
@@ -150,11 +151,14 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-muted-foreground py-10 text-center text-sm">
-          {accounts.length === 0
-            ? t("components.clients.emptyNoAccounts", "Todavía no cargaste ninguna cuenta.")
-            : t("components.clients.emptyNoMatches", "Ninguna cuenta coincide con estos filtros.")}
-        </p>
+        <EmptyState
+          icon={Building2}
+          title={
+            accounts.length === 0
+              ? t("components.clients.emptyNoAccounts", "Todavía no cargaste ninguna cuenta.")
+              : t("components.clients.emptyNoMatches", "Ninguna cuenta coincide con estos filtros.")
+          }
+        />
       )}
 
       {filtered.length > 0 && view === "grid" && (

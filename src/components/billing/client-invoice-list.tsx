@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import { toast } from "sonner";
-import { CheckCircle2, AlertTriangle, Download, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Download, Loader2, Receipt } from "lucide-react";
 
 import { PayInvoiceDialog } from "@/components/billing/pay-invoice-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { getInvoicePdfAction } from "@/app/actions/billing";
@@ -72,11 +73,7 @@ export function ClientInvoiceList({
   }
 
   if (invoices.length === 0) {
-    return (
-      <p className="text-muted-foreground py-10 text-center text-sm">
-        {t("billing.noInvoices", "Todavía no tenés facturas.")}
-      </p>
-    );
+    return <EmptyState icon={Receipt} title={t("billing.noInvoices", "Todavía no tenés facturas.")} />;
   }
 
   return (

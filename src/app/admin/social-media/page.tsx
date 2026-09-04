@@ -5,6 +5,7 @@ import { getSocialMediaOverview } from "@/lib/queries/social-media";
 import { ContentStatusChart } from "@/components/dashboard/content-status-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
+import { EmptyState } from "@/components/shared/empty-state";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 import type { ContentStatus } from "@/types/database";
@@ -99,7 +100,9 @@ export default async function AdminSocialMediaPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             {overview.scheduledPieces.length === 0 && (
-              <p className="text-muted-foreground text-sm">{t("pages.socialOverview.noScheduled", "No hay piezas programadas.")}</p>
+              <p className="text-muted-foreground py-6 text-center text-sm">
+                {t("pages.socialOverview.noScheduled", "No hay piezas programadas.")}
+              </p>
             )}
             {overview.scheduledPieces.map((item) => (
               <div key={item.id} className="bg-accent/40 flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm">
@@ -119,7 +122,11 @@ export default async function AdminSocialMediaPage() {
               <CardTitle className="text-sm">{t("pages.socialOverview.byStatus", "Piezas por estado")}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-sm">{t("pages.socialOverview.noPieces", "Todavía no hay piezas cargadas.")}</p>
+              <EmptyState
+                icon={CalendarClock}
+                title={t("pages.socialOverview.noPieces", "Todavía no hay piezas cargadas.")}
+                className="py-6"
+              />
             </CardContent>
           </Card>
         )}

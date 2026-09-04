@@ -57,10 +57,11 @@ export function UtmBuilderForm({ clients }: { clients: { id: string; name: strin
 
   return (
     <Card className="glass-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <Link2 className="size-4" /> {t("components.analytics.buildCampaignTitle", "Armar campaña")}
-        </CardTitle>
+      <CardHeader className="flex-row items-center gap-3 space-y-0">
+        <div className="icon-chip">
+          <Link2 className="size-4" strokeWidth={1.75} />
+        </div>
+        <CardTitle>{t("components.analytics.buildCampaignTitle", "Armar campaña")}</CardTitle>
       </CardHeader>
       <CardContent>
         <form action={handleSubmit} className="space-y-3">

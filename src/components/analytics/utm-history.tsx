@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, Link2 } from "lucide-react";
 
 import { deleteUtmLinkAction } from "@/app/actions/analytics";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { EmptyState } from "@/components/shared/empty-state";
 import { formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { UtmLink } from "@/types/database";
@@ -47,9 +48,14 @@ export function UtmHistory({ links }: { links: (UtmLink & { clientName: string |
 
   if (links.length === 0) {
     return (
-      <p className="text-muted-foreground py-8 text-center text-sm">
-        {t("components.analytics.utmNoCampaigns", "Todavía no armaste ninguna campaña UTM.")}
-      </p>
+      <EmptyState
+        icon={Link2}
+        title={t("components.analytics.utmNoCampaigns", "Todavía no armaste ninguna campaña UTM.")}
+        hint={t(
+          "components.analytics.utmNoCampaignsHint",
+          "Completá el formulario de arriba para generar tu primer link con parámetros UTM."
+        )}
+      />
     );
   }
 

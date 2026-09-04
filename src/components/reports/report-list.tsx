@@ -10,6 +10,7 @@ import { NOVA_AGENT, getAgentRole } from "@/lib/ai/agents";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 
@@ -53,11 +54,22 @@ export function ReportList({
 
   if (reports.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        {role === "admin"
-          ? t("components.reports.noReportsAdmin", "Todavía no generaste ningún reporte.")
-          : t("components.reports.noReportsClient", "Todavía no hay reportes publicados para tu cuenta.")}
-      </p>
+      <EmptyState
+        icon={FileText}
+        title={
+          role === "admin"
+            ? t("components.reports.noReportsAdmin", "Todavía no generaste ningún reporte.")
+            : t("components.reports.noReportsClient", "Todavía no hay reportes publicados para tu cuenta.")
+        }
+        hint={
+          role === "admin"
+            ? t(
+                "components.reports.noReportsAdminHint",
+                "Usá \"Generar reporte\" arriba — Claude arma el resumen a partir del contenido publicado y las métricas reales de la cuenta."
+              )
+            : undefined
+        }
+      />
     );
   }
 

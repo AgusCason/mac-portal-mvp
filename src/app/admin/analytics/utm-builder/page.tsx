@@ -3,6 +3,8 @@ import { getUtmLinks } from "@/lib/queries/analytics";
 import { getSelectableClients } from "@/lib/queries/content";
 import { UtmBuilderForm } from "@/components/analytics/utm-builder-form";
 import { UtmHistory } from "@/components/analytics/utm-history";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { History } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -25,10 +27,17 @@ export default async function AnalyticsUtmBuilderPage() {
 
       <UtmBuilderForm clients={clients} />
 
-      <div>
-        <p className="mb-2 text-sm font-medium text-muted-foreground">{t("pages.utmBuilder.historyLabel", "Historial")}</p>
-        <UtmHistory links={links} />
-      </div>
+      <Card className="glass-card">
+        <CardHeader className="flex-row items-center gap-3 space-y-0">
+          <div className="icon-chip">
+            <History className="size-4" strokeWidth={1.75} />
+          </div>
+          <CardTitle>{t("pages.utmBuilder.historyLabel", "Historial")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <UtmHistory links={links} />
+        </CardContent>
+      </Card>
     </div>
   );
 }

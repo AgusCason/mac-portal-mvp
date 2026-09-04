@@ -11,7 +11,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
-import { Paperclip, PieChart } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Paperclip, PieChart, Globe } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
 /** Mismo color que ya usa cada Badge de etapa (ver web-project-stage.ts),
@@ -85,9 +86,7 @@ export default async function AdminSitiosWebPage() {
       )}
 
       {projects.length === 0 && (
-        <p className="text-muted-foreground py-10 text-center text-sm">
-          {t("components.webProjects.noProjects", "Todavía no creaste ningún proyecto web.")}
-        </p>
+        <EmptyState icon={Globe} title={t("components.webProjects.noProjects", "Todavía no creaste ningún proyecto web.")} />
       )}
 
       <div className="space-y-2">

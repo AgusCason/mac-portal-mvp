@@ -5,10 +5,13 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
+import { ListChecks } from "lucide-react";
+
 import { updateMyTaskStatusAction } from "@/app/actions/tasks";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
 import { cn, formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { TaskWithRelations } from "@/lib/queries/tasks";
@@ -52,11 +55,7 @@ export function MyTasksList({ tasks }: { tasks: TaskWithRelations[] }) {
   }
 
   if (tasks.length === 0) {
-    return (
-      <p className="text-muted-foreground py-10 text-center text-sm">
-        {t("tasks.noTasks", "No tenés tareas asignadas por ahora.")}
-      </p>
-    );
+    return <EmptyState icon={ListChecks} title={t("tasks.noTasks", "No tenés tareas asignadas por ahora.")} />;
   }
 
   const today = new Date().toISOString().slice(0, 10);

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Loader2, ListChecks } from "lucide-react";
 
 import {
   updateTaskStatusAction,
@@ -31,6 +31,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TaskFormFields } from "@/components/tasks/task-form-fields";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { cn, formatDate } from "@/lib/utils";
 import type { TaskWithRelations } from "@/lib/queries/tasks";
@@ -155,9 +156,11 @@ export function TasksTable({
 
   if (tasks.length === 0) {
     return (
-      <p className="text-muted-foreground py-10 text-center text-sm">
-        {t("components.tasks.noTasksForFilters", "No hay tareas para estos filtros.")}
-      </p>
+      <EmptyState
+        icon={ListChecks}
+        title={t("components.tasks.noTasksForFilters", "No hay tareas para estos filtros.")}
+        hint={t("components.tasks.noTasksForFiltersHint", "Probá otro filtro o creá una tarea con \"Nueva Tarea\" arriba.")}
+      />
     );
   }
 

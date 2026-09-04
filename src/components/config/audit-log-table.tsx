@@ -1,8 +1,10 @@
 "use client";
 
 import type * as React from "react";
+import { History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { EmptyState } from "@/components/shared/empty-state";
 import { getAuditActionLabel } from "@/lib/audit-labels";
 import { formatDate, formatTime } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -27,11 +29,7 @@ export function AuditLogTable({ entries }: { entries: AuditLogEntryWithRelations
   const { t } = useLocale();
 
   if (entries.length === 0) {
-    return (
-      <p className="text-muted-foreground py-10 text-center text-sm">
-        {t("audit.emptyState", "Todavía no hay actividad registrada.")}
-      </p>
-    );
+    return <EmptyState icon={History} title={t("audit.emptyState", "Todavía no hay actividad registrada.")} />;
   }
 
   return (

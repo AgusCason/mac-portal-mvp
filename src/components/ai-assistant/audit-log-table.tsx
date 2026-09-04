@@ -1,5 +1,6 @@
 "use client";
 
+import { History } from "lucide-react";
 import type { AiAuditLog, AiActionStatus } from "@/types/database";
 import {
   Table,
@@ -10,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { Locale } from "@/lib/i18n/dictionary";
 
@@ -42,12 +44,13 @@ export function AuditLogTable({ entries }: { entries: AiAuditLog[] }) {
 
   if (entries.length === 0) {
     return (
-      <p className="text-muted-foreground text-sm">
-        {t(
+      <EmptyState
+        icon={History}
+        title={t(
           "components.aiAssistant.auditEmptyState",
           "Todavía no hay propuestas registradas en la auditoría del asistente."
         )}
-      </p>
+      />
     );
   }
 
