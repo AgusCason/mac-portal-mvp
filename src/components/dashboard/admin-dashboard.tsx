@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { UserCog, Clock, ArrowUpRight, TrendingDown, CircleCheck, Sparkles, Building2 } from "lucide-react";
+import { UserCog, ArrowUpRight, TrendingDown, CircleCheck, Sparkles, Building2 } from "lucide-react";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { ContentStatusChart } from "@/components/dashboard/content-status-chart";
 import { BillingHeroCard, INITIALS_GRADIENTS } from "@/components/dashboard/billing-hero-card";
 import { AccountsHeroCard } from "@/components/dashboard/accounts-hero-card";
+import { ProgressRing } from "@/components/shared/mini-charts";
 import {
   Card,
   CardContent,
@@ -63,6 +64,8 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
           title={t("components.dashboard.kpiMonthlyRevenue", "Facturación mensual")}
           viewAllHref="/admin/planes"
           viewAllLabel={t("components.dashboard.viewBilling", "Ver facturación")}
+          dailyCollections={data.dailyCollections}
+          dailyCollectionsLabel={t("components.dashboard.dailyCollectionsLabel", "Cobros de los últimos 14 días")}
         />
         <AccountsHeroCard
           activeClients={data.activeClients}
@@ -84,13 +87,26 @@ export function AdminDashboard({ data, profile }: { data: AdminDashboardData; pr
           icon={UserCog}
           tone="primary"
         />
-        <KpiCard
-          label={t("components.dashboard.kpiContentInProgress", "Contenido en curso")}
-          value={inFlight}
-          icon={Clock}
-          tone="warning"
-          hint={t("components.dashboard.kpiContentInProgressHint", "En edición + por aprobar + con cambios")}
-        />
+        {/* Mismo patrón "mini-tile" del mockup: ring con el valor adentro en
+            vez de icon-chip + número grande — acá el ring SÍ es una
+            proporción real (`inFlight` sobre el total del pipeline
+            editorial), nunca un % inventado. */}
+        <Card className="flex-row items-center gap-3.5 p-4">
+          <ProgressRing
+            value={inFlight}
+            max={data.totalContentItems}
+            displayValue={inFlight}
+            color="var(--warning)"
+          />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold tracking-tight">
+              {t("components.dashboard.kpiContentInProgress", "Contenido en curso")}
+            </p>
+            <p className="text-muted-foreground text-xs">
+              {t("components.dashboard.kpiContentInProgressHint", "En edición + por aprobar + con cambios")}
+            </p>
+          </div>
+        </Card>
       </div>
 
       {/* Fila: Contenido por estado (reemplaza a "Pendientes de aprobación

@@ -56,6 +56,16 @@ export interface AdminDashboardData {
    *  del mockup, calculado de verdad a partir de `created_at` (no tenemos
    *  snapshots históricos para un delta más preciso). */
   newClientsThisMonth: number;
+  /** Cobros reales por día (facturas `paid`, últimos 14 días, agrupadas por
+   *  `paid_at`) — para el sparkline de la card de Facturación. A propósito
+   *  NO es un histórico de "facturación mensual" (no tenemos snapshots de
+   *  `client_plans` en el tiempo para eso, ver `planMix`) sino cobros reales
+   *  día a día, que sí existen en `billing_invoices.paid_at`. */
+  dailyCollections: number[];
+  /** `inFlight` (contentByStatus: en_edición + por_aprobar + requiere
+   *  cambios) sobre el total de items del pipeline — proporción real para
+   *  el ring de "Contenido en curso" (nunca un % inventado). */
+  totalContentItems: number;
 }
 
 /** Datos agregados para el dashboard del Super Administrador. */
@@ -67,6 +77,10 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     1
   ).toISOString();
 
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 13);
+  fourteenDaysAgo.setHours(0, 0, 0, 0);
+
   const [
     { count: totalClients },
     { count: activeClients },
@@ -76,6 +90,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     { data: planRows },
     { data: metricAlertRows },
     { count: newClientsThisMonth },
+    { data: collectionRows },
   ] = await Promise.all([
     supabase.from("clients").select("id", { count: "exact", head: true }),
     supabase
@@ -106,12 +121,34 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
       .select("id", { count: "exact", head: true })
       .eq("status", "active")
       .gte("created_at", startOfMonth),
+    supabase
+      .from("billing_invoices")
+      .select("amount, paid_at")
+      .eq("status", "paid")
+      .gte("paid_at", fourteenDaysAgo.toISOString()),
   ]);
 
   const contentByStatus = emptyStatusMap();
   for (const row of contentRows ?? []) {
     const status = row.status as ContentStatus;
     contentByStatus[status] = (contentByStatus[status] ?? 0) + 1;
+  }
+  const totalContentItems = (contentRows ?? []).length;
+
+  // 14 baldes (uno por día, en orden), sumando el monto de cada factura
+  // pagada ese día — mismo criterio que `getReachTrend` en analytics.ts.
+  const dailyTotals = new Map<string, number>();
+  for (const row of collectionRows ?? []) {
+    if (!row.paid_at) continue;
+    const day = row.paid_at.slice(0, 10);
+    dailyTotals.set(day, (dailyTotals.get(day) ?? 0) + Number(row.amount));
+  }
+  const dailyCollections: number[] = [];
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(fourteenDaysAgo);
+    d.setDate(d.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    dailyCollections.push(dailyTotals.get(key) ?? 0);
   }
 
   const monthlyRevenue = (planRows ?? []).reduce((sum, row) => {
@@ -179,6 +216,8 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
     planMix,
     topClientsByRevenue,
     newClientsThisMonth: newClientsThisMonth ?? 0,
+    dailyCollections,
+    totalContentItems,
   };
 }
 

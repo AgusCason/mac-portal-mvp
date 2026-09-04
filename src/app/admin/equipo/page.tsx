@@ -1,9 +1,11 @@
+import { Layers } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { getEditors } from "@/lib/queries/team";
 import { getEditorAssignedClients } from "@/lib/queries/editor";
 import { NewEditorDialog } from "@/components/team/new-editor-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { INITIALS_GRADIENTS } from "@/components/dashboard/billing-hero-card";
+import { ProgressRing } from "@/components/shared/mini-charts";
 import { getInitials, cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -19,6 +21,8 @@ export default async function AdminEquipoPage() {
   const assignmentsByEditor = await Promise.all(
     editors.map((e) => getEditorAssignedClients(e.id))
   );
+  const editorsWithClients = assignmentsByEditor.filter((a) => a.length > 0).length;
+  const totalAssignedClients = assignmentsByEditor.reduce((sum, a) => sum + a.length, 0);
 
   return (
     <div className="space-y-4">
@@ -31,6 +35,35 @@ export default async function AdminEquipoPage() {
         </div>
         <NewEditorDialog />
       </div>
+
+      {editors.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Ring real: editores CON al menos un cliente asignado, sobre el
+              total de editores — nunca un % inventado. */}
+          <Card className="flex-row items-center gap-3.5 p-4">
+            <ProgressRing value={editorsWithClients} max={editors.length} color="var(--primary)" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold tracking-tight">
+                {t("pages.equipo.withClientsTitle", "Editores con clientes asignados")}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {editorsWithClients} {t("pages.equipo.ofTotal", "de")} {editors.length}
+              </p>
+            </div>
+          </Card>
+          <Card className="flex-row items-center gap-3.5 p-4">
+            <div className="icon-chip !size-14">
+              <Layers className="size-5" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold tracking-tight">
+                {t("pages.equipo.totalAssignmentsTitle", "Asignaciones activas")}
+              </p>
+              <p className="tabular-nums text-2xl font-bold tracking-tighter">{totalAssignedClients}</p>
+            </div>
+          </Card>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {editors.map((editor, i) => {

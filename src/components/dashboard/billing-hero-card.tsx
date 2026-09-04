@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Wallet, ArrowUpRight } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Sparkline } from "@/components/shared/mini-charts";
 import { getInitials, formatCurrency, cn } from "@/lib/utils";
 
 /** Compartido con `admin-dashboard.tsx` (avatares de "Cuentas recientes") —
@@ -24,13 +25,21 @@ export function BillingHeroCard({
   title,
   viewAllHref,
   viewAllLabel,
+  dailyCollections,
+  dailyCollectionsLabel,
 }: {
   monthlyRevenue: number;
   topClients: { id: string; name: string; plan_name: string; price: number }[];
   title: string;
   viewAllHref: string;
   viewAllLabel: string;
+  /** Cobros reales por día (últimos 14 días) — opcional: si no hay ningún
+   *  cobro registrado en la ventana, no tiene sentido mostrar una línea
+   *  siempre en cero. */
+  dailyCollections?: number[];
+  dailyCollectionsLabel?: string;
 }) {
+  const hasCollectionsTrend = (dailyCollections ?? []).some((v) => v > 0);
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
@@ -49,9 +58,19 @@ export function BillingHeroCard({
         </Link>
       </CardHeader>
       <CardContent className="space-y-5">
-        <p className="tabular-nums text-4xl font-bold tracking-tighter">
-          {formatCurrency(monthlyRevenue)}
-        </p>
+        <div>
+          <p className="tabular-nums text-4xl font-bold tracking-tighter">
+            {formatCurrency(monthlyRevenue)}
+          </p>
+          {hasCollectionsTrend && (
+            <>
+              <Sparkline points={dailyCollections!} className="mt-3" />
+              {dailyCollectionsLabel && (
+                <p className="text-muted-foreground mt-1 text-[10.5px]">{dailyCollectionsLabel}</p>
+              )}
+            </>
+          )}
+        </div>
         <div className="flex flex-col gap-2">
           {topClients.length === 0 && (
             <p className="text-muted-foreground text-sm">—</p>

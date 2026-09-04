@@ -4,6 +4,7 @@ import { getContacts } from "@/lib/queries/contacts";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { NewClientDialog } from "@/components/clients/new-client-dialog";
 import { AccountsView } from "@/components/clients/accounts-view";
+import { AccountsStatusCard } from "@/components/clients/accounts-status-card";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -48,6 +49,18 @@ export default async function AdminClientesPage({
         </div>
         <NewClientDialog plans={plans ?? []} contacts={contacts} initialContactId={fromContact} />
       </div>
+
+      <AccountsStatusCard
+        accounts={accounts}
+        title={t("pages.clientes.statusCardTitle", "Cuentas por estado")}
+        statusLabels={{
+          active: t("pages.clientes.statusActive", "Activas"),
+          paused: t("pages.clientes.statusPaused", "Pausadas"),
+          churned: t("pages.clientes.statusChurned", "Perdidas"),
+        }}
+        centerLabel={t("pages.clientes.statusCenterLabel", "cuentas")}
+        planMixEmptyLabel={t("pages.clientes.planMixEmpty", "Todavía no hay planes activos.")}
+      />
 
       <AccountsView accounts={accounts} />
     </div>
