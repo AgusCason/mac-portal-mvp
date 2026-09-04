@@ -4,10 +4,11 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Save } from "lucide-react";
+import { Sparkles, Loader2, Save, Users } from "lucide-react";
 
 import { saveBrandVoiceAction, suggestBrandVoiceFieldAction } from "@/app/actions/brand-voice";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -207,9 +208,10 @@ export function BrandVoiceView({
       </div>
 
       {!selectedClientId ? (
-        <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-          {t("components.brandVoice.chooseAccountEmpty", "Elegí una cuenta para ver o editar su Brand Voice.")}
-        </p>
+        <EmptyState
+          icon={Users}
+          title={t("components.brandVoice.chooseAccountEmpty", "Elegí una cuenta para ver o editar su Brand Voice.")}
+        />
       ) : (
         <BrandVoiceForm
           key={selectedClientId}

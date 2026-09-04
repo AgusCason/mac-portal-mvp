@@ -1,12 +1,13 @@
 "use client";
 
-import { ImageOff } from "lucide-react";
+import { ImageOff, CalendarDays } from "lucide-react";
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
 import { STATUS_META, getStatusLabel } from "@/components/dashboard/content-status-badge";
 import { CATEGORY_META, getCategoryLabel } from "@/lib/content-category-meta";
 import { NETWORK_META } from "@/lib/network-meta";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   Table,
   TableBody,
@@ -30,9 +31,10 @@ export function PlannerList({ items }: { items: ContentItemWithClient[] }) {
 
   if (sorted.length === 0) {
     return (
-      <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-        {t("components.planner.noPiecesThisMonth", "No hay piezas para este mes.")}
-      </p>
+      <EmptyState
+        icon={CalendarDays}
+        title={t("components.planner.noPiecesThisMonth", "No hay piezas para este mes.")}
+      />
     );
   }
 

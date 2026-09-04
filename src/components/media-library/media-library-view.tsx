@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { NewFolderDialog } from "@/components/media-library/new-folder-dialog";
 import { UploadAssetDialog } from "@/components/media-library/upload-asset-dialog";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { MediaAssetWithRelations, MediaFolderWithCount } from "@/lib/queries/media-library";
 
@@ -182,11 +183,14 @@ export function MediaLibraryView({
           <UploadAssetDialog folders={folders} clients={clients} currentFolderId={selectedFolder} />
         </div>
         {filteredAssets.length === 0 ? (
-          <div className="text-muted-foreground rounded-xl border border-dashed py-12 text-center text-sm">
-            {selectedFolder
-              ? t("components.mediaLibrary.noFilesInFolder", "No hay archivos en esta carpeta.")
-              : t("components.mediaLibrary.noFilesYet", "No hay archivos todavía.")}
-          </div>
+          <EmptyState
+            icon={ImageIcon}
+            title={
+              selectedFolder
+                ? t("components.mediaLibrary.noFilesInFolder", "No hay archivos en esta carpeta.")
+                : t("components.mediaLibrary.noFilesYet", "No hay archivos todavía.")
+            }
+          />
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {filteredAssets.map((asset) => (

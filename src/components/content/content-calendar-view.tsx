@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Kanban, CalendarDays, List, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
+import { Kanban, CalendarDays, List, ChevronLeft, ChevronRight, Search, SearchX, SlidersHorizontal } from "lucide-react";
 
 import type { ContentItemWithClient } from "@/lib/queries/content";
 import type { UserRole } from "@/types/database";
@@ -11,6 +11,7 @@ import { PlannerCalendar } from "@/components/social-media/planner-calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   Select,
   SelectContent,
@@ -232,9 +233,10 @@ export function ContentCalendarView({
       </div>
 
       {filteredItems.length === 0 ? (
-        <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-          {t("components.content.noMatchFilter", "No hay piezas que coincidan con el filtro.")}
-        </p>
+        <EmptyState
+          icon={SearchX}
+          title={t("components.content.noMatchFilter", "No hay piezas que coincidan con el filtro.")}
+        />
       ) : (
         <>
           {view === "panel" && <ContentBoard items={filteredItems} role={role} />}

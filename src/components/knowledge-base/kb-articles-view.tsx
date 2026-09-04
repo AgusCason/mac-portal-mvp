@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Search, Star, Pin, Pencil, Trash2, Loader2, Eye } from "lucide-react";
+import { Search, Star, Pin, Pencil, Trash2, Loader2, Eye, BookOpen } from "lucide-react";
 
 import {
   deleteKbArticleAction,
@@ -14,6 +14,7 @@ import {
 } from "@/app/actions/knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/shared/empty-state";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -202,11 +203,14 @@ export function KbArticlesView({ articles }: { articles: KbArticleWithFavorite[]
           <ArticleRow key={article.id} article={article} />
         ))}
         {filtered.length === 0 && (
-          <div className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-            {articles.length === 0
-              ? t("components.knowledgeBase.noArticles", "Todavía no hay artículos.")
-              : t("components.knowledgeBase.noResults", "Sin resultados.")}
-          </div>
+          <EmptyState
+            icon={articles.length === 0 ? BookOpen : Search}
+            title={
+              articles.length === 0
+                ? t("components.knowledgeBase.noArticles", "Todavía no hay artículos.")
+                : t("components.knowledgeBase.noResults", "Sin resultados.")
+            }
+          />
         )}
       </div>
     </div>

@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { ImageOff, Kanban, CalendarDays, List, Search, SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
+import { ImageOff, Kanban, CalendarDays, List, Search, SearchX, Send, LayoutGrid, SlidersHorizontal, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -262,9 +263,10 @@ export function PlannerView({
         />
 
         {filteredItems.length === 0 ? (
-          <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-            {t("components.planner.noMatchFilter", "No hay piezas que coincidan con el filtro.")}
-          </p>
+          <EmptyState
+            icon={SearchX}
+            title={t("components.planner.noMatchFilter", "No hay piezas que coincidan con el filtro.")}
+          />
         ) : (
           <>
             {view === "tablero" && <PlannerBoard items={filteredItems} />}
@@ -289,9 +291,10 @@ export function PlannerView({
       <TabsContent value="publicados">
         <div className="space-y-2">
           {published.length === 0 && (
-            <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-              {t("components.planner.noPublished", "Todavía no hay piezas publicadas.")}
-            </p>
+            <EmptyState
+              icon={Send}
+              title={t("components.planner.noPublished", "Todavía no hay piezas publicadas.")}
+            />
           )}
           {published.map((item) => {
             const network = NETWORK_META[item.network];
@@ -314,9 +317,10 @@ export function PlannerView({
 
       <TabsContent value="grilla-ig">
         {igGrid.length === 0 ? (
-          <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-            {t("components.planner.noIgFeed", "No hay piezas de Instagram Feed todavía.")}
-          </p>
+          <EmptyState
+            icon={LayoutGrid}
+            title={t("components.planner.noIgFeed", "No hay piezas de Instagram Feed todavía.")}
+          />
         ) : (
           <div className="grid grid-cols-3 gap-1 sm:grid-cols-4 lg:grid-cols-6">
             {igGrid.map((item) => (

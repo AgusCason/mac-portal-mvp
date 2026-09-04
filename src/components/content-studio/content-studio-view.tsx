@@ -4,10 +4,11 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2, Loader2 } from "lucide-react";
+import { Pencil, Trash2, Loader2, Lightbulb } from "lucide-react";
 
 import { deleteContentIdeaAction, updateContentIdeaAction } from "@/app/actions/content-ideas";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/empty-state";
 import {
   Dialog,
   DialogContent,
@@ -133,9 +134,10 @@ function IdeaGrid({
         <NewIdeaDialog clients={clients} defaultType={type} />
       </div>
       {filtered.length === 0 ? (
-        <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-          {t("components.contentStudio.emptyIdeas", "Todavía no hay nada acá.")}
-        </p>
+        <EmptyState
+          icon={Lightbulb}
+          title={t("components.contentStudio.emptyIdeas", "Todavía no hay nada acá.")}
+        />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((idea) => (
