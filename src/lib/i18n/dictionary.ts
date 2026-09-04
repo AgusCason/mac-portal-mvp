@@ -244,6 +244,7 @@ const es = {
     statusEnCurso: "En curso",
     statusCompletada: "Completada",
     statusCancelada: "Cancelada",
+    statusCenterLabel: "tareas",
   },
   agents: {
     max: {
@@ -1401,6 +1402,8 @@ const es = {
       account: "Cuenta",
       pageDescription: "Engagements y proyectos del workspace.",
       noProjects: "Todavía no creaste ningún proyecto.",
+      statusOverviewTitle: "Proyectos por estado",
+      statusCenterLabel: "proyectos",
     },
     sitiosWeb: {
       description: "Proyectos de diseño y desarrollo web por cliente.",
@@ -1776,6 +1779,7 @@ const en: typeof es = {
     statusEnCurso: "In progress",
     statusCompletada: "Completed",
     statusCancelada: "Cancelled",
+    statusCenterLabel: "tasks",
   },
   agents: {
     max: {
@@ -2931,6 +2935,8 @@ const en: typeof es = {
       account: "Account",
       pageDescription: "Workspace engagements and projects.",
       noProjects: "You haven't created any projects yet.",
+      statusOverviewTitle: "Projects by status",
+      statusCenterLabel: "projects",
     },
     sitiosWeb: {
       description: "Client website design and development projects.",
