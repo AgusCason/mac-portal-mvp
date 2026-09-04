@@ -1,4 +1,4 @@
-import { Camera, Music2, PlaySquare, Radar } from "lucide-react";
+import { Camera, Music2, PlaySquare, Radar, Users, Eye, Zap } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { getSocialAccountsOverview } from "@/lib/queries/social";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -13,6 +13,14 @@ export default async function AdminRedesPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
   const accounts = await getSocialAccountsOverview();
+
+  const withMetrics = accounts.filter((a) => a.latest !== null);
+  const totalReach = withMetrics.reduce((sum, a) => sum + (a.latest?.reach ?? 0), 0);
+  const totalFollowers = withMetrics.reduce((sum, a) => sum + (a.latest?.followers ?? 0), 0);
+  const avgEngagement =
+    withMetrics.length > 0
+      ? withMetrics.reduce((sum, a) => sum + Number(a.latest?.engagement_rate ?? 0), 0) / withMetrics.length
+      : 0;
 
   return (
     <div className="space-y-4">
@@ -49,6 +57,44 @@ export default async function AdminRedesPage() {
             </Button>
           </CardContent>
         </Card>
+      )}
+
+      {withMetrics.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Card className="glass-card flex-row items-center gap-3.5 p-4">
+            <div className="icon-chip">
+              <Eye className="size-4" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs font-medium uppercase">
+                {t("pages.redes.totalReach", "Alcance total")}
+              </p>
+              <p className="text-xl font-semibold tabular-nums">{totalReach.toLocaleString("es-AR")}</p>
+            </div>
+          </Card>
+          <Card className="glass-card flex-row items-center gap-3.5 p-4">
+            <div className="icon-chip">
+              <Users className="size-4" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs font-medium uppercase">
+                {t("pages.redes.totalFollowers", "Seguidores totales")}
+              </p>
+              <p className="text-xl font-semibold tabular-nums">{totalFollowers.toLocaleString("es-AR")}</p>
+            </div>
+          </Card>
+          <Card className="glass-card flex-row items-center gap-3.5 p-4">
+            <div className="icon-chip">
+              <Zap className="size-4" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs font-medium uppercase">
+                {t("pages.redes.avgEngagement", "Engagement promedio")}
+              </p>
+              <p className="text-xl font-semibold tabular-nums">{avgEngagement.toFixed(1)}%</p>
+            </div>
+          </Card>
+        </div>
       )}
 
       {accounts.length > 0 && (

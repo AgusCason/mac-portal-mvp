@@ -1371,6 +1371,9 @@ const es = {
       connectHint:
         "Conectá Instagram, TikTok o YouTube desde el detalle de cada cliente para ver alcance, reproducciones, engagement y crecimiento de seguidores acá.",
       connectInstagram: "Conectar Instagram",
+      totalReach: "Alcance total",
+      totalFollowers: "Seguidores totales",
+      avgEngagement: "Engagement promedio",
     },
     equipo: {
       noName: "Sin nombre",
@@ -1523,6 +1526,9 @@ const es = {
       upcoming: "Próximas publicaciones",
       noScheduled: "No hay piezas programadas.",
       byStatus: "Piezas por estado",
+      byStatusDesc: "Distribución de piezas del módulo por estado.",
+      byPlatformTitle: "Cuentas conectadas por plataforma",
+      byPlatformCenterLabel: "cuentas",
       noPieces: "Todavía no hay piezas cargadas.",
       shortcutInsightsDesc: "Métricas y monitoreo por cuenta",
       shortcutPlannerDesc: "Calendario y kanban de piezas",
@@ -2917,6 +2923,9 @@ const en: typeof es = {
       connectHint:
         "Connect Instagram, TikTok, or YouTube from each client's detail page to see reach, plays, engagement, and follower growth here.",
       connectInstagram: "Connect Instagram",
+      totalReach: "Total reach",
+      totalFollowers: "Total followers",
+      avgEngagement: "Average engagement",
     },
     equipo: {
       noName: "No name",
@@ -3069,6 +3078,9 @@ const en: typeof es = {
       upcoming: "Upcoming publishes",
       noScheduled: "No scheduled pieces.",
       byStatus: "Pieces by status",
+      byStatusDesc: "Distribution of this module's pieces by status.",
+      byPlatformTitle: "Connected accounts by platform",
+      byPlatformCenterLabel: "accounts",
       noPieces: "No pieces loaded yet.",
       shortcutInsightsDesc: "Metrics and monitoring per account",
       shortcutPlannerDesc: "Calendar and kanban of pieces",

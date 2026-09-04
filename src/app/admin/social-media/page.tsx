@@ -1,12 +1,34 @@
 import Link from "next/link";
-import { CalendarClock, Radar, Compass, Sparkles, Swords, LayoutGrid } from "lucide-react";
+import { CalendarClock, Radar, Compass, Sparkles, Swords, LayoutGrid, Camera, Music2, PlaySquare } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { getSocialMediaOverview } from "@/lib/queries/social-media";
-import { STATUS_META, getStatusLabel } from "@/components/dashboard/content-status-badge";
+import { ContentStatusChart } from "@/components/dashboard/content-status-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { DonutMini } from "@/components/shared/mini-charts";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
+import type { ContentStatus } from "@/types/database";
+
+const CONTENT_STATUS_ORDER: ContentStatus[] = [
+  "borrador",
+  "en_edicion",
+  "por_aprobar",
+  "requiere_cambios",
+  "aprobado",
+  "programado",
+  "publicado",
+];
+
+// lucide-react v1 no incluye íconos de marca (Instagram/TikTok/YouTube) — íconos genéricos,
+// mismo criterio que ya usa /admin/redes.
+const PLATFORM_ICON = { instagram: Camera, tiktok: Music2, youtube: PlaySquare } as const;
+const PLATFORM_LABEL: Record<string, string> = { instagram: "Instagram", tiktok: "TikTok", youtube: "YouTube" };
+const PLATFORM_COLOR: Record<string, string> = {
+  instagram: "var(--info)",
+  tiktok: "var(--warning)",
+  youtube: "var(--destructive)",
+};
+const PLATFORM_ORDER = ["instagram", "tiktok", "youtube"];
 
 /**
  * Social Media > Overview — resumen ejecutivo del módulo, equivalente a
@@ -16,6 +38,11 @@ export default async function AdminSocialMediaPage() {
   const profile = await requireAdmin();
   const t = getT(profile.language);
   const overview = await getSocialMediaOverview();
+
+  const contentByStatus = Object.fromEntries(
+    CONTENT_STATUS_ORDER.map((s) => [s, overview.byStatus[s] ?? 0])
+  ) as Record<ContentStatus, number>;
+  const platformEntries = PLATFORM_ORDER.filter((p) => (overview.accountsByPlatform[p] ?? 0) > 0);
 
   const SHORTCUTS = [
     { label: t("nav.socialMedia.insights", "Insights"), href: "/admin/redes", icon: Radar, description: t("pages.socialOverview.shortcutInsightsDesc", "Métricas y monitoreo por cuenta") },
@@ -86,25 +113,60 @@ export default async function AdminSocialMediaPage() {
           </CardContent>
         </Card>
 
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle className="text-sm">{t("pages.socialOverview.byStatus", "Piezas por estado")}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            {Object.entries(overview.byStatus).map(([status, count]) => {
-              const meta = STATUS_META[status as keyof typeof STATUS_META];
-              return (
-                <Badge key={status} variant={meta?.variant ?? "secondary"}>
-                  {meta ? getStatusLabel(status as keyof typeof STATUS_META, t) : status}: {count}
-                </Badge>
-              );
-            })}
-            {Object.keys(overview.byStatus).length === 0 && (
+        {overview.totalPieces === 0 && (
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="text-sm">{t("pages.socialOverview.byStatus", "Piezas por estado")}</CardTitle>
+            </CardHeader>
+            <CardContent>
               <p className="text-muted-foreground text-sm">{t("pages.socialOverview.noPieces", "Todavía no hay piezas cargadas.")}</p>
-            )}
+            </CardContent>
+          </Card>
+        )}
+        {overview.totalPieces > 0 && (
+          <ContentStatusChart
+            contentByStatus={contentByStatus}
+            t={t}
+            title={t("pages.socialOverview.byStatus", "Piezas por estado")}
+            description={t("pages.socialOverview.byStatusDesc", "Distribución de piezas del módulo por estado.")}
+          />
+        )}
+      </div>
+
+      {platformEntries.length > 0 && (
+        <Card className="glass-card">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <div className="icon-chip">
+              <Radar className="size-4" strokeWidth={1.75} />
+            </div>
+            <CardTitle>{t("pages.socialOverview.byPlatformTitle", "Cuentas conectadas por plataforma")}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-5 sm:flex-row sm:justify-around">
+            <DonutMini
+              segments={platformEntries.map((platform) => ({
+                label: PLATFORM_LABEL[platform] ?? platform,
+                value: overview.accountsByPlatform[platform] ?? 0,
+                color: PLATFORM_COLOR[platform] ?? "var(--muted-foreground)",
+              }))}
+              centerValue={overview.connectedAccounts}
+              centerLabel={t("pages.socialOverview.byPlatformCenterLabel", "cuentas")}
+            />
+            <div className="flex w-full flex-wrap justify-center gap-x-5 gap-y-2 sm:max-w-sm">
+              {platformEntries.map((platform) => {
+                const Icon = PLATFORM_ICON[platform as keyof typeof PLATFORM_ICON];
+                const count = overview.accountsByPlatform[platform] ?? 0;
+                return (
+                  <div key={platform} className="flex items-center gap-2 text-xs">
+                    <Icon className="size-3.5" style={{ color: PLATFORM_COLOR[platform] }} />
+                    <span className="text-muted-foreground">{PLATFORM_LABEL[platform] ?? platform}</span>
+                    <strong className="tabular-nums">{count}</strong>
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {SHORTCUTS.map((s) => (
