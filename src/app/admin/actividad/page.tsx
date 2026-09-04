@@ -4,7 +4,8 @@ import { requireAdmin } from "@/lib/auth";
 import { getRecentActivity } from "@/lib/queries/activity";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, History } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { getT, resolveLocale } from "@/lib/i18n/dictionary";
 
 const DATE_FNS_LOCALE = { es, en: enUS } as const;
@@ -73,9 +74,7 @@ export default async function AdminActividadPage() {
 
       <div className="flex flex-col gap-2">
         {events.length === 0 && (
-          <p className="text-muted-foreground rounded-xl border border-dashed py-8 text-center text-sm">
-            {t("pages.actividad.emptyState", "Todavía no hay actividad registrada.")}
-          </p>
+          <EmptyState icon={History} title={t("pages.actividad.emptyState", "Todavía no hay actividad registrada.")} />
         )}
         {events.map((event) => (
           <div key={event.id} className="glass-card flex items-start justify-between gap-3 rounded-xl px-4 py-3">

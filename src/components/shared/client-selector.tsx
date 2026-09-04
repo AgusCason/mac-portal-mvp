@@ -32,7 +32,7 @@ export function ClientSelector({
 
   if (clients.length === 0) {
     return (
-      <p className="text-muted-foreground rounded-lg border border-dashed border-border px-3 py-2 text-sm">
+      <p className="text-muted-foreground bg-accent/40 rounded-lg px-3 py-2 text-sm">
         {t("components.shared.noClientsAssigned", "Todavía no tenés clientes asignados.")}
       </p>
     );
