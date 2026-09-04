@@ -1455,6 +1455,7 @@ const es = {
     },
     socialCompetidores: {
       description: "Perfiles de la competencia y benchmark de métricas públicas.",
+      byFollowersTitle: "Competidores por seguidores",
     },
     analyticsEnvios: {
       empty: "Todavía no se publicó ningún reporte",
@@ -3023,6 +3024,7 @@ const en: typeof es = {
     },
     socialCompetidores: {
       description: "Competitor profiles and public metrics benchmark.",
+      byFollowersTitle: "Competitors by followers",
     },
     analyticsEnvios: {
       empty: "No report has been published yet",
