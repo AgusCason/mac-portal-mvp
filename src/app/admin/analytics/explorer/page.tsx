@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
-import type { CsvColumn } from "@/lib/export-csv";
+import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 import type { SocialPlatform } from "@/types/database";
@@ -59,6 +59,7 @@ export default async function AnalyticsExplorerPage({
       days: dias ? Number(dias) : undefined,
     }),
   ]);
+  const explorerCsv = buildCsv(EXPLORER_CSV_COLUMNS, rows);
 
   return (
     <div className="space-y-4">
@@ -73,7 +74,7 @@ export default async function AnalyticsExplorerPage({
             {t("pages.analyticsExplorer.rowsSuffix", "de métricas diarias.")}
           </p>
         </div>
-        <ExportCsvButton filename="metricas.csv" columns={EXPLORER_CSV_COLUMNS} rows={rows} />
+        <ExportCsvButton filename="metricas.csv" csv={explorerCsv} disabled={rows.length === 0} />
       </div>
 
       <ExplorerFilters clients={clients} />

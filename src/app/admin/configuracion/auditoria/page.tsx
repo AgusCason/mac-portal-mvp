@@ -4,7 +4,7 @@ import { getAllProfilesLite } from "@/lib/queries/team";
 import { AuditLogTable } from "@/components/config/audit-log-table";
 import { AuditLogFiltersBar, type AuditLogUserOption } from "@/components/config/audit-log-filters";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
-import type { CsvColumn } from "@/lib/export-csv";
+import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { AUDIT_ACTION_LABELS } from "@/lib/audit-labels";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
@@ -50,6 +50,7 @@ export default async function AuditoriaPage({
     id: p.id,
     label: p.full_name || p.email,
   }));
+  const auditCsv = buildCsv(AUDIT_CSV_COLUMNS, entries);
 
   return (
     <div className="space-y-4">
@@ -65,7 +66,7 @@ export default async function AuditoriaPage({
             )}
           </p>
         </div>
-        <ExportCsvButton filename="auditoria.csv" columns={AUDIT_CSV_COLUMNS} rows={entries} />
+        <ExportCsvButton filename="auditoria.csv" csv={auditCsv} disabled={entries.length === 0} />
       </div>
 
       <AuditLogFiltersBar users={userOptions} />

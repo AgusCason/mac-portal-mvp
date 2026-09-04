@@ -3,7 +3,7 @@ import { getVaultCredentials, type VaultCredentialWithClient } from "@/lib/queri
 import { getClients } from "@/lib/queries/clients";
 import { VaultList } from "@/components/settings/vault-list";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
-import type { CsvColumn } from "@/lib/export-csv";
+import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
@@ -24,6 +24,7 @@ export default async function BovedaPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
   const [credentials, clients] = await Promise.all([getVaultCredentials(), getClients()]);
+  const vaultCsv = buildCsv(VAULT_CSV_COLUMNS, credentials);
 
   return (
     <div className="space-y-4">
@@ -47,7 +48,7 @@ export default async function BovedaPage() {
               )}
             </CardDescription>
           </div>
-          <ExportCsvButton filename="boveda-metadata.csv" columns={VAULT_CSV_COLUMNS} rows={credentials} />
+          <ExportCsvButton filename="boveda-metadata.csv" csv={vaultCsv} disabled={credentials.length === 0} />
         </CardHeader>
         <CardContent>
           <VaultList

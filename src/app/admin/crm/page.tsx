@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getCrmLeads } from "@/lib/queries/crm";
 import { CrmBoard } from "@/components/crm/crm-board";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
-import type { CsvColumn } from "@/lib/export-csv";
+import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import type { CrmLead } from "@/types/database";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -29,6 +29,7 @@ export default async function CrmPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
   const leads = await getCrmLeads();
+  const crmCsv = buildCsv(CRM_CSV_COLUMNS, leads);
 
   return (
     <div className="space-y-4">
@@ -42,7 +43,7 @@ export default async function CrmPage() {
             )}
           </p>
         </div>
-        <ExportCsvButton filename="crm.csv" columns={CRM_CSV_COLUMNS} rows={leads} />
+        <ExportCsvButton filename="crm.csv" csv={crmCsv} disabled={leads.length === 0} />
       </div>
       <CrmBoard leads={leads} />
     </div>

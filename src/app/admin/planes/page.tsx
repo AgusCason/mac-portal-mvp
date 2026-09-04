@@ -9,7 +9,7 @@ import { InvoiceList } from "@/components/billing/invoice-list";
 import { BillingDashboard } from "@/components/billing/billing-dashboard";
 import { PaymentMethodsPanel } from "@/components/billing/payment-methods-panel";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
-import type { CsvColumn } from "@/lib/export-csv";
+import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -53,6 +53,7 @@ export default async function AdminPlanesPage() {
   const billingAnalytics = (currenciesInUse.length > 0 ? currenciesInUse : ["ARS"]).map((c) =>
     computeBillingAnalytics(invoices, c)
   );
+  const invoicesCsv = buildCsv(INVOICE_CSV_COLUMNS, invoices);
 
   return (
     <div className="space-y-4">
@@ -125,7 +126,7 @@ export default async function AdminPlanesPage() {
           </div>
 
           <div className="flex items-center justify-end gap-2">
-            <ExportCsvButton filename="facturas.csv" columns={INVOICE_CSV_COLUMNS} rows={invoices} />
+            <ExportCsvButton filename="facturas.csv" csv={invoicesCsv} disabled={invoices.length === 0} />
             <NewInvoiceDialog clients={clients} plans={planOptions} />
           </div>
 

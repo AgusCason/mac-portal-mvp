@@ -4,7 +4,7 @@ import { getSelectableClients } from "@/lib/queries/content";
 import { ContractList } from "@/components/contracts/contract-list";
 import { NewContractDialog } from "@/components/contracts/new-contract-dialog";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
-import type { CsvColumn } from "@/lib/export-csv";
+import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -26,6 +26,7 @@ export default async function AdminContratosPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
   const [contracts, clients] = await Promise.all([getContracts(), getSelectableClients()]);
+  const contractsCsv = buildCsv(CONTRACT_CSV_COLUMNS, contracts);
 
   return (
     <div className="space-y-4">
@@ -37,7 +38,7 @@ export default async function AdminContratosPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportCsvButton filename="contratos.csv" columns={CONTRACT_CSV_COLUMNS} rows={contracts} />
+          <ExportCsvButton filename="contratos.csv" csv={contractsCsv} disabled={contracts.length === 0} />
           <NewContractDialog clients={clients} />
         </div>
       </div>

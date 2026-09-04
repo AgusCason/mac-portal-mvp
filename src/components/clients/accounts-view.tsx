@@ -20,7 +20,7 @@ import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { cn, formatDate } from "@/lib/utils";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { AccountCardData } from "@/lib/queries/clients";
-import type { CsvColumn } from "@/lib/export-csv";
+import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 
 type StatusFilter = "active" | "all";
 type ViewMode = "grid" | "table";
@@ -67,6 +67,7 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
     { header: t("components.clients.colTeam", "Equipo"), value: (a) => a.team.map((m) => m.name).join(" / ") },
     { header: t("components.clients.colSignedUp", "Alta"), value: (a) => formatDate(a.createdAt) },
   ];
+  const clientsCsv = buildCsv(csvColumns, filtered);
 
   return (
     <div className="space-y-4">
@@ -118,8 +119,8 @@ export function AccountsView({ accounts }: { accounts: AccountCardData[] }) {
         <ExportCsvButton
           className="ml-auto h-8"
           filename="clientes.csv"
-          columns={csvColumns}
-          rows={filtered}
+          csv={clientsCsv}
+          disabled={filtered.length === 0}
         />
 
         <div className="bg-accent/60 border-border inline-flex items-center gap-0.5 rounded-full border p-0.5">
