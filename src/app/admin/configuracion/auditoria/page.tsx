@@ -5,7 +5,9 @@ import { AuditLogTable } from "@/components/config/audit-log-table";
 import { AuditLogFiltersBar, type AuditLogUserOption } from "@/components/config/audit-log-filters";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
-import { AUDIT_ACTION_LABELS } from "@/lib/audit-labels";
+import { AUDIT_ACTION_LABELS, getAuditActionLabel } from "@/lib/audit-labels";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -52,6 +54,15 @@ export default async function AuditoriaPage({
   }));
   const auditCsv = buildCsv(AUDIT_CSV_COLUMNS, entries);
 
+  const actionCounts = new Map<string, number>();
+  for (const entry of entries) {
+    actionCounts.set(entry.action_type, (actionCounts.get(entry.action_type) ?? 0) + 1);
+  }
+  const topActions = Array.from(actionCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+  const maxActionCount = Math.max(1, ...topActions.map(([, count]) => count));
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-2">
@@ -68,6 +79,33 @@ export default async function AuditoriaPage({
         </div>
         <ExportCsvButton filename="auditoria.csv" csv={auditCsv} disabled={entries.length === 0} />
       </div>
+
+      {topActions.length > 0 && (
+        <Card className="glass-card">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <div className="icon-chip">
+              <BarChart3 className="size-4" strokeWidth={1.75} />
+            </div>
+            <CardTitle>{t("audit.byActionTitle", "Acciones más frecuentes")}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2.5">
+            {topActions.map(([actionType, count]) => {
+              const widthPct = Math.max(4, Math.round((count / maxActionCount) * 100));
+              return (
+                <div key={actionType} className="flex items-center gap-3">
+                  <span className="w-52 shrink-0 truncate text-[11.5px] font-semibold">
+                    {getAuditActionLabel(actionType, t)}
+                  </span>
+                  <div className="bg-accent/60 h-2 flex-1 overflow-hidden rounded-full">
+                    <span className="bg-primary/80 block h-full rounded-full" style={{ width: `${widthPct}%` }} />
+                  </div>
+                  <span className="w-6 shrink-0 text-right text-xs font-bold tabular-nums">{count}</span>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       <AuditLogFiltersBar users={userOptions} />
       <AuditLogTable entries={entries} />

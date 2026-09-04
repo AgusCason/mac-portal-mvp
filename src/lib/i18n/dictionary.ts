@@ -275,6 +275,7 @@ const es = {
       securityBlocked: "Bloqueo automático temporal",
       securityAlert: "Alerta de monitoreo de seguridad",
     },
+    byActionTitle: "Acciones más frecuentes",
     colDate: "Fecha",
     colWho: "Quién",
     colAction: "Acción",
@@ -1276,6 +1277,13 @@ const es = {
       title: "CRM",
       description:
         "Pipeline de prospectos comerciales — cuando ganás uno, dalo de alta como Cliente desde Clientes para que arranque a operar.",
+      openPipelineValue: "Pipeline abierto",
+      openLeads: "Leads activos",
+      winRate: "Tasa de conversión",
+    },
+    contratos: {
+      signedRatioTitle: "Firmados sobre el total",
+      ofTotal: "de",
     },
     adminReportes: {
       title: "Reportes con IA",
@@ -1829,6 +1837,7 @@ const en: typeof es = {
       securityBlocked: "Automatic temporary block",
       securityAlert: "Security monitoring alert",
     },
+    byActionTitle: "Most frequent actions",
     colDate: "Date",
     colWho: "Who",
     colAction: "Action",
@@ -2828,6 +2837,13 @@ const en: typeof es = {
       title: "CRM",
       description:
         "Pipeline of commercial prospects — when you win one, add it as a Client from Accounts so it can start operating.",
+      openPipelineValue: "Open pipeline",
+      openLeads: "Active leads",
+      winRate: "Win rate",
+    },
+    contratos: {
+      signedRatioTitle: "Signed out of the total",
+      ofTotal: "of",
     },
     adminReportes: {
       title: "AI Reports",

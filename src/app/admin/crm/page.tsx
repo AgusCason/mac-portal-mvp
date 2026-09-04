@@ -3,8 +3,13 @@ import { getCrmLeads } from "@/lib/queries/crm";
 import { CrmBoard } from "@/components/crm/crm-board";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
+import { Card } from "@/components/ui/card";
+import { Wallet, Users, Trophy } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 import type { CrmLead } from "@/types/database";
 import { getT } from "@/lib/i18n/dictionary";
+
+const OPEN_STAGES = ["nuevo", "contactado", "calificado", "propuesta"] as const;
 
 const CRM_STAGE_LABEL: Record<string, string> = {
   nuevo: "Nuevo",
@@ -31,6 +36,13 @@ export default async function CrmPage() {
   const leads = await getCrmLeads();
   const crmCsv = buildCsv(CRM_CSV_COLUMNS, leads);
 
+  const openLeads = leads.filter((l) => (OPEN_STAGES as readonly string[]).includes(l.stage));
+  const openPipelineValue = openLeads.reduce((sum, l) => sum + (l.estimated_value ?? 0), 0);
+  const wonCount = leads.filter((l) => l.stage === "ganado").length;
+  const lostCount = leads.filter((l) => l.stage === "perdido").length;
+  const closedCount = wonCount + lostCount;
+  const winRate = closedCount > 0 ? Math.round((wonCount / closedCount) * 100) : null;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
@@ -45,6 +57,47 @@ export default async function CrmPage() {
         </div>
         <ExportCsvButton filename="crm.csv" csv={crmCsv} disabled={leads.length === 0} />
       </div>
+
+      {leads.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Card className="glass-card flex-row items-center gap-3.5 p-4">
+            <div className="icon-chip">
+              <Wallet className="size-4" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs font-medium uppercase">
+                {t("pages.crm.openPipelineValue", "Pipeline abierto")}
+              </p>
+              <p className="text-xl font-semibold tabular-nums">{formatCurrency(openPipelineValue)}</p>
+            </div>
+          </Card>
+          <Card className="glass-card flex-row items-center gap-3.5 p-4">
+            <div className="icon-chip">
+              <Users className="size-4" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs font-medium uppercase">
+                {t("pages.crm.openLeads", "Leads activos")}
+              </p>
+              <p className="text-xl font-semibold tabular-nums">{openLeads.length}</p>
+            </div>
+          </Card>
+          <Card className="glass-card flex-row items-center gap-3.5 p-4">
+            <div className="icon-chip">
+              <Trophy className="size-4" strokeWidth={1.75} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs font-medium uppercase">
+                {t("pages.crm.winRate", "Tasa de conversión")}
+              </p>
+              <p className="text-xl font-semibold tabular-nums">
+                {winRate !== null ? `${winRate}%` : "—"}
+              </p>
+            </div>
+          </Card>
+        </div>
+      )}
+
       <CrmBoard leads={leads} />
     </div>
   );

@@ -5,6 +5,8 @@ import { ContractList } from "@/components/contracts/contract-list";
 import { NewContractDialog } from "@/components/contracts/new-contract-dialog";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
+import { Card } from "@/components/ui/card";
+import { ProgressRing } from "@/components/shared/mini-charts";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -42,6 +44,24 @@ export default async function AdminContratosPage() {
           <NewContractDialog clients={clients} />
         </div>
       </div>
+
+      {contracts.length > 0 && (() => {
+        const signedCount = contracts.filter((c) => c.status === "firmado").length;
+        return (
+          <Card className="flex-row items-center gap-3.5 p-4">
+            <ProgressRing value={signedCount} max={contracts.length} color="var(--success)" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold tracking-tight">
+                {t("pages.contratos.signedRatioTitle", "Firmados sobre el total")}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {signedCount} {t("pages.contratos.ofTotal", "de")} {contracts.length}
+              </p>
+            </div>
+          </Card>
+        );
+      })()}
+
       <ContractList contracts={contracts} role="admin" />
     </div>
   );
