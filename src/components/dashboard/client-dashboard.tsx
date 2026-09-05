@@ -189,22 +189,24 @@ export function ClientDashboard({
             </CardContent>
           </Card>
 
-          <Card className="border-l-primary/60 border-l-2">
-            <CardContent className="space-y-2 pt-6">
-              <div className="flex items-center gap-2">
-                <Sparkles className="text-primary size-4" strokeWidth={1.75} />
-                <p className="text-sm font-semibold">
-                  {t("components.dashboard.helpTitle", "¿Necesitás ayuda?")}
-                </p>
-              </div>
-              <p className="text-foreground/80 text-xs leading-relaxed">
-                {t(
-                  "components.dashboard.helpBody",
-                  "Tocá el ícono ✦ abajo a la derecha para preguntarle a MAX, tu asistente del portal, cómo usar cualquier sección."
-                )}
-              </p>
-            </CardContent>
-          </Card>
+          {/* Mismo tratamiento "hero" que la card de MAX del dashboard de
+              Admin (gradiente + icon chip circular + texto blanco) — acá no
+              es un Link porque MAX vive en el botón flotante ✦ (sheet), no
+              en una página propia, pero visualmente es la misma pieza. */}
+          <div className="from-primary to-info flex flex-col rounded-2xl bg-gradient-to-br p-6 shadow-[var(--shadow-elevated)]">
+            <span className="bg-primary-foreground/20 mb-5 flex size-11 shrink-0 items-center justify-center rounded-full">
+              <Sparkles className="text-primary-foreground size-5" strokeWidth={2} />
+            </span>
+            <p className="text-primary-foreground text-lg leading-tight font-extrabold tracking-tight">
+              {t("components.dashboard.helpTitle", "¿Necesitás ayuda?")}
+            </p>
+            <p className="text-primary-foreground/80 mt-2.5 text-[11.5px] leading-relaxed">
+              {t(
+                "components.dashboard.helpBody",
+                "Tocá el ícono ✦ abajo a la derecha para preguntarle a MAX, tu asistente del portal, cómo usar cualquier sección."
+              )}
+            </p>
+          </div>
         </div>
       </div>
 
