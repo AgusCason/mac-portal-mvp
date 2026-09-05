@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getPrimaryClientId } from "@/lib/queries/client-membership";
 import { getReports } from "@/lib/queries/reports";
 import { ReportList } from "@/components/reports/report-list";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function ClientReportesPage() {
@@ -12,12 +13,10 @@ export default async function ClientReportesPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.client.reportes", "Reportes")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.clientReportes.description", "Resúmenes de performance que la agencia habilitó para tu cuenta.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.client.reportes", "Reportes")}
+        description={t("pages.clientReportes.description", "Resúmenes de performance que la agencia habilitó para tu cuenta.")}
+      />
       {clientId ? (
         <ReportList reports={reports} role="client" />
       ) : (

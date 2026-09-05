@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { MAX_AGENT, getAgentRole, getAgentTagline } from "@/lib/ai/agents";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -41,14 +42,18 @@ export default async function AiAssistantPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">
-          {t("pages.asistente.titlePrefix", "Asistente IA ·")} <span className="text-primary">{MAX_AGENT.name}</span>
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {getAgentRole(MAX_AGENT, t)} — {getAgentTagline(MAX_AGENT, t)}
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <>
+            {t("pages.asistente.titlePrefix", "Asistente IA ·")} <span className="text-primary">{MAX_AGENT.name}</span>
+          </>
+        }
+        description={
+          <>
+            {getAgentRole(MAX_AGENT, t)} — {getAgentTagline(MAX_AGENT, t)}
+          </>
+        }
+      />
 
       <Tabs defaultValue="chat">
         <TabsList>

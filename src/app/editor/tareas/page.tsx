@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getMyTasks } from "@/lib/queries/tasks";
 import { MyTasksList } from "@/components/tasks/my-tasks-list";
 import { TaskFilters } from "@/components/tasks/task-filters";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 import type { TaskStatus } from "@/types/database";
 
@@ -24,17 +25,17 @@ export default async function EditorTareasPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">
-          {t("tasks.editorPageTitle", "Mis tareas")}
-          <span className="text-muted-foreground ml-2 text-sm font-normal align-middle">
-            · {pendingCount} pendiente{pendingCount === 1 ? "" : "s"}
-          </span>
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {t("tasks.editorPageDescription", "Tareas que te asignó el admin.")}
-        </p>
-      </div>
+      <PageHeader
+        title={
+          <>
+            {t("tasks.editorPageTitle", "Mis tareas")}
+            <span className="text-muted-foreground ml-2 text-sm font-normal align-middle">
+              · {pendingCount} pendiente{pendingCount === 1 ? "" : "s"}
+            </span>
+          </>
+        }
+        description={t("tasks.editorPageDescription", "Tareas que te asignó el admin.")}
+      />
 
       <TaskFilters />
       <MyTasksList tasks={tasks} />

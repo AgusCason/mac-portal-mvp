@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth";
 import { getKbArticles } from "@/lib/queries/knowledge-base";
 import { NewArticleDialog } from "@/components/knowledge-base/new-article-dialog";
 import { KbArticlesView } from "@/components/knowledge-base/kb-articles-view";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -16,15 +17,11 @@ export default async function AdminKnowledgeBasePage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("pages.knowledgeBase.title", "Knowledge Base")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t("pages.knowledgeBase.description", "Documentación interna y procesos de la agencia.")}
-          </p>
-        </div>
-        <NewArticleDialog />
-      </div>
+      <PageHeader
+        title={t("pages.knowledgeBase.title", "Knowledge Base")}
+        description={t("pages.knowledgeBase.description", "Documentación interna y procesos de la agencia.")}
+        actions={<NewArticleDialog />}
+      />
       <KbArticlesView articles={articles} />
     </div>
   );

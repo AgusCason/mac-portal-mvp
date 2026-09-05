@@ -4,6 +4,7 @@ import { getSocialAccountsOverview } from "@/lib/queries/social";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 // lucide-react v1 no incluye íconos de marca (Instagram/YouTube) — usamos genéricos.
@@ -24,18 +25,14 @@ export default async function AdminRedesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("pages.redes.title", "Redes sociales")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t(
-              "pages.redes.description",
-              "Cuentas conectadas y métricas clave por cliente (Meta Graph API, TikTok, YouTube)."
-            )}
-          </p>
-        </div>
-        <Badge variant="secondary">{t("pages.redes.badge", "Fase avanzada")}</Badge>
-      </div>
+      <PageHeader
+        title={t("pages.redes.title", "Redes sociales")}
+        description={t(
+          "pages.redes.description",
+          "Cuentas conectadas y métricas clave por cliente (Meta Graph API, TikTok, YouTube)."
+        )}
+        actions={<Badge variant="secondary">{t("pages.redes.badge", "Fase avanzada")}</Badge>}
+      />
 
       {accounts.length === 0 && (
         <Card className="glass-card">

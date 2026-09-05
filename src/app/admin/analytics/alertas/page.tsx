@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
 import { TrendingDown, PieChart } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -31,15 +32,13 @@ export default async function AnalyticsAlertasPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("pages.analyticsAlertas.title", "Alertas de métricas")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t(
-            "pages.analyticsAlertas.description",
-            "Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos."
-          )}
-        </p>
-      </div>
+      <PageHeader
+        title={t("pages.analyticsAlertas.title", "Alertas de métricas")}
+        description={t(
+          "pages.analyticsAlertas.description",
+          "Caídas de 30% o más en alcance o seguidores vs. el promedio de los días previos."
+        )}
+      />
 
       {alerts.length > 0 && (() => {
         const reachCount = alerts.filter((a) => a.metricType === "reach").length;

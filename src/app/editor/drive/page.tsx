@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getEditorAssignedClients } from "@/lib/queries/editor";
 import { ClientSelector } from "@/components/shared/client-selector";
 import { DriveBrowser } from "@/components/drive/drive-browser";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function EditorDrivePage({
@@ -18,12 +19,10 @@ export default async function EditorDrivePage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.editor.driveClientes", "Drive de clientes")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.editorDrive.description", "Solo ves clientes donde el admin activó tu acceso a Drive.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.editor.driveClientes", "Drive de clientes")}
+        description={t("pages.editorDrive.description", "Solo ves clientes donde el admin activó tu acceso a Drive.")}
+      />
       <ClientSelector clients={clients.filter((c) => c.can_view_drive)} />
       {activeClient && !activeClient.can_view_drive && (
         <p className="text-muted-foreground text-sm">

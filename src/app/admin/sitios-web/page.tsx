@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { Paperclip, PieChart, Globe } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -37,15 +38,11 @@ export default async function AdminSitiosWebPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.sitiosWeb", "Sitios Web")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t("pages.sitiosWeb.description", "Proyectos de diseño y desarrollo web por cliente.")}
-          </p>
-        </div>
-        <NewWebProjectDialog clients={clients} />
-      </div>
+      <PageHeader
+        title={t("nav.management.sitiosWeb", "Sitios Web")}
+        description={t("pages.sitiosWeb.description", "Proyectos de diseño y desarrollo web por cliente.")}
+        actions={<NewWebProjectDialog clients={clients} />}
+      />
 
       {projects.length > 0 && (
         <Card className="glass-card">

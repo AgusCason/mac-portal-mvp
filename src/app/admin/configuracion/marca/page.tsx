@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getBranding } from "@/lib/queries/branding";
 import { BrandingForm } from "@/components/settings/branding-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function MarcaPage() {
@@ -11,15 +12,13 @@ export default async function MarcaPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.config.marca", "Marca")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t(
-            "pages.marca.description",
-            "Nombre, logos y colores white-label de la plataforma — se aplican a todo el portal (los 3 roles) apenas guardás."
-          )}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.config.marca", "Marca")}
+        description={t(
+          "pages.marca.description",
+          "Nombre, logos y colores white-label de la plataforma — se aplican a todo el portal (los 3 roles) apenas guardás."
+        )}
+      />
       <Card className="glass-card">
         <CardHeader>
           <CardTitle>{t("pages.marca.identityTitle", "Identidad de marca")}</CardTitle>

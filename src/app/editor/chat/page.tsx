@@ -3,6 +3,7 @@ import { getEditorAssignedClients } from "@/lib/queries/editor";
 import { getChatMessages } from "@/lib/queries/chat";
 import { ClientSelector } from "@/components/shared/client-selector";
 import { ChatThread } from "@/components/chat/chat-thread";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function EditorChatPage({
@@ -19,12 +20,10 @@ export default async function EditorChatPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.chat", "Chat")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.editorChat.description", "Solo ves clientes donde el admin activó tu acceso al chat.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.chat", "Chat")}
+        description={t("pages.editorChat.description", "Solo ves clientes donde el admin activó tu acceso al chat.")}
+      />
       <ClientSelector clients={clients} />
       {activeClientId ? (
         <ChatThread clientId={activeClientId} messages={messages} currentProfileId={profile.id} />

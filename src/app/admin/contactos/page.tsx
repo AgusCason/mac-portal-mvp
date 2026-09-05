@@ -4,6 +4,7 @@ import { getSelectableClients } from "@/lib/queries/content";
 import { NewContactDialog } from "@/components/contacts/new-contact-dialog";
 import { ContactsTable } from "@/components/contacts/contacts-table";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { PageHeader } from "@/components/shared/page-header";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -28,18 +29,16 @@ export default async function AdminContactosPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.contactos", "Contactos")}</h1>
-          <p className="text-muted-foreground text-sm">
-            Directorio de personas y referentes vinculados a tus cuentas.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportCsvButton filename="contactos.csv" csv={contactsCsv} disabled={contacts.length === 0} />
-          <NewContactDialog clients={clients} />
-        </div>
-      </div>
+      <PageHeader
+        title={t("nav.management.contactos", "Contactos")}
+        description="Directorio de personas y referentes vinculados a tus cuentas."
+        actions={
+          <div className="flex items-center gap-2">
+            <ExportCsvButton filename="contactos.csv" csv={contactsCsv} disabled={contacts.length === 0} />
+            <NewContactDialog clients={clients} />
+          </div>
+        }
+      />
 
       <ContactsTable contacts={contacts} clients={clients} />
     </div>

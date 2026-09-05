@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { ListChecks, PieChart, FolderKanban } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -36,15 +37,11 @@ export default async function AdminProyectosPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.proyectos", "Proyectos")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t("pages.proyectos.pageDescription", "Engagements y proyectos del workspace.")}
-          </p>
-        </div>
-        <NewProjectDialog clients={clients} />
-      </div>
+      <PageHeader
+        title={t("nav.management.proyectos", "Proyectos")}
+        description={t("pages.proyectos.pageDescription", "Engagements y proyectos del workspace.")}
+        actions={<NewProjectDialog clients={clients} />}
+      />
 
       {projects.length === 0 && (
         <EmptyState icon={FolderKanban} title={t("pages.proyectos.noProjects", "Todavía no creaste ningún proyecto.")} />

@@ -6,6 +6,7 @@ import { ContentStatusChart } from "@/components/dashboard/content-status-chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 import type { ContentStatus } from "@/types/database";
@@ -65,10 +66,10 @@ export default async function AdminSocialMediaPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.socialMedia.group", "Social Media")}</h1>
-        <p className="text-muted-foreground text-sm">{t("pages.socialOverview.description", "Resumen de piezas, cuentas conectadas y próximas publicaciones.")}</p>
-      </div>
+      <PageHeader
+        title={t("nav.socialMedia.group", "Social Media")}
+        description={t("pages.socialOverview.description", "Resumen de piezas, cuentas conectadas y próximas publicaciones.")}
+      />
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Card className="glass-card">

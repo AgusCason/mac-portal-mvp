@@ -7,6 +7,7 @@ import { WebProjectStageStepper, WebProjectStageSelect } from "@/components/web-
 import { WebProjectDetailsPanel } from "@/components/web-projects/web-project-details-panel";
 import { WebProjectAssetsPanel } from "@/components/web-projects/web-project-assets-panel";
 import { WebProjectInvoicesPanel } from "@/components/web-projects/web-project-invoices-panel";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 import type { Plan } from "@/types/database";
 
@@ -32,16 +33,16 @@ export default async function AdminSitioWebDetailPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{project.title}</h1>
-          <p className="text-muted-foreground text-sm">
+      <PageHeader
+        title={project.title}
+        description={
+          <>
             {t("components.webProjects.account", "Cuenta")}: {project.client_name}
             {project.description && ` — ${project.description}`}
-          </p>
-        </div>
-        <WebProjectStageSelect projectId={project.id} stage={project.stage} />
-      </div>
+          </>
+        }
+        actions={<WebProjectStageSelect projectId={project.id} stage={project.stage} />}
+      />
 
       <WebProjectStageStepper stage={project.stage} />
 

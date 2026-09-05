@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, History } from "lucide-react";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT, resolveLocale } from "@/lib/i18n/dictionary";
 
 const DATE_FNS_LOCALE = { es, en: enUS } as const;
@@ -38,12 +39,10 @@ export default async function AdminActividadPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.management.actividad", "Actividad")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.actividad.description", "Bitácora completa de lo que pasó en el workspace.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.management.actividad", "Actividad")}
+        description={t("pages.actividad.description", "Bitácora completa de lo que pasó en el workspace.")}
+      />
 
       {eventTypesByCount.length > 0 && (
         <Card className="glass-card">

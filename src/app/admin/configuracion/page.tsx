@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function AdminConfiguracionPage() {
@@ -8,12 +9,10 @@ export default async function AdminConfiguracionPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("pages.configuracion.title", "Configuración")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.configuracion.description", "Integraciones y datos generales de la agencia.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("pages.configuracion.title", "Configuración")}
+        description={t("pages.configuracion.description", "Integraciones y datos generales de la agencia.")}
+      />
       <Card className="glass-card">
         <CardHeader>
           <CardTitle>{t("pages.configuracion.integrationsTitle", "Integraciones")}</CardTitle>

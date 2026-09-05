@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getT, resolveLocale } from "@/lib/i18n/dictionary";
+import { PageHeader } from "@/components/shared/page-header";
 
 const DATE_LOCALE = { es: "es-AR", en: "en-US" } as const;
 
@@ -30,15 +31,17 @@ export default async function AdminWebFormDetailPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{form.name}</h1>
-        <p className="text-muted-foreground text-sm">
-          {submissions.length}{" "}
-          {submissions.length === 1
-            ? t("pages.webFormDetail.responseSingular", "respuesta")
-            : t("pages.webFormDetail.responsePlural", "respuestas")}
-        </p>
-      </div>
+      <PageHeader
+        title={form.name}
+        description={
+          <>
+            {submissions.length}{" "}
+            {submissions.length === 1
+              ? t("pages.webFormDetail.responseSingular", "respuesta")
+              : t("pages.webFormDetail.responsePlural", "respuestas")}
+          </>
+        }
+      />
 
       <div className="overflow-hidden rounded-xl border border-border">
         <Table>

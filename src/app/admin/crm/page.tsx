@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getCrmLeads } from "@/lib/queries/crm";
 import { CrmBoard, NewLeadDialog } from "@/components/crm/crm-board";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { PageHeader } from "@/components/shared/page-header";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { Card } from "@/components/ui/card";
 import { Wallet, Users, Trophy } from "lucide-react";
@@ -45,21 +46,19 @@ export default async function CrmPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("pages.crm.title", "CRM")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t(
-              "pages.crm.description",
-              "Pipeline de prospectos comerciales — cuando ganás uno, dalo de alta como Cliente desde Clientes para que arranque a operar."
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportCsvButton filename="crm.csv" csv={crmCsv} disabled={leads.length === 0} />
-          <NewLeadDialog />
-        </div>
-      </div>
+      <PageHeader
+        title={t("pages.crm.title", "CRM")}
+        description={t(
+          "pages.crm.description",
+          "Pipeline de prospectos comerciales — cuando ganás uno, dalo de alta como Cliente desde Clientes para que arranque a operar."
+        )}
+        actions={
+          <div className="flex items-center gap-2">
+            <ExportCsvButton filename="crm.csv" csv={crmCsv} disabled={leads.length === 0} />
+            <NewLeadDialog />
+          </div>
+        }
+      />
 
       {leads.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-3">

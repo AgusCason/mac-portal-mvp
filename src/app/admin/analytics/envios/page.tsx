@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Send, BarChart3 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /** Últimos 6 meses calendario (incluye el actual), como "2026-09" -> "sep. 2026". */
@@ -49,12 +50,10 @@ export default async function AnalyticsEnviosPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.envios", "Envíos")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.analyticsEnvios.description", "Reportes publicados y entregados a cada cliente, en orden cronológico.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.analytics.envios", "Envíos")}
+        description={t("pages.analyticsEnvios.description", "Reportes publicados y entregados a cada cliente, en orden cronológico.")}
+      />
 
       {reports.length > 0 && (() => {
         const months = lastSixMonths();

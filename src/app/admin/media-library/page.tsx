@@ -4,6 +4,7 @@ import { getSelectableClients } from "@/lib/queries/content";
 import { MediaLibraryView } from "@/components/media-library/media-library-view";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DonutMini } from "@/components/shared/mini-charts";
+import { PageHeader } from "@/components/shared/page-header";
 import { HardDrive } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -54,10 +55,7 @@ export default async function AdminMediaLibraryPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Media Library</h1>
-        <p className="text-muted-foreground text-sm">Archivos y assets compartidos del workspace.</p>
-      </div>
+      <PageHeader title="Media Library" description="Archivos y assets compartidos del workspace." />
 
       {assets.length > 0 && (
         <Card className="glass-card">

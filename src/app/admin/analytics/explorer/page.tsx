@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { PageHeader } from "@/components/shared/page-header";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { formatDate } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
@@ -63,19 +64,19 @@ export default async function AnalyticsExplorerPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.explorer", "Explorer")}</h1>
-          <p className="text-muted-foreground text-sm">
+      <PageHeader
+        title={t("nav.analytics.explorer", "Explorer")}
+        description={
+          <>
             {rows.length}{" "}
             {rows.length === 1
               ? t("pages.analyticsExplorer.rowSingular", "fila")
               : t("pages.analyticsExplorer.rowPlural", "filas")}{" "}
             {t("pages.analyticsExplorer.rowsSuffix", "de métricas diarias.")}
-          </p>
-        </div>
-        <ExportCsvButton filename="metricas.csv" csv={explorerCsv} disabled={rows.length === 0} />
-      </div>
+          </>
+        }
+        actions={<ExportCsvButton filename="metricas.csv" csv={explorerCsv} disabled={rows.length === 0} />}
+      />
 
       <ExplorerFilters clients={clients} />
 

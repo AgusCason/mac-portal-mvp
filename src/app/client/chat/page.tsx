@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getPrimaryClientId } from "@/lib/queries/client-membership";
 import { getChatMessages } from "@/lib/queries/chat";
 import { ChatThread } from "@/components/chat/chat-thread";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function ClientChatPage({
@@ -17,12 +18,10 @@ export default async function ClientChatPage({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("pages.clientChat.title", "Chat con la agencia")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.clientChat.description", "Briefs y consultas rápidas, todo en un solo lugar.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("pages.clientChat.title", "Chat con la agencia")}
+        description={t("pages.clientChat.description", "Briefs y consultas rápidas, todo en un solo lugar.")}
+      />
       {clientId ? (
         <ChatThread
           key={prefill ?? "default"}

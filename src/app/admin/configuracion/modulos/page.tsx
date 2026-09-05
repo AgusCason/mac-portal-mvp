@@ -4,6 +4,7 @@ import { getModuleFlags } from "@/lib/queries/module-flags";
 import { ModulosPanel } from "@/components/config/modulos-panel";
 import { Card } from "@/components/ui/card";
 import { ProgressRing } from "@/components/shared/mini-charts";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -22,14 +23,16 @@ export default async function AdminModulosPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.config.modulos", "Módulos")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {total} {t("components.config.totalModulesSummary", "módulos")} · {incluidos}{" "}
-          {t("components.config.includedSummary", "incluidos")} · {proximamente}{" "}
-          {t("components.config.comingSoonSummary", "próximamente")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.config.modulos", "Módulos")}
+        description={
+          <>
+            {total} {t("components.config.totalModulesSummary", "módulos")} · {incluidos}{" "}
+            {t("components.config.includedSummary", "incluidos")} · {proximamente}{" "}
+            {t("components.config.comingSoonSummary", "próximamente")}
+          </>
+        }
+      />
 
       {total > 0 && (
         <Card className="flex-row items-center gap-3.5 p-4">

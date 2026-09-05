@@ -109,7 +109,7 @@ export default async function AdminClientDetailPage({
             </AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">{client.name}</h1>
             <p className="text-muted-foreground text-sm">
               {client.brand_name ?? t("pages.clienteDetail.noBrandName", "Sin nombre de marca")} ·{" "}
               {client.contact_email ?? t("pages.clienteDetail.noEmail", "sin email")}

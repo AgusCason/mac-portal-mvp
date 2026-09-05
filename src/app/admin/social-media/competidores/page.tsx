@@ -4,6 +4,7 @@ import { getSelectableClients } from "@/lib/queries/content";
 import { CompetitorsView } from "@/components/competitors/competitors-view";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -24,12 +25,10 @@ export default async function AdminCompetidoresPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.socialMedia.competidores", "Competidores")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.socialCompetidores.description", "Perfiles de la competencia y benchmark de métricas públicas.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.socialMedia.competidores", "Competidores")}
+        description={t("pages.socialCompetidores.description", "Perfiles de la competencia y benchmark de métricas públicas.")}
+      />
 
       {topByFollowers.length > 0 && (
         <Card className="glass-card">

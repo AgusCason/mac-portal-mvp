@@ -9,6 +9,7 @@ import { InvoiceList } from "@/components/billing/invoice-list";
 import { BillingDashboard } from "@/components/billing/billing-dashboard";
 import { PaymentMethodsPanel } from "@/components/billing/payment-methods-panel";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { PageHeader } from "@/components/shared/page-header";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -57,17 +58,13 @@ export default async function AdminPlanesPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">
-          {t("billing.pageTitle", "Planes y facturación")}
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          {t(
-            "billing.pageDescription",
-            "Información financiera — visible solo para vos (RLS bloquea a editores)."
-          )}
-        </p>
-      </div>
+      <PageHeader
+        title={t("billing.pageTitle", "Planes y facturación")}
+        description={t(
+          "billing.pageDescription",
+          "Información financiera — visible solo para vos (RLS bloquea a editores)."
+        )}
+      />
 
       <Tabs defaultValue="dashboard">
         <TabsList>

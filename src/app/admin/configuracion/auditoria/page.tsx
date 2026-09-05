@@ -4,6 +4,7 @@ import { getAllProfilesLite } from "@/lib/queries/team";
 import { AuditLogTable } from "@/components/config/audit-log-table";
 import { AuditLogFiltersBar, type AuditLogUserOption } from "@/components/config/audit-log-filters";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { PageHeader } from "@/components/shared/page-header";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { AUDIT_ACTION_LABELS, getAuditActionLabel } from "@/lib/audit-labels";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,20 +66,14 @@ export default async function AuditoriaPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">
-            {t("audit.pageTitle", "Auditoría")}
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {t(
-              "audit.pageDescription",
-              "Registro de acciones financieras y sensibles — quién marcó qué como pagado, quién editó los métodos de cobro, quién tocó una credencial de la Bóveda."
-            )}
-          </p>
-        </div>
-        <ExportCsvButton filename="auditoria.csv" csv={auditCsv} disabled={entries.length === 0} />
-      </div>
+      <PageHeader
+        title={t("audit.pageTitle", "Auditoría")}
+        description={t(
+          "audit.pageDescription",
+          "Registro de acciones financieras y sensibles — quién marcó qué como pagado, quién editó los métodos de cobro, quién tocó una credencial de la Bóveda."
+        )}
+        actions={<ExportCsvButton filename="auditoria.csv" csv={auditCsv} disabled={entries.length === 0} />}
+      />
 
       {topActions.length > 0 && (
         <Card className="glass-card">

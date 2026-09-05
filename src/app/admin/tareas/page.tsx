@@ -6,6 +6,7 @@ import { NewTaskDialog } from "@/components/tasks/new-task-dialog";
 import { TasksTable } from "@/components/tasks/tasks-table";
 import { TaskFilters } from "@/components/tasks/task-filters";
 import { DonutMini } from "@/components/shared/mini-charts";
+import { PageHeader } from "@/components/shared/page-header";
 import type { TaskStatus } from "@/types/database";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -53,20 +54,18 @@ export default async function AdminTareasPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">
+      <PageHeader
+        title={
+          <>
             {t("tasks.adminPageTitle", "Tareas del Workspace")}
             <span className="text-muted-foreground ml-2 text-sm font-normal align-middle">
               · {pendingCount} pendiente{pendingCount === 1 ? "" : "s"}
             </span>
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            {t("tasks.adminPageDescription", "Gestiona y asigna tareas para la agencia.")}
-          </p>
-        </div>
-        <NewTaskDialog clients={clients} staff={staff} />
-      </div>
+          </>
+        }
+        description={t("tasks.adminPageDescription", "Gestiona y asigna tareas para la agencia.")}
+        actions={<NewTaskDialog clients={clients} staff={staff} />}
+      />
 
       {allTasks.length > 0 && (
         <div className="glass-card flex flex-col items-center gap-5 rounded-2xl p-5 sm:flex-row sm:justify-around">

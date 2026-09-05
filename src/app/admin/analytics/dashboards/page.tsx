@@ -3,6 +3,7 @@ import { getPlatformDashboards } from "@/lib/queries/analytics";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FollowersDonutChart, EngagementBarChart } from "@/components/analytics/overview-charts";
 import { Camera, Music2, PlaySquare, LayoutDashboard, Users, Activity } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 import type { SocialPlatform } from "@/types/database";
 
@@ -31,12 +32,10 @@ export default async function AnalyticsDashboardsPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.analytics.dashboards", "Dashboards")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.analyticsDashboards.description", "Vistas resumen por plataforma, con datos reales de las cuentas conectadas.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.analytics.dashboards", "Dashboards")}
+        description={t("pages.analyticsDashboards.description", "Vistas resumen por plataforma, con datos reales de las cuentas conectadas.")}
+      />
 
       {dashboards.length > 0 && (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

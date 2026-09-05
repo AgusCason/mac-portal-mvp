@@ -3,6 +3,7 @@ import { getVaultCredentials, type VaultCredentialWithClient } from "@/lib/queri
 import { getClients } from "@/lib/queries/clients";
 import { VaultList, NewCredentialDialog } from "@/components/settings/vault-list";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { PageHeader } from "@/components/shared/page-header";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/utils";
@@ -29,21 +30,19 @@ export default async function BovedaPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("nav.config.boveda", "Bóveda")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t(
-              "pages.boveda.description",
-              "Credenciales y accesos técnicos cifrados (Meta, dominios, hosting), con vínculo opcional a un cliente. Solo vos (admin) podés ver y usar esta pantalla."
-            )}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportCsvButton filename="boveda-metadata.csv" csv={vaultCsv} disabled={credentials.length === 0} />
-          <NewCredentialDialog clients={selectableClients} />
-        </div>
-      </div>
+      <PageHeader
+        title={t("nav.config.boveda", "Bóveda")}
+        description={t(
+          "pages.boveda.description",
+          "Credenciales y accesos técnicos cifrados (Meta, dominios, hosting), con vínculo opcional a un cliente. Solo vos (admin) podés ver y usar esta pantalla."
+        )}
+        actions={
+          <div className="flex items-center gap-2">
+            <ExportCsvButton filename="boveda-metadata.csv" csv={vaultCsv} disabled={credentials.length === 0} />
+            <NewCredentialDialog clients={selectableClients} />
+          </div>
+        }
+      />
       <Card className="glass-card">
         <CardHeader>
           <CardTitle>{t("pages.boveda.savedCredentialsTitle", "Credenciales guardadas")}</CardTitle>

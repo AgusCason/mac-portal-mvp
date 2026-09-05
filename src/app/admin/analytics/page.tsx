@@ -5,6 +5,7 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { ReachTrendChart, FollowersDonutChart, EngagementBarChart } from "@/components/analytics/overview-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 import {
   Radar,
@@ -81,12 +82,10 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("pages.analyticsOverview.title", "Analytics")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.analyticsOverview.description", "Rendimiento agregado de todas las cuentas conectadas de la agencia.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("pages.analyticsOverview.title", "Analytics")}
+        description={t("pages.analyticsOverview.description", "Rendimiento agregado de todas las cuentas conectadas de la agencia.")}
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard label={t("pages.analyticsOverview.connectedAccounts", "Cuentas conectadas")} value={overview.connectedAccounts} icon={Radar} />

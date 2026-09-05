@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth";
 import { getContentItems, getSelectableClients } from "@/lib/queries/content";
 import { getMediaFolders, getMediaAssets } from "@/lib/queries/media-library";
 import { PlannerView } from "@/components/social-media/planner-view";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -21,12 +22,10 @@ export default async function AdminSocialMediaPlannerPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("nav.socialMedia.planner", "Planner")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.socialPlanner.description", "Calendario editorial, publicados y grilla de Instagram.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("nav.socialMedia.planner", "Planner")}
+        description={t("pages.socialPlanner.description", "Calendario editorial, publicados y grilla de Instagram.")}
+      />
       <PlannerView items={items} clients={clients} folders={folders} assets={assets} />
     </div>
   );

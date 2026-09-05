@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { INITIALS_GRADIENTS } from "@/components/dashboard/billing-hero-card";
 import { ProgressRing } from "@/components/shared/mini-charts";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { getInitials, cn } from "@/lib/utils";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -27,15 +28,11 @@ export default async function AdminEquipoPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("nav.equipo", "Equipo")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t("pages.equipo.description", "Editores de la agencia y los clientes que tienen asignados.")}
-          </p>
-        </div>
-        <NewEditorDialog />
-      </div>
+      <PageHeader
+        title={t("nav.equipo", "Equipo")}
+        description={t("pages.equipo.description", "Editores de la agencia y los clientes que tienen asignados.")}
+        actions={<NewEditorDialog />}
+      />
 
       {editors.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

@@ -4,6 +4,7 @@ import { getSelectableClients } from "@/lib/queries/content";
 import { ContractList } from "@/components/contracts/contract-list";
 import { NewContractDialog } from "@/components/contracts/new-contract-dialog";
 import { ExportCsvButton } from "@/components/shared/export-csv-button";
+import { PageHeader } from "@/components/shared/page-header";
 import { buildCsv, type CsvColumn } from "@/lib/export-csv";
 import { Card } from "@/components/ui/card";
 import { ProgressRing } from "@/components/shared/mini-charts";
@@ -32,18 +33,16 @@ export default async function AdminContratosPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("nav.contratos", "Contratos")}</h1>
-          <p className="text-muted-foreground text-sm">
-            Acuerdos de servicio y confidencialidad, con trazabilidad de firma.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportCsvButton filename="contratos.csv" csv={contractsCsv} disabled={contracts.length === 0} />
-          <NewContractDialog clients={clients} />
-        </div>
-      </div>
+      <PageHeader
+        title={t("nav.contratos", "Contratos")}
+        description="Acuerdos de servicio y confidencialidad, con trazabilidad de firma."
+        actions={
+          <div className="flex items-center gap-2">
+            <ExportCsvButton filename="contratos.csv" csv={contractsCsv} disabled={contracts.length === 0} />
+            <NewContractDialog clients={clients} />
+          </div>
+        }
+      />
 
       {contracts.length > 0 && (() => {
         const signedCount = contracts.filter((c) => c.status === "firmado").length;

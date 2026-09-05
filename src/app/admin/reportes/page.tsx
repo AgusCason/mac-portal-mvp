@@ -6,6 +6,7 @@ import { NewReportDialog } from "@/components/reports/new-report-dialog";
 import { ReportFilters } from "@/components/reports/report-filters";
 import { Card } from "@/components/ui/card";
 import { ProgressRing } from "@/components/shared/mini-charts";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 import type { ReportStatus } from "@/types/database";
 
@@ -26,18 +27,14 @@ export default async function AdminReportesPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("pages.adminReportes.title", "Reportes con IA")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t(
-              "pages.adminReportes.description",
-              "Resumen ejecutivo generado por Claude a partir de contenido publicado y métricas reales — revisalo y publicalo cuando esté listo para el cliente."
-            )}
-          </p>
-        </div>
-        <NewReportDialog clients={clients} />
-      </div>
+      <PageHeader
+        title={t("pages.adminReportes.title", "Reportes con IA")}
+        description={t(
+          "pages.adminReportes.description",
+          "Resumen ejecutivo generado por Claude a partir de contenido publicado y métricas reales — revisalo y publicalo cuando esté listo para el cliente."
+        )}
+        actions={<NewReportDialog clients={clients} />}
+      />
 
       {reports.length > 0 && (() => {
         const publishedCount = reports.filter((r) => r.status === "published").length;

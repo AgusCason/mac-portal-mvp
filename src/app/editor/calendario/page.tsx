@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { getContentItems, getSelectableClients } from "@/lib/queries/content";
 import { ContentCalendarView } from "@/components/content/content-calendar-view";
 import { NewContentDialog } from "@/components/content/new-content-dialog";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 export default async function EditorCalendarioPage() {
@@ -12,15 +13,11 @@ export default async function EditorCalendarioPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("pages.calendario.title", "Calendario editorial")}</h1>
-          <p className="text-muted-foreground text-sm">
-            Piezas de tus clientes asignados.
-          </p>
-        </div>
-        <NewContentDialog clients={clients} />
-      </div>
+      <PageHeader
+        title={t("pages.calendario.title", "Calendario editorial")}
+        description="Piezas de tus clientes asignados."
+        actions={<NewContentDialog clients={clients} />}
+      />
 
       <ContentCalendarView items={items} role="editor" />
     </div>

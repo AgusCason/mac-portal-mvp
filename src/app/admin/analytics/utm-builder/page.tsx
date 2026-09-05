@@ -5,6 +5,7 @@ import { UtmBuilderForm } from "@/components/analytics/utm-builder-form";
 import { UtmHistory } from "@/components/analytics/utm-history";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { History } from "lucide-react";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -18,12 +19,10 @@ export default async function AnalyticsUtmBuilderPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("pages.utmBuilder.title", "UTM Builder")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.utmBuilder.description", "Armá URLs de campaña con parámetros UTM y reutilizá el historial.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("pages.utmBuilder.title", "UTM Builder")}
+        description={t("pages.utmBuilder.description", "Armá URLs de campaña con parámetros UTM y reutilizá el historial.")}
+      />
 
       <UtmBuilderForm clients={clients} />
 

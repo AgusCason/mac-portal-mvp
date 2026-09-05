@@ -7,6 +7,7 @@ import { WebProjectDetailsPanel } from "@/components/web-projects/web-project-de
 import { WebProjectAssetsPanel } from "@/components/web-projects/web-project-assets-panel";
 import { WebProjectInvoicesPanel } from "@/components/web-projects/web-project-invoices-panel";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/shared/page-header";
 import { Globe } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -24,12 +25,10 @@ export default async function ClientSitioWebPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t("pages.clientSitioWeb.title", "Tu sitio web")}</h1>
-        <p className="text-muted-foreground text-sm">
-          {t("pages.clientSitioWeb.description", "Seguí el avance de tu proyecto y aprobá los entregables.")}
-        </p>
-      </div>
+      <PageHeader
+        title={t("pages.clientSitioWeb.title", "Tu sitio web")}
+        description={t("pages.clientSitioWeb.description", "Seguí el avance de tu proyecto y aprobá los entregables.")}
+      />
 
       {projects.length === 0 && (
         <Card>

@@ -4,6 +4,7 @@ import { getWebForms } from "@/lib/queries/web-forms";
 import { NewWebFormDialog } from "@/components/web-forms/new-web-form-dialog";
 import { WebFormsTable } from "@/components/web-forms/web-forms-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PageHeader } from "@/components/shared/page-header";
 import { BarChart3 } from "lucide-react";
 import { getT } from "@/lib/i18n/dictionary";
 
@@ -26,15 +27,11 @@ export default async function AdminWebFormsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("pages.webForms.title", "Web Forms")}</h1>
-          <p className="text-muted-foreground text-sm">
-            {t("pages.webForms.description", "Formularios públicos para captar leads o respuestas.")}
-          </p>
-        </div>
-        <NewWebFormDialog />
-      </div>
+      <PageHeader
+        title={t("pages.webForms.title", "Web Forms")}
+        description={t("pages.webForms.description", "Formularios públicos para captar leads o respuestas.")}
+        actions={<NewWebFormDialog />}
+      />
 
       {totalResponses > 0 && (
         <Card className="glass-card">

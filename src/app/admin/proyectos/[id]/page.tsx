@@ -4,6 +4,7 @@ import { getProjectDetail } from "@/lib/queries/projects";
 import { ProjectBoard } from "@/components/projects/project-board";
 import { getProjectStatusLabel, PROJECT_STATUS_VARIANT } from "@/components/projects/project-status";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/shared/page-header";
 import { getT } from "@/lib/i18n/dictionary";
 
 /**
@@ -25,20 +26,22 @@ export default async function AdminProyectoDetailPage({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">{project.title}</h1>
-          <p className="text-muted-foreground text-sm">
+      <PageHeader
+        title={project.title}
+        description={
+          <>
             {project.client_name
               ? `${t("pages.proyectos.account", "Cuenta")}: ${project.client_name}`
               : t("pages.proyectos.internal", "Proyecto interno")}
             {project.description && ` — ${project.description}`}
-          </p>
-        </div>
-        <Badge variant={PROJECT_STATUS_VARIANT[project.status]}>
-          {getProjectStatusLabel(project.status, t)}
-        </Badge>
-      </div>
+          </>
+        }
+        actions={
+          <Badge variant={PROJECT_STATUS_VARIANT[project.status]}>
+            {getProjectStatusLabel(project.status, t)}
+          </Badge>
+        }
+      />
 
       <ProjectBoard projectId={project.id} items={items} />
     </div>
