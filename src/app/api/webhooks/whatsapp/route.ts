@@ -58,9 +58,22 @@ export async function POST(request: NextRequest) {
       console.warn("[whatsapp webhook] Firma inválida — request rechazado.");
       return NextResponse.json({ ok: false }, { status: 401 });
     }
+  } else if (process.env.NODE_ENV === "production") {
+    // En producción, sin el secret no hay forma de confirmar que el POST
+    // viene realmente de Meta — cualquiera que adivine la URL podría
+    // insertar mensajes falsos en `chat_messages` como si fueran de un
+    // cliente real. Antes esto era un soft-fail (aceptaba igual, solo con
+    // un warning en el log) para no bloquear despliegues que todavía no
+    // habían cargado la env var — pero eso deja la puerta abierta
+    // silenciosamente. Ahora se rechaza en producción; en dev/preview sigue
+    // aceptando sin firma para no trabar pruebas locales sin el secret a mano.
+    console.error(
+      "[whatsapp webhook] WHATSAPP_APP_SECRET no configurado en producción — request rechazado."
+    );
+    return NextResponse.json({ ok: false, error: "webhook_not_configured" }, { status: 503 });
   } else {
     console.warn(
-      "[whatsapp webhook] WHATSAPP_APP_SECRET no configurado — el webhook acepta requests sin verificar firma."
+      "[whatsapp webhook] WHATSAPP_APP_SECRET no configurado — el webhook acepta requests sin verificar firma (solo fuera de producción)."
     );
   }
 

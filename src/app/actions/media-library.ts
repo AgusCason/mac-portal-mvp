@@ -9,6 +9,21 @@ const MEDIA_PATH = "/admin/media-library";
 const MEDIA_BUCKET = "media-library";
 const MAX_FILE_BYTES = 25 * 1024 * 1024; // 25MB
 
+/**
+ * `file.name` viene tal cual lo puso el usuario en su sistema operativo —
+ * antes se usaba directo dentro del storage path (`${folderId}/${Date.now()}-
+ * ${file.name}`). Acepta admin únicamente hoy (`requireAdmin()` arriba en
+ * `uploadMediaAssetAction`), pero un nombre de archivo con `/`, `..` u otros
+ * caracteres raros ahí adentro sigue siendo una entrada no confiable que no
+ * hace falta aceptar tal cual — esto lo deja seguro sin cambiar la
+ * extensión ni el nombre visible (`file_name` en la fila de `media_assets`
+ * conserva el original para mostrar en la UI).
+ */
+function sanitizeStorageFilename(name: string): string {
+  const base = name.split(/[/\\]/).pop() || "archivo";
+  return base.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-180) || "archivo";
+}
+
 const folderSchema = z.object({
   name: z.string().min(2, "El nombre es obligatorio"),
   color: z.string().min(1).default("gray"),
@@ -68,7 +83,7 @@ export async function uploadMediaAssetAction(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const serviceRole = createServiceRoleClient();
 
-  const storagePath = `${folderId || "sin-carpeta"}/${Date.now()}-${file.name}`;
+  const storagePath = `${folderId || "sin-carpeta"}/${Date.now()}-${sanitizeStorageFilename(file.name)}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const { error: uploadError } = await serviceRole.storage

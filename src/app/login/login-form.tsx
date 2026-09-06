@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, ShieldCheck, Sparkles } from "lucide-react";
 
-import { loginAction } from "@/app/actions/auth";
-import { createClient } from "@/lib/supabase/client";
+import { loginAction, verifyMfaAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -109,15 +108,11 @@ export function LoginForm() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({
-      factorId: awaitingMfa.factorId,
-      code: mfaCode.trim(),
-    });
+    const result = await verifyMfaAction(awaitingMfa.factorId, mfaCode);
     setLoading(false);
 
-    if (verifyError) {
-      setError("Código incorrecto. Probá de nuevo.");
+    if (!result.ok) {
+      setError(result.error);
       return;
     }
     goToNext();

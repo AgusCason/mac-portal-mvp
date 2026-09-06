@@ -179,3 +179,38 @@ export async function requestPasswordResetAction(
 
   return { ok: true };
 }
+
+export type VerifyMfaResult = { ok: true } | { ok: false; error: string };
+
+/**
+ * Paso 2 del login (código de 6 dígitos) — antes se llamaba directo a
+ * `supabase.auth.mfa.challengeAndVerify` desde `login-form.tsx` en el
+ * browser, sin ningún límite de intentos propio (a diferencia del paso de
+ * contraseña, que sí lo tiene acá arriba). La ventana de validez del TOTP
+ * (30-90s con tolerancia de reloj) ya limita bastante un ataque de fuerza
+ * bruta por sí sola, pero rate-limitar el intento server-side es la misma
+ * defensa en profundidad que ya se aplica al resto del login — así que se
+ * movió acá. Server Action en vez de llamada directa del cliente por eso
+ * mismo: necesitamos poder contar/rechazar intentos ANTES de gastarlos
+ * contra Supabase Auth, igual que `loginAction` con la contraseña.
+ */
+export async function verifyMfaAction(factorId: string, code: string): Promise<VerifyMfaResult> {
+  const supabase = await createSupabaseServerClient();
+  const ip = await getClientIp();
+
+  const allowed = await checkRateLimit(supabase, `mfa:verify:ip:${ip}`, {
+    maxHits: 8,
+    windowSeconds: 5 * 60,
+    blockMinutes: 15,
+  });
+  if (!allowed) {
+    return { ok: false, error: "Demasiados intentos. Esperá unos minutos e intentá de nuevo." };
+  }
+
+  const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
+  if (error) {
+    return { ok: false, error: "Código incorrecto. Probá de nuevo." };
+  }
+
+  return { ok: true };
+}

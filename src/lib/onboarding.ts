@@ -1,6 +1,7 @@
 import "server-only";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import type { UserRole } from "@/types/database";
 
 export interface InviteOk {
@@ -36,6 +37,14 @@ export async function inviteOrReuseUser(
   fullName: string,
   role: UserRole
 ): Promise<InviteOk | InviteError> {
+  // Defensa en profundidad: hoy los dos callers (alta de Cliente/Editor)
+  // ya validan `requireAdmin()` antes de llegar acá, pero esta función usa
+  // la Service Role Key (bypassea RLS por completo e invita usuarios con
+  // cualquier rol) — no debería depender solo de que TODO futuro caller se
+  // acuerde de chequear el rol antes de llamarla. Mismo patrón que
+  // `requireRole()` en layouts + páginas: cada punto que toca algo
+  // sensible valida por su cuenta, aunque sea redundante.
+  await requireAdmin();
   const admin = createServiceRoleClient();
 
   const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
