@@ -43,22 +43,15 @@ export async function getAnalyticsOverview(): Promise<AnalyticsOverview> {
     };
   }
 
-  // Última métrica cargada por cuenta (una query por cuenta sería N+1 real,
-  // pero la cantidad de cuentas sociales de una agencia chica/mediana no lo
-  // justifica evitar — mismo patrón que getSocialAccountsOverview).
-  const latestByAccount = await Promise.all(
-    accountIds.map((id) =>
-      supabase
-        .from("social_metrics")
-        .select("reach, followers, engagement_rate")
-        .eq("social_account_id", id)
-        .order("metric_date", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-    )
-  );
-
-  const rows = latestByAccount.map((r) => r.data).filter((r): r is NonNullable<typeof r> => Boolean(r));
+  // Última métrica cargada por cuenta — 1 sola llamada al RPC
+  // `latest_social_metrics` (DISTINCT ON) en vez de 1 query por cuenta; ver
+  // 0043_latest_social_metrics_rpc.sql. El comentario anterior asumía que
+  // esto no valía la pena para una agencia chica/mediana, pero es justo el
+  // patrón que se vuelve notorio a medida que se conectan más cuentas.
+  const { data } = await supabase.rpc("latest_social_metrics", {
+    p_account_ids: accountIds,
+  });
+  const rows = data ?? [];
   const totalReach = rows.reduce((sum, r) => sum + (r.reach ?? 0), 0);
   const totalFollowers = rows.reduce((sum, r) => sum + (r.followers ?? 0), 0);
   const avgEngagementRate = rows.length
@@ -146,33 +139,27 @@ export async function getPlatformDashboards(): Promise<PlatformDashboard[]> {
     byPlatform.set(a.platform, list);
   }
 
-  const dashboards = await Promise.all(
-    Array.from(byPlatform.entries()).map(async ([platform, ids]) => {
-      const latest = await Promise.all(
-        ids.map((id) =>
-          supabase
-            .from("social_metrics")
-            .select("reach, followers, engagement_rate")
-            .eq("social_account_id", id)
-            .order("metric_date", { ascending: false })
-            .limit(1)
-            .maybeSingle()
-        )
-      );
-      const rows = latest.map((r) => r.data).filter((r): r is NonNullable<typeof r> => Boolean(r));
-      return {
-        platform,
-        accountCount: ids.length,
-        totalReach: rows.reduce((sum, r) => sum + (r.reach ?? 0), 0),
-        totalFollowers: rows.reduce((sum, r) => sum + (r.followers ?? 0), 0),
-        avgEngagementRate: rows.length
-          ? rows.reduce((sum, r) => sum + Number(r.engagement_rate ?? 0), 0) / rows.length
-          : 0,
-      } satisfies PlatformDashboard;
-    })
-  );
+  // Antes: doble N+1 anidado (1 query por plataforma × 1 query por cuenta
+  // dentro de esa plataforma) — el peor caso de los tres que había en este
+  // archivo. Se resuelve con 1 sola llamada al RPC para TODAS las cuentas de
+  // la agencia, y después se agrupa por plataforma acá en JS.
+  const { data } = await supabase.rpc("latest_social_metrics", {
+    p_account_ids: accounts.map((a) => a.id),
+  });
+  const latestByAccount = new Map((data ?? []).map((row) => [row.social_account_id, row]));
 
-  return dashboards;
+  return Array.from(byPlatform.entries()).map(([platform, ids]) => {
+    const rows = ids.map((id) => latestByAccount.get(id)).filter((r): r is NonNullable<typeof r> => Boolean(r));
+    return {
+      platform,
+      accountCount: ids.length,
+      totalReach: rows.reduce((sum, r) => sum + (r.reach ?? 0), 0),
+      totalFollowers: rows.reduce((sum, r) => sum + (r.followers ?? 0), 0),
+      avgEngagementRate: rows.length
+        ? rows.reduce((sum, r) => sum + Number(r.engagement_rate ?? 0), 0) / rows.length
+        : 0,
+    } satisfies PlatformDashboard;
+  });
 }
 
 /** Una fila de la tabla plana de Analytics > Explorer. */
@@ -214,32 +201,36 @@ export async function getExplorerRows(filters: ExplorerFilters = {}): Promise<Ex
   const { data: accounts } = await accountsQuery;
   if (!accounts || accounts.length === 0) return [];
 
-  const rows = await Promise.all(
-    accounts.map(async (acc) => {
-      const { data: metrics } = await supabase
-        .from("social_metrics")
-        .select("id, metric_date, reach, impressions, engagement_rate, followers, plays")
-        .eq("social_account_id", acc.id)
-        .gte("metric_date", since)
-        .order("metric_date", { ascending: false });
+  // Antes: 1 query por cuenta para sus métricas del rango — potencialmente
+  // el peor de los tres N+1 de este archivo, porque acá no hay scoping por
+  // cliente (puede ser TODAS las cuentas de la agencia). 1 sola query con
+  // `.in(...)` trae todo de una vez.
+  const accountsById = new Map(accounts.map((acc) => [acc.id, acc]));
+  const { data: allMetrics } = await supabase
+    .from("social_metrics")
+    .select("id, social_account_id, metric_date, reach, impressions, engagement_rate, followers, plays")
+    .in("social_account_id", accounts.map((a) => a.id))
+    .gte("metric_date", since)
+    .order("metric_date", { ascending: false });
 
-      const clientName = (acc.clients as unknown as { name: string } | null)?.name ?? "—";
-      return (metrics ?? []).map((m) => ({
-        id: m.id,
-        clientName,
-        platform: acc.platform,
-        accountName: acc.display_name,
-        metricDate: m.metric_date,
-        reach: m.reach,
-        impressions: m.impressions,
-        engagementRate: Number(m.engagement_rate ?? 0),
-        followers: m.followers,
-        plays: m.plays,
-      }));
-    })
-  );
+  const rows = (allMetrics ?? []).map((m) => {
+    const acc = accountsById.get(m.social_account_id);
+    const clientName = (acc?.clients as unknown as { name: string } | null)?.name ?? "—";
+    return {
+      id: m.id,
+      clientName,
+      platform: acc?.platform as SocialPlatform,
+      accountName: acc?.display_name ?? null,
+      metricDate: m.metric_date,
+      reach: m.reach,
+      impressions: m.impressions,
+      engagementRate: Number(m.engagement_rate ?? 0),
+      followers: m.followers,
+      plays: m.plays,
+    };
+  });
 
-  return rows.flat().sort((a, b) => (a.metricDate < b.metricDate ? 1 : -1));
+  return rows.sort((a, b) => (a.metricDate < b.metricDate ? 1 : -1));
 }
 
 /** Una fila de Analytics > Alertas. */

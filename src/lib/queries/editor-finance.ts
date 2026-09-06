@@ -168,21 +168,62 @@ export async function getEditorFinanceOverview(): Promise<EditorFinanceOverviewR
     return [];
   }
 
-  return Promise.all(
-    (editors ?? []).map(async (editor) => {
-      const [rates, payouts] = await Promise.all([
-        getEditorRates(editor.id),
-        getEditorPayouts(editor.id),
-      ]);
-      return {
-        editorId: editor.id,
-        editorName: editor.full_name || editor.email,
-        editorEmail: editor.email,
-        ratesCount: rates.filter((r) => r.amount != null).length,
-        totals: computeEditorFinanceTotals(payouts),
-      };
-    })
-  );
+  if (!editors || editors.length === 0) return [];
+
+  // Antes: por cada editor, 2 queries (tarifas + pagos) vía getEditorRates/
+  // getEditorPayouts de arriba — N+1 real que escala con la cantidad de
+  // editores del equipo. Acá se traen TODAS las asignaciones y TODOS los
+  // pagos en 2 queries batcheadas con `.in(...)` y se agrupan por editor en
+  // JS. getEditorRates/getEditorPayouts NO se tocan: siguen siendo la
+  // función correcta para "un editor puntual" (su propio panel "Mis Pagos",
+  // o el detalle admin por editor en /admin/finanzas-equipo/[editorId]).
+  const editorIds = editors.map((e) => e.id);
+  const [{ data: allAssignments }, { data: allPayouts }] = await Promise.all([
+    supabase
+      .from("editor_client_assignments")
+      .select(
+        "id, editor_id, client_id, pay_amount, pay_currency, pay_frequency, pay_day, pay_notes, clients(name, status)"
+      )
+      .in("editor_id", editorIds),
+    supabase.from("editor_payouts").select("*").in("editor_id", editorIds),
+  ]);
+
+  const ratesByEditor = new Map<string, EditorClientRate[]>();
+  for (const row of allAssignments ?? []) {
+    const client = row.clients as unknown as { name: string; status: string } | null;
+    const list = ratesByEditor.get(row.editor_id) ?? [];
+    list.push({
+      assignmentId: row.id,
+      clientId: row.client_id,
+      clientName: client?.name ?? "—",
+      clientStatus: client?.status ?? "active",
+      amount: row.pay_amount,
+      currency: row.pay_currency,
+      frequency: row.pay_frequency,
+      paymentDay: row.pay_day,
+      notes: row.pay_notes,
+    });
+    ratesByEditor.set(row.editor_id, list);
+  }
+
+  const payoutsByEditor = new Map<string, EditorPayout[]>();
+  for (const row of (allPayouts ?? []) as EditorPayout[]) {
+    const list = payoutsByEditor.get(row.editor_id) ?? [];
+    list.push(row);
+    payoutsByEditor.set(row.editor_id, list);
+  }
+
+  return editors.map((editor) => {
+    const rates = ratesByEditor.get(editor.id) ?? [];
+    const payouts = payoutsByEditor.get(editor.id) ?? [];
+    return {
+      editorId: editor.id,
+      editorName: editor.full_name || editor.email,
+      editorEmail: editor.email,
+      ratesCount: rates.filter((r) => r.amount != null).length,
+      totals: computeEditorFinanceTotals(payouts),
+    };
+  });
 }
 
 /** Suma los totales por moneda de varios editores en uno solo por moneda — para el KPI general de la agencia. */

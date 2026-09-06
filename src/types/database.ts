@@ -1849,6 +1849,13 @@ export interface Database {
         Args: Flatten<{ p_key: string }>;
         Returns: boolean;
       };
+      // Reemplaza el patrón N+1 "última métrica por cuenta social" (ver
+      // 0043_latest_social_metrics_rpc.sql) — DISTINCT ON en Postgres, algo
+      // que PostgREST no puede expresar en una consulta REST normal.
+      latest_social_metrics: {
+        Args: Flatten<{ p_account_ids: string[] }>;
+        Returns: SocialMetric[];
+      };
     };
   };
 }

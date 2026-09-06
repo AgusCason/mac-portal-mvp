@@ -24,24 +24,27 @@ export async function getSocialAccountsOverview(
 
   if (error || !accounts) return [];
 
-  const results = await Promise.all(
-    accounts.map(async (acc) => {
-      const { data: latest } = await supabase
-        .from("social_metrics")
-        .select("*")
-        .eq("social_account_id", acc.id)
-        .order("metric_date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+  // Antes: 1 query por cuenta para su métrica más reciente (N+1 real, el
+  // cuello de botella de "cambiar de sección" cuando la agencia crece). Se
+  // reemplaza por 1 sola llamada al RPC `latest_social_metrics` (DISTINCT ON
+  // en Postgres — PostgREST no puede expresar "el último por grupo" en una
+  // consulta REST normal). Ver 0043_latest_social_metrics_rpc.sql.
+  const accountIds = accounts.map((a) => a.id);
+  const { data: latestRows } = await supabase.rpc("latest_social_metrics", {
+    p_account_ids: accountIds,
+  });
+  const latestByAccount = new Map((latestRows ?? []).map((row) => [row.social_account_id, row]));
 
-      const { clients, ...rest } = acc as SocialAccount & {
-        clients: { name: string } | null;
-      };
-      return { ...rest, client_name: clients?.name ?? "—", latest: latest ?? null };
-    })
-  );
-
-  return results;
+  return accounts.map((acc) => {
+    const { clients, ...rest } = acc as SocialAccount & {
+      clients: { name: string } | null;
+    };
+    return {
+      ...rest,
+      client_name: clients?.name ?? "—",
+      latest: latestByAccount.get(acc.id) ?? null,
+    };
+  });
 }
 
 export interface PlatformMetricsSummary {
@@ -76,35 +79,45 @@ export async function getClientMetricsSummary(
 
   if (!accounts || accounts.length === 0) return [];
 
-  return Promise.all(
-    accounts.map(async (acc) => {
-      const { data: metrics } = await supabase
-        .from("social_metrics")
-        .select("reach, impressions, engagement_rate, followers, plays, metric_date")
-        .eq("social_account_id", acc.id)
-        .gte("metric_date", since)
-        .order("metric_date", { ascending: false });
+  // Antes: 1 query por cuenta del cliente para sus métricas del período (N+1
+  // acotado a un cliente, pero el mismo patrón se repetía en todos lados). 1
+  // sola query con `.in(...)` trae todas las filas de todas las cuentas del
+  // cliente, y se agrupan acá por cuenta.
+  const accountIds = accounts.map((a) => a.id);
+  const { data: allMetrics } = await supabase
+    .from("social_metrics")
+    .select("social_account_id, reach, impressions, engagement_rate, followers, plays, metric_date")
+    .in("social_account_id", accountIds)
+    .gte("metric_date", since)
+    .order("metric_date", { ascending: false });
 
-      const rows = metrics ?? [];
-      const totalReach = rows.reduce((sum, r) => sum + (r.reach ?? 0), 0);
-      const totalImpressions = rows.reduce((sum, r) => sum + (r.impressions ?? 0), 0);
-      const totalPlays = rows.reduce((sum, r) => sum + (r.plays ?? 0), 0);
-      const avgEngagementRate = rows.length
-        ? rows.reduce((sum, r) => sum + Number(r.engagement_rate ?? 0), 0) / rows.length
-        : 0;
+  const metricsByAccount = new Map<string, NonNullable<typeof allMetrics>>();
+  for (const row of allMetrics ?? []) {
+    const list = metricsByAccount.get(row.social_account_id) ?? [];
+    list.push(row);
+    metricsByAccount.set(row.social_account_id, list);
+  }
 
-      return {
-        platform: acc.platform,
-        displayName: acc.display_name,
-        followers: rows[0]?.followers ?? null,
-        totalReach,
-        totalImpressions,
-        avgEngagementRate,
-        totalPlays,
-        daysWithData: rows.length,
-      };
-    })
-  );
+  return accounts.map((acc) => {
+    const rows = metricsByAccount.get(acc.id) ?? [];
+    const totalReach = rows.reduce((sum, r) => sum + (r.reach ?? 0), 0);
+    const totalImpressions = rows.reduce((sum, r) => sum + (r.impressions ?? 0), 0);
+    const totalPlays = rows.reduce((sum, r) => sum + (r.plays ?? 0), 0);
+    const avgEngagementRate = rows.length
+      ? rows.reduce((sum, r) => sum + Number(r.engagement_rate ?? 0), 0) / rows.length
+      : 0;
+
+    return {
+      platform: acc.platform,
+      displayName: acc.display_name,
+      followers: rows[0]?.followers ?? null,
+      totalReach,
+      totalImpressions,
+      avgEngagementRate,
+      totalPlays,
+      daysWithData: rows.length,
+    };
+  });
 }
 
 export interface ClientPostMetric {
