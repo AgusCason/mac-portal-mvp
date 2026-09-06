@@ -247,6 +247,29 @@ export interface SocialMetric {
   plays: number;
 }
 
+/**
+ * Una publicación real de Instagram con sus métricas — resultado de leer la
+ * Graph API (ver `netlify/functions/sync-social-metrics.ts`), no confundir
+ * con `ContentItem` (la grilla de contenido PLANEADO/por publicar).
+ */
+export interface SocialMediaPost {
+  id: string;
+  social_account_id: string;
+  external_post_id: string;
+  media_type: string | null;
+  permalink: string | null;
+  thumbnail_url: string | null;
+  caption: string | null;
+  posted_at: string | null;
+  reach: number;
+  likes: number;
+  comments: number;
+  saved: number;
+  plays: number;
+  engagement_rate: number;
+  synced_at: string;
+}
+
 export interface BillingInvoice {
   id: string;
   client_id: string;
@@ -984,6 +1007,29 @@ export interface Database {
           >
         >;
         Update: Flatten<Partial<SocialMetric>>;
+        Relationships: [];
+      };
+      social_media_posts: {
+        Row: Flatten<SocialMediaPost>;
+        Insert: Flatten<
+          Optional<
+            SocialMediaPost,
+            | "id"
+            | "media_type"
+            | "permalink"
+            | "thumbnail_url"
+            | "caption"
+            | "posted_at"
+            | "reach"
+            | "likes"
+            | "comments"
+            | "saved"
+            | "plays"
+            | "engagement_rate"
+            | "synced_at"
+          >
+        >;
+        Update: Flatten<Partial<SocialMediaPost>>;
         Relationships: [];
       };
       ai_conversations: {

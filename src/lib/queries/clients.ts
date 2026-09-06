@@ -56,6 +56,13 @@ export async function getAccountsOverview(
 ): Promise<AccountCardData[]> {
   const supabase = await createClient();
 
+  // `editor_client_assignments` tiene DOS foreign keys a `profiles`
+  // (`editor_id` y `assigned_by`, ver 0001_schema.sql) — un embed
+  // `profiles(...)` sin desambiguar hace que PostgREST rechace la consulta
+  // ENTERA con "more than one relationship was found", así que ni un solo
+  // cliente llegaba a esta página (el error quedaba silenciado más abajo,
+  // devolviendo `[]` como si de verdad no hubiera clientes). Mismo criterio
+  // que ya usa `queries/tasks.ts` para su propio embed ambiguo con profiles.
   const [{ data: clients, error }, { data: favorites }] = await Promise.all([
     supabase
       .from("clients")
@@ -63,7 +70,7 @@ export async function getAccountsOverview(
         `id, name, brand_name, logo_url, status, created_at,
          social_instagram, social_tiktok, social_facebook, social_youtube, social_website,
          client_plans(status, plans(name)),
-         editor_client_assignments(profiles(id, full_name, avatar_url))`
+         editor_client_assignments(profiles!editor_client_assignments_editor_id_fkey(id, full_name, avatar_url))`
       )
       .order("created_at", { ascending: false })
       .limit(limit),
@@ -161,9 +168,13 @@ export async function getClientDetail(clientId: string): Promise<ClientDetail | 
         .limit(1)
         .maybeSingle(),
       supabase.from("drive_folders").select("folder_type, drive_folder_id").eq("client_id", clientId),
+      // Mismo embed ambiguo que en `getAccountsOverview` de más arriba —
+      // desambiguado igual, por FK explícita.
       supabase
         .from("editor_client_assignments")
-        .select("id, editor_id, can_view_chat, can_view_drive, profiles(full_name, email)")
+        .select(
+          "id, editor_id, can_view_chat, can_view_drive, profiles!editor_client_assignments_editor_id_fkey(full_name, email)"
+        )
         .eq("client_id", clientId),
       supabase
         .from("content_items")

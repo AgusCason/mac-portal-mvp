@@ -1,7 +1,7 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import PDFDocument from "pdfkit";
-import type { PlatformMetricsSummary } from "@/lib/queries/social";
+import type { PlatformMetricsSummary, ClientPostMetric } from "@/lib/queries/social";
 
 let _client: Anthropic | null = null;
 function getAnthropicClient() {
@@ -21,6 +21,7 @@ Reglas:
 - Estructurá la respuesta en secciones. Cada sección empieza con una línea que dice "## Título de la sección" seguida del texto en párrafos normales (sin markdown, sin bullets con guiones ni asteriscos).
 - Usá estas secciones, en este orden: "Resumen General", "Contenido Publicado", "Métricas por Red", "Recomendaciones".
 - Nunca inventes cifras que no te dieron. Si falta información de alguna red (sin cuentas conectadas, sin datos cargados), decilo explícitamente en vez de estimar o rellenar.
+- Si te dieron publicaciones puntuales de mejor y peor rendimiento, usalas: en "Contenido Publicado" nombrá qué piezas se destacaron y por qué (formato, tema), y en "Recomendaciones" basate en esa comparación real (qué repetir, qué evitar) en vez de dar consejos genéricos de redes sociales.
 - Sé concreto: 2-4 párrafos cortos por sección, no un ensayo.`;
 
 export interface ReportContext {
@@ -29,6 +30,13 @@ export interface ReportContext {
   periodLabel: string;
   publishedPieces: { title: string; network: string }[];
   metrics: PlatformMetricsSummary[];
+  topPosts?: ClientPostMetric[];
+  bottomPosts?: ClientPostMetric[];
+}
+
+function formatPost(p: ClientPostMetric): string {
+  const label = p.caption ? p.caption.slice(0, 80).replace(/\s+/g, " ") : "(sin descripción)";
+  return `- [${p.platform}${p.mediaType ? `/${p.mediaType}` : ""}] "${label}" — alcance ${p.reach}, likes ${p.likes}, comentarios ${p.comments}, guardados ${p.saved}${p.plays ? `, reproducciones ${p.plays}` : ""}, engagement ${p.engagementRate.toFixed(2)}%`;
 }
 
 /**
@@ -59,6 +67,12 @@ ${ctx.publishedPieces.map((p) => `- ${p.title} (${p.network})`).join("\n") || "(
 
 Métricas por red social:
 ${metricsBlock}
+
+Publicaciones de mejor rendimiento en el período:
+${ctx.topPosts && ctx.topPosts.length > 0 ? ctx.topPosts.map(formatPost).join("\n") : "(sin datos de publicaciones individuales todavía)"}
+
+Publicaciones de peor rendimiento en el período:
+${ctx.bottomPosts && ctx.bottomPosts.length > 0 ? ctx.bottomPosts.map(formatPost).join("\n") : "(sin datos de publicaciones individuales todavía)"}
 
 Redactá el resumen ejecutivo de este período para el cliente, siguiendo la estructura de secciones indicada.`;
 

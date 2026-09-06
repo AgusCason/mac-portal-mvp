@@ -55,6 +55,22 @@ export const READ_TOOLS: Anthropic.Tool[] = [
       "Corre un diagnóstico sobre toda la base de datos de la agencia y devuelve una lista de inconsistencias/errores comunes: clientes activos sin carpetas de Drive, clientes sin ningún editor asignado, asignaciones de editor sin ningún permiso activo (ni chat ni Drive — probable error de carga), contratos pendientes de firma hace más de 30 días, y clientes con email de contacto con formato inválido. Usar esto cuando el admin pida 'revisar errores', 'ver qué está mal' o similar.",
     input_schema: { type: "object", properties: {} },
   },
+  {
+    name: "get_client_social_metrics",
+    description:
+      "Trae métricas REALES de redes sociales de un cliente puntual: un resumen agregado por plataforma (alcance, impresiones, engagement promedio, seguidores) de los últimos N días, más las publicaciones de mejor y peor rendimiento en ese período con su detalle (alcance, likes, comentarios, guardados, reproducciones, % de engagement). Usar esta tool ANTES de proponer ideas de contenido, mejoras o de opinar sobre cómo le está yendo a un cliente en redes — comparar publicaciones reales de alto vs bajo rendimiento es la base de cualquier sugerencia concreta, nunca inventar recomendaciones genéricas sin mirar los datos primero. Si el cliente todavía no tiene ninguna cuenta conectada, la tool lo aclara explícitamente.",
+    input_schema: {
+      type: "object",
+      properties: {
+        clientId: { type: "string", description: "UUID del cliente." },
+        days: {
+          type: "number",
+          description: "Ventana de días hacia atrás a considerar (default 30, máximo 180).",
+        },
+      },
+      required: ["clientId"],
+    },
+  },
 ];
 
 export async function listClients(
@@ -90,9 +106,12 @@ export async function getClientDetail(supabase: AdminClient, input: { clientId: 
         .eq("status", "active")
         .maybeSingle(),
       supabase.from("drive_folders").select("folder_type").eq("client_id", input.clientId),
+      // `editor_client_assignments` tiene dos FKs a `profiles` (editor_id y
+      // assigned_by) — sin desambiguar, PostgREST rechaza toda la consulta
+      // (ver el mismo fix en `queries/clients.ts`).
       supabase
         .from("editor_client_assignments")
-        .select("id, can_view_chat, can_view_drive, profiles(full_name)")
+        .select("id, can_view_chat, can_view_drive, profiles!editor_client_assignments_editor_id_fkey(full_name)")
         .eq("client_id", input.clientId),
       supabase
         .from("content_items")
@@ -217,6 +236,113 @@ export async function findDataIssues(supabase: AdminClient): Promise<{ issues: D
   return { issues };
 }
 
+interface SocialPostRow {
+  id: string;
+  social_account_id: string;
+  media_type: string | null;
+  permalink: string | null;
+  caption: string | null;
+  posted_at: string | null;
+  reach: number;
+  likes: number;
+  comments: number;
+  saved: number;
+  plays: number;
+  engagement_rate: number;
+}
+
+/**
+ * Métricas de redes sociales de un cliente puntual — a diferencia del resto
+ * de las tools de este catálogo, acá le damos al asistente datos "de
+ * negocio" (rendimiento de contenido) en vez de "de administración de la
+ * agencia", justamente para que pueda razonar sobre mejoras de contenido y
+ * no solo sobre errores operativos. Se descartan publicaciones con `reach`
+ * 0 (sin datos sincronizados todavía) para no confundir al modelo con ceros
+ * que no reflejan rendimiento real.
+ */
+export async function getClientSocialMetrics(
+  supabase: AdminClient,
+  input: { clientId: string; days?: number }
+) {
+  const days = input.days && input.days > 0 ? Math.min(input.days, 180) : 30;
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: accounts, error: accountsError } = await supabase
+    .from("social_accounts")
+    .select("id, platform, display_name")
+    .eq("client_id", input.clientId);
+
+  if (accountsError) return { error: accountsError.message };
+  if (!accounts || accounts.length === 0) {
+    return {
+      platforms: [],
+      topPosts: [],
+      bottomPosts: [],
+      note: "Este cliente todavía no tiene ninguna cuenta social conectada (ver /admin/redes).",
+    };
+  }
+
+  const accountIds = accounts.map((a) => a.id);
+  const accountById = new Map(accounts.map((a) => [a.id, a]));
+
+  const [{ data: metricRows }, { data: postRows }] = await Promise.all([
+    supabase
+      .from("social_metrics")
+      .select("social_account_id, reach, impressions, engagement_rate, followers, plays, metric_date")
+      .in("social_account_id", accountIds)
+      .gte("metric_date", since.slice(0, 10)),
+    supabase
+      .from("social_media_posts")
+      .select(
+        "id, social_account_id, media_type, permalink, caption, posted_at, reach, likes, comments, saved, plays, engagement_rate"
+      )
+      .in("social_account_id", accountIds)
+      .gte("posted_at", since)
+      .gt("reach", 0)
+      .order("engagement_rate", { ascending: false }),
+  ]);
+
+  const platforms = accounts.map((acc) => {
+    const rows = (metricRows ?? []).filter((r) => r.social_account_id === acc.id);
+    const totalReach = rows.reduce((sum, r) => sum + (r.reach ?? 0), 0);
+    const avgEngagementRate = rows.length
+      ? rows.reduce((sum, r) => sum + Number(r.engagement_rate ?? 0), 0) / rows.length
+      : 0;
+    return {
+      platform: acc.platform,
+      display_name: acc.display_name,
+      followers: rows[0]?.followers ?? null,
+      total_reach: totalReach,
+      total_impressions: rows.reduce((sum, r) => sum + (r.impressions ?? 0), 0),
+      avg_engagement_rate: Number(avgEngagementRate.toFixed(2)),
+      total_plays: rows.reduce((sum, r) => sum + (r.plays ?? 0), 0),
+      days_with_data: rows.length,
+    };
+  });
+
+  const posts = ((postRows ?? []) as SocialPostRow[]).map((p) => ({
+    id: p.id,
+    platform: accountById.get(p.social_account_id)?.platform ?? "—",
+    media_type: p.media_type,
+    permalink: p.permalink,
+    caption: p.caption?.slice(0, 200) ?? null,
+    posted_at: p.posted_at,
+    reach: p.reach,
+    likes: p.likes,
+    comments: p.comments,
+    saved: p.saved,
+    plays: p.plays,
+    engagement_rate: p.engagement_rate,
+  }));
+
+  const topPosts = posts.slice(0, 5);
+  // Solo tiene sentido mostrar "peores" si hay suficiente volumen como para
+  // que no sean literalmente las mismas publicaciones que ya salieron arriba.
+  const bottomPosts = posts.length > 5 ? posts.slice(-5).reverse() : [];
+
+  return { platforms, topPosts, bottomPosts };
+}
+
 export async function executeReadTool(
   name: string,
   input: Record<string, unknown>,
@@ -229,6 +355,8 @@ export async function executeReadTool(
       return getClientDetail(supabase, input as { clientId: string });
     case "find_data_issues":
       return findDataIssues(supabase);
+    case "get_client_social_metrics":
+      return getClientSocialMetrics(supabase, input as { clientId: string; days?: number });
     default:
       return { error: `Tool de lectura desconocida: ${name}` };
   }

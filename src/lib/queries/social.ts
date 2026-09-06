@@ -106,3 +106,106 @@ export async function getClientMetricsSummary(
     })
   );
 }
+
+export interface ClientPostMetric {
+  id: string;
+  platform: string;
+  mediaType: string | null;
+  permalink: string | null;
+  thumbnailUrl: string | null;
+  caption: string | null;
+  postedAt: string | null;
+  reach: number;
+  likes: number;
+  comments: number;
+  saved: number;
+  plays: number;
+  engagementRate: number;
+}
+
+interface RawPostRow {
+  id: string;
+  media_type: string | null;
+  permalink: string | null;
+  thumbnail_url: string | null;
+  caption: string | null;
+  posted_at: string | null;
+  reach: number;
+  likes: number;
+  comments: number;
+  saved: number;
+  plays: number;
+  engagement_rate: number;
+  social_accounts: { platform: string } | null;
+}
+
+function mapPostRow(row: RawPostRow): ClientPostMetric {
+  return {
+    id: row.id,
+    platform: row.social_accounts?.platform ?? "—",
+    mediaType: row.media_type,
+    permalink: row.permalink,
+    thumbnailUrl: row.thumbnail_url,
+    caption: row.caption,
+    postedAt: row.posted_at,
+    reach: row.reach,
+    likes: row.likes,
+    comments: row.comments,
+    saved: row.saved,
+    plays: row.plays,
+    engagementRate: Number(row.engagement_rate ?? 0),
+  };
+}
+
+/**
+ * Publicaciones reales (no contenido planeado) de mejor y peor rendimiento
+ * de un cliente en los últimos `days` días — el insumo por-publicación que
+ * completa a `getClientMetricsSummary` (que solo agrega totales por
+ * plataforma) para que tanto los Reportes con IA como el Asistente puedan
+ * señalar EJEMPLOS concretos de qué funcionó y qué no, en vez de hablar en
+ * abstracto. Se descartan publicaciones con `reach` 0 (todavía sin datos
+ * sincronizados) para no ensuciar el ranking con ceros.
+ */
+export async function getClientTopPosts(
+  clientId: string,
+  days = 30,
+  limit = 5
+): Promise<{ topPosts: ClientPostMetric[]; bottomPosts: ClientPostMetric[] }> {
+  const supabase = await createClient();
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+  // `!inner` habilita filtrar por columnas de la tabla embebida
+  // (`social_accounts.client_id`) — sin él, PostgREST no acepta el `.eq`
+  // sobre el embed.
+  const baseSelect =
+    "id, media_type, permalink, thumbnail_url, caption, posted_at, reach, likes, comments, saved, plays, engagement_rate, social_accounts!inner(platform, client_id)";
+
+  const [{ data: top }, { data: bottom }] = await Promise.all([
+    supabase
+      .from("social_media_posts")
+      .select(baseSelect)
+      .eq("social_accounts.client_id", clientId)
+      .gte("posted_at", since)
+      .gt("reach", 0)
+      .order("engagement_rate", { ascending: false })
+      .limit(limit),
+    supabase
+      .from("social_media_posts")
+      .select(baseSelect)
+      .eq("social_accounts.client_id", clientId)
+      .gte("posted_at", since)
+      .gt("reach", 0)
+      .order("engagement_rate", { ascending: true })
+      .limit(limit),
+  ]);
+
+  const topPosts = ((top ?? []) as unknown as RawPostRow[]).map(mapPostRow);
+  const bottomIds = new Set(topPosts.map((p) => p.id));
+  const bottomPosts = ((bottom ?? []) as unknown as RawPostRow[])
+    .map(mapPostRow)
+    // Si hay pocas publicaciones en el período, el mismo post puede salir
+    // "peor" y "mejor" a la vez — no tiene sentido mostrarlo duplicado.
+    .filter((p) => !bottomIds.has(p.id));
+
+  return { topPosts, bottomPosts };
+}

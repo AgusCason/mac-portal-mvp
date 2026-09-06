@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin, requireRole } from "@/lib/auth";
 import { createClient as createSupabaseServerClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { getClientMetricsSummary } from "@/lib/queries/social";
+import { getClientMetricsSummary, getClientTopPosts } from "@/lib/queries/social";
 import { generateReportSummary, buildReportPdf } from "@/lib/reports";
 
 const REPORT_PERIOD_DAYS = 30;
@@ -75,6 +75,7 @@ export async function generateReportAction(formData: FormData): Promise<Generate
     .gte("updated_at", since);
 
   const metrics = await getClientMetricsSummary(client.id, REPORT_PERIOD_DAYS);
+  const { topPosts, bottomPosts } = await getClientTopPosts(client.id, REPORT_PERIOD_DAYS);
 
   let summary: string;
   try {
@@ -84,6 +85,8 @@ export async function generateReportAction(formData: FormData): Promise<Generate
       periodLabel: `Últimos ${REPORT_PERIOD_DAYS} días`,
       publishedPieces: (publishedRows ?? []).map((r) => ({ title: r.title, network: r.network })),
       metrics,
+      topPosts,
+      bottomPosts,
     });
   } catch (err) {
     return {
