@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { Users, Wrench, HandCoins, ArrowRight } from "lucide-react";
 import { requireRole } from "@/lib/auth";
-import { getClientPaymentsOverview, getToolsCostOverview } from "@/lib/queries/finance-overview";
+import {
+  getClientPaymentsOverview,
+  getToolsCostOverview,
+  getEditorPayoutsMonthly,
+} from "@/lib/queries/finance-overview";
 import { getEditorFinanceOverview, mergeFinanceTotals } from "@/lib/queries/editor-finance";
 import { ClientPaymentsPanel } from "@/components/finance/client-payments-panel";
 import { ToolsCostPanel } from "@/components/finance/tools-cost-panel";
-import { FinanceKpiRow } from "@/components/finance/finance-kpi-row";
+import { EditorPayoutsPanel } from "@/components/finance/editor-payouts-panel";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { getT } from "@/lib/i18n/dictionary";
@@ -21,10 +25,11 @@ export default async function AdminFinanzasPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
 
-  const [clientPayments, toolsCost, editorOverview] = await Promise.all([
+  const [clientPayments, toolsCost, editorOverview, editorMonthly] = await Promise.all([
     getClientPaymentsOverview(),
     getToolsCostOverview(),
     getEditorFinanceOverview(),
+    getEditorPayoutsMonthly(),
   ]);
   const editorTotals = mergeFinanceTotals(editorOverview.map((o) => o.totals));
 
@@ -80,11 +85,12 @@ export default async function AdminFinanzasPage() {
             </Link>
           </Button>
         </div>
-        <FinanceKpiRow totals={editorTotals} language={profile.language} />
-        {editorTotals.length === 0 && (
+        {editorTotals.length === 0 ? (
           <p className="text-muted-foreground text-sm">
             {t("pages.finanzas.noEditorPayouts", "Todavía no hay pagos de editores cargados.")}
           </p>
+        ) : (
+          <EditorPayoutsPanel totals={editorTotals} monthly={editorMonthly} language={profile.language} />
         )}
       </section>
     </div>

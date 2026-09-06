@@ -1,8 +1,17 @@
 import "server-only";
-import { getInvoices } from "@/lib/queries/billing";
+import { getInvoices, computeBillingAnalytics, type BillingAnalytics } from "@/lib/queries/billing";
 import { getAgencyTools } from "@/lib/queries/tools";
-import { getEditorFinanceOverview, mergeFinanceTotals } from "@/lib/queries/editor-finance";
-import { computeToolsCostOverview, type ToolsCostOverview } from "@/lib/finance-utils";
+import {
+  getEditorFinanceOverview,
+  mergeFinanceTotals,
+  getAllEditorPayouts,
+} from "@/lib/queries/editor-finance";
+import {
+  computeToolsCostOverview,
+  computeEditorPayoutsMonthly,
+  type ToolsCostOverview,
+  type EditorPayoutsMonthly,
+} from "@/lib/finance-utils";
 
 /* ------------------------------------------------------------------ */
 /* Pago Clientes — reutiliza billing_invoices (ya es "lo que pagan los */
@@ -29,6 +38,8 @@ export interface ClientPaymentsOverview {
   byCurrency: ClientPaymentTotals[];
   /** Facturas pendientes/atrasadas, la más próxima primero — "fechas de pago de cada uno". */
   upcoming: UpcomingClientPayment[];
+  /** Evolución mensual (últimos 6 meses) por moneda — para el gráfico del dashboard general. */
+  monthly: BillingAnalytics[];
 }
 
 function monthKeyOf(dateStr: string): string {
@@ -71,9 +82,13 @@ export async function getClientPaymentsOverview(): Promise<ClientPaymentsOvervie
     }))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
+  const currencies = Array.from(new Set(invoices.map((i) => i.currency))).sort((a, b) => a.localeCompare(b));
+  const monthly = currencies.map((currency) => computeBillingAnalytics(invoices, currency, 6));
+
   return {
     byCurrency: Array.from(byCurrencyMap.values()).sort((a, b) => a.currency.localeCompare(b.currency)),
     upcoming,
+    monthly,
   };
 }
 
@@ -94,6 +109,15 @@ export async function getToolsCostOverview(): Promise<ToolsCostOverview> {
 
 /* ------------------------------------------------------------------ */
 /* Pago Editor — reutiliza lo que ya existe en queries/editor-finance.  */
+/* La evolución mensual agregada (todos los editores) es nueva: junta    */
+/* `getAllEditorPayouts` (I/O) con `computeEditorPayoutsMonthly` (pura,   */
+/* en finance-utils.ts) igual que se hizo con Herramientas.              */
 /* ------------------------------------------------------------------ */
 
 export { getEditorFinanceOverview, mergeFinanceTotals };
+export type { EditorPayoutsMonthly };
+
+export async function getEditorPayoutsMonthly(): Promise<EditorPayoutsMonthly[]> {
+  const payouts = await getAllEditorPayouts();
+  return computeEditorPayoutsMonthly(payouts);
+}

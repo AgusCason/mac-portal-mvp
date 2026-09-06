@@ -119,21 +119,21 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       ],
     },
     { label: "Equipo", key: "nav.equipo", href: "/admin/equipo", icon: UserCog },
-    { label: "Finanzas", key: "nav.finanzas", href: "/admin/finanzas", icon: Wallet },
-    { label: "Finanzas de Equipo", key: "nav.finanzasEquipo", href: "/admin/finanzas-equipo", icon: HandCoins },
+    {
+      label: "Finanzas",
+      key: "nav.finanzas.group",
+      icon: HandCoins,
+      children: [
+        { label: "General", key: "nav.finanzas.general", href: "/admin/finanzas", icon: LayoutDashboard },
+        { label: "Clientes", key: "nav.finanzas.clientes", href: "/admin/planes", icon: Wallet },
+        { label: "Equipo", key: "nav.finanzas.equipo", href: "/admin/finanzas-equipo", icon: UserCog },
+      ],
+    },
     { label: "Herramientas", key: "nav.herramientas", href: "/admin/herramientas", icon: Wrench },
     { label: "Calendario", key: "nav.calendario", href: "/admin/calendario", icon: CalendarDays },
     { label: "Contratos", key: "nav.contratos", href: "/admin/contratos", icon: FileSignature },
     { label: "Chat", key: "nav.chat", href: "/admin/chat", icon: Inbox },
-    {
-      label: "Comercial",
-      key: "nav.comercial.group",
-      icon: Wallet,
-      children: [
-        { label: "Planes y facturación", key: "nav.comercial.planes", href: "/admin/planes", icon: Wallet },
-        { label: "CRM", key: "nav.comercial.crm", href: "/admin/crm", icon: Handshake },
-      ],
-    },
+    { label: "CRM", key: "nav.crm", href: "/admin/crm", icon: Handshake },
     { label: "Asistente IA", key: "nav.asistenteIA", href: "/admin/asistente", icon: Sparkles },
     {
       label: "Configuración",

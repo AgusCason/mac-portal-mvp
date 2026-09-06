@@ -72,6 +72,30 @@ export async function getEditorPayouts(editorId: string, limit = 300): Promise<E
   });
 }
 
+/**
+ * Todo el historial de pagos de TODOS los editores (sin filtrar por
+ * editor_id) — solo lo puede leer un admin, vía la policy
+ * "editor_payouts_admin_all" (0040_editor_finance_and_tools.sql). Se usa
+ * para el gráfico de evolución mensual del dashboard general de Finanzas;
+ * `getEditorPayouts(editorId)` de arriba sigue siendo lo que usa el panel
+ * por editor.
+ */
+export async function getAllEditorPayouts(limit = 1000): Promise<EditorPayout[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("editor_payouts")
+    .select("*")
+    .order("due_date", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error("[getAllEditorPayouts]", error.message);
+    return [];
+  }
+
+  return data ?? [];
+}
+
 export interface EditorFinanceTotalsByCurrency {
   currency: string;
   paidAllTime: number;

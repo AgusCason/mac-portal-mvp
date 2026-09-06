@@ -4,6 +4,8 @@ import { KpiCard } from "@/components/dashboard/kpi-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/shared/empty-state";
+import { ToolsCostRankedChart } from "@/components/finance/tools-cost-ranked-chart";
+import { FinanceAlertBanner } from "@/components/finance/finance-alert-banner";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { URGENCY_BADGE } from "@/lib/finance-utils";
 import { getT } from "@/lib/i18n/dictionary";
@@ -12,8 +14,8 @@ import type { ProfileLanguage } from "@/types/database";
 /**
  * Bloque "Pago Herramientas" del dashboard general de Finanzas — cuánto sale
  * cada herramienta (gasto recurrente normalizado a mensual, ver
- * `computeToolsCostOverview`) y alertas de vencimiento próximo, cargadas a
- * mano por el admin en Herramientas.
+ * `computeToolsCostOverview`), el ranking por herramienta y alertas de
+ * vencimiento próximo, cargadas a mano por el admin en Herramientas.
  */
 export function ToolsCostPanel({
   overview,
@@ -23,9 +25,18 @@ export function ToolsCostPanel({
   language: ProfileLanguage;
 }) {
   const t = getT(language);
+  const overdueCount = overview.renewals.filter((r) => r.urgency === "overdue").length;
+  const urgentCount = overview.renewals.filter((r) => r.urgency === "urgent").length;
 
   return (
     <div className="space-y-4">
+      <FinanceAlertBanner
+        overdueCount={overdueCount}
+        urgentCount={urgentCount}
+        overdueLabel={t("components.finance.alertToolsOverdue", "herramientas vencidas")}
+        urgentLabel={t("components.finance.alertToolsUrgent", "vencen esta semana")}
+      />
+
       {overview.byCurrency.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {overview.byCurrency.map((tot) => (
@@ -37,6 +48,21 @@ export function ToolsCostPanel({
             />
           ))}
         </div>
+      )}
+
+      {overview.byCurrency.map((tot) =>
+        tot.topTools.length > 0 ? (
+          <Card key={tot.currency}>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">
+                {t("components.finance.toolsBreakdownChartTitle", "Gasto por herramienta")} ({tot.currency})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ToolsCostRankedChart rows={tot.topTools} currency={tot.currency} />
+            </CardContent>
+          </Card>
+        ) : null
       )}
 
       <Card>

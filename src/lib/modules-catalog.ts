@@ -148,6 +148,12 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         status: "incluido",
       },
       {
+        key: "planes-facturacion",
+        label: "Planes y facturación",
+        description: "Planes contratados, facturas, morosidad y recordatorios automáticos.",
+        status: "incluido",
+      },
+      {
         key: "contratos",
         label: "Contratos",
         description: "Documentos legales con firma digital y trazabilidad (IP + fecha).",
@@ -220,12 +226,6 @@ export const MODULES_CATALOG: ModuleCategory[] = [
     area: "Gestión",
     category: "Comercial",
     modules: [
-      {
-        key: "planes-facturacion",
-        label: "Planes y facturación",
-        description: "Planes contratados, facturas, morosidad y recordatorios automáticos.",
-        status: "incluido",
-      },
       {
         key: "crm",
         label: "CRM",
