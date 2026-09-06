@@ -119,16 +119,6 @@ drop policy if exists "agency_tools_admin_all" on public.agency_tools;
 create policy "agency_tools_admin_all" on public.agency_tools
   for all using (public.is_admin()) with check (public.is_admin());
 
--- El editor solo ve las herramientas que efectivamente le compartieron.
-drop policy if exists "agency_tools_editor_select" on public.agency_tools;
-create policy "agency_tools_editor_select" on public.agency_tools
-  for select using (
-    exists (
-      select 1 from public.agency_tool_access
-      where agency_tool_access.tool_id = agency_tools.id and agency_tool_access.editor_id = auth.uid()
-    )
-  );
-
 drop trigger if exists set_updated_at on public.agency_tools;
 create trigger set_updated_at before update on public.agency_tools
   for each row execute function public.set_updated_at();
@@ -151,10 +141,21 @@ create policy "agency_tool_access_admin_all" on public.agency_tool_access
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- El editor ve SUS PROPIAS filas de acceso (para saber qué le compartieron,
--- y porque la policy de arriba de agency_tools depende de este select).
+-- y porque la policy de abajo de agency_tools depende de este select).
 drop policy if exists "agency_tool_access_editor_select" on public.agency_tool_access;
 create policy "agency_tool_access_editor_select" on public.agency_tool_access
   for select using (editor_id = auth.uid());
+
+-- El editor solo ve las herramientas que efectivamente le compartieron.
+-- Va después de crear agency_tool_access porque esta policy la referencia.
+drop policy if exists "agency_tools_editor_select" on public.agency_tools;
+create policy "agency_tools_editor_select" on public.agency_tools
+  for select using (
+    exists (
+      select 1 from public.agency_tool_access
+      where agency_tool_access.tool_id = agency_tools.id and agency_tool_access.editor_id = auth.uid()
+    )
+  );
 
 -- El secreto se cifra/descifra dentro de estas funciones (mismo patrón que
 -- vault_add_credential/vault_reveal_credential de 0013_vault.sql) — nunca
