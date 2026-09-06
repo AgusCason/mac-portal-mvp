@@ -4,20 +4,26 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
-import { inviteOrReuseUser } from "@/lib/onboarding";
+import { inviteOrReuseUser, createUserWithPassword } from "@/lib/onboarding";
 
 const createEditorSchema = z.object({
   fullName: z.string().min(2, "El nombre es obligatorio"),
   email: z.string().email("Email inválido"),
+  // "direct": crea la cuenta ya confirmada con contraseña temporal, sin
+  // depender de que llegue ningún email. "invite": el flujo original.
+  mode: z.enum(["direct", "invite"]).default("direct"),
 });
 
 export type CreateEditorResult =
-  | { ok: true; profileId: string; alreadyExisted: boolean }
+  | { ok: true; profileId: string; alreadyExisted: boolean; temporaryPassword?: string }
   | { ok: false; error: string };
 
 /**
- * Alta de Editor (Admin) — aprovisionamiento automático: invita por email vía
- * Supabase Auth Admin API con role=editor; el trigger `handle_new_user` crea
+ * Alta de Editor (Admin). Dos modos (ver `NewEditorDialog`):
+ *  - "direct" (default): `createUserWithPassword` — cuenta lista al toque
+ *    con una contraseña temporal que el admin le pasa al editor a mano.
+ *  - "invite": `inviteOrReuseUser` — el flujo original por email.
+ * Cualquiera de los dos dispara el mismo trigger `handle_new_user`, que crea
  * su `profiles`. Deja el perfil listo para asignar a clientes desde
  * `assignEditorToClientAction` (el editor NO ve nada hasta que se le asigne
  * al menos un cliente).
@@ -28,16 +34,25 @@ export async function createEditorAction(formData: FormData): Promise<CreateEdit
   const parsed = createEditorSchema.safeParse({
     fullName: formData.get("fullName"),
     email: formData.get("email"),
+    mode: formData.get("mode"),
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const invite = await inviteOrReuseUser(parsed.data.email, parsed.data.fullName, "editor");
-  if (!invite.ok) return { ok: false, error: invite.error };
+  const result =
+    parsed.data.mode === "direct"
+      ? await createUserWithPassword(parsed.data.email, parsed.data.fullName, "editor")
+      : await inviteOrReuseUser(parsed.data.email, parsed.data.fullName, "editor");
+  if (!result.ok) return { ok: false, error: result.error };
 
   revalidatePath("/admin/equipo");
-  return { ok: true, profileId: invite.profileId, alreadyExisted: invite.alreadyExisted };
+  return {
+    ok: true,
+    profileId: result.profileId,
+    alreadyExisted: result.alreadyExisted,
+    temporaryPassword: result.temporaryPassword,
+  };
 }
 
 export interface AssignEditorInput {
