@@ -11,8 +11,9 @@ import { requireAdmin } from "@/lib/auth";
  *     cuenta de Instagram profesional.
  *
  * Este endpoint arma la URL de autorización y redirige. El callback
- * (/api/oauth/meta/callback, a implementar) intercambia el `code` por un
- * access token de larga duración y lo guarda en `social_accounts`.
+ * (/api/oauth/meta/callback) intercambia el `code` por un access token de
+ * larga duración y lo guarda cifrado en `social_accounts` (ver
+ * src/lib/meta.ts y supabase/migrations/0038_social_account_tokens.sql).
  */
 export async function GET(request: NextRequest) {
   await requireAdmin();
@@ -28,10 +29,14 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const authUrl = new URL("https://www.facebook.com/v19.0/dialog/oauth");
+  // Misma versión de Graph API que usa src/lib/meta.ts y src/lib/whatsapp.ts
+  // — mantenerla igual en los tres lugares no es obligatorio (Meta soporta
+  // varias versiones en simultáneo) pero evita confusión al leer el código.
+  const authUrl = new URL("https://www.facebook.com/v21.0/dialog/oauth");
   authUrl.searchParams.set("client_id", appId);
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("state", clientId ?? "");
+  authUrl.searchParams.set("response_type", "code");
   authUrl.searchParams.set(
     "scope",
     "instagram_basic,instagram_manage_insights,pages_show_list"

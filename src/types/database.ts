@@ -228,6 +228,10 @@ export interface SocialAccount {
   platform: SocialPlatform;
   external_account_id: string;
   display_name: string | null;
+  // Nunca se lee/escribe en texto plano — solo vía las funciones SQL
+  // `social_account_store_token` / `social_account_reveal_token`
+  // (pgcrypto, ver supabase/migrations/0038_social_account_tokens.sql).
+  access_token_encrypted: string | null;
   connected_by: string | null;
   connected_at: string;
 }
@@ -955,7 +959,10 @@ export interface Database {
       social_accounts: {
         Row: Flatten<SocialAccount>;
         Insert: Flatten<
-          Optional<SocialAccount, "id" | "display_name" | "connected_by" | "connected_at">
+          Optional<
+            SocialAccount,
+            "id" | "display_name" | "access_token_encrypted" | "connected_by" | "connected_at"
+          >
         >;
         Update: Flatten<Partial<SocialAccount>>;
         Relationships: [
@@ -1533,6 +1540,14 @@ export interface Database {
         Returns: null;
       };
       vault_reveal_credential: {
+        Args: Flatten<{ p_id: string; p_passphrase: string }>;
+        Returns: string | null;
+      };
+      social_account_store_token: {
+        Args: Flatten<{ p_id: string; p_token: string; p_passphrase: string }>;
+        Returns: null;
+      };
+      social_account_reveal_token: {
         Args: Flatten<{ p_id: string; p_passphrase: string }>;
         Returns: string | null;
       };

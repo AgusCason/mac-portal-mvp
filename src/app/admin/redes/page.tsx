@@ -1,4 +1,4 @@
-import { Camera, Music2, PlaySquare, Radar, Users, Eye, Zap } from "lucide-react";
+import { Camera, Music2, PlaySquare, Radar, Users, Eye, Zap, CircleCheck, CircleAlert } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { getSocialAccountsOverview } from "@/lib/queries/social";
 import { getClients } from "@/lib/queries/clients";
@@ -11,9 +11,46 @@ import { getT } from "@/lib/i18n/dictionary";
 // lucide-react v1 no incluye íconos de marca (Instagram/YouTube) — usamos genéricos.
 const PLATFORM_ICON = { instagram: Camera, tiktok: Music2, youtube: PlaySquare } as const;
 
-export default async function AdminRedesPage() {
+/**
+ * Códigos que puede mandar /api/oauth/meta/callback en `?instagramError=` —
+ * traducidos acá en vez de mostrar el código crudo, para que el admin
+ * entienda qué pasó sin tener que leer los logs del servidor. `t` se recibe
+ * como parámetro (en vez de importar `getT` acá) para no duplicar la
+ * resolución de idioma del componente.
+ */
+function instagramErrorMessage(code: string, t: (key: string, fallback: string) => string): string {
+  switch (code) {
+    case "denied":
+      return t("pages.redes.errorDenied", "Cancelaste la conexión con Meta — no se conectó nada.");
+    case "invalid_client":
+      return t("pages.redes.errorInvalidClient", "No se encontró el cliente al que ibas a conectarle la cuenta.");
+    case "exchange_failed":
+      return t("pages.redes.errorExchangeFailed", "Meta rechazó el intercambio de credenciales. Probá de nuevo.");
+    case "fetch_pages_failed":
+      return t("pages.redes.errorFetchPagesFailed", "No se pudieron leer tus páginas de Facebook.");
+    case "no_instagram_account":
+      return t(
+        "pages.redes.errorNoInstagramAccount",
+        "Ninguna de tus páginas de Facebook tiene una cuenta de Instagram profesional vinculada."
+      );
+    case "save_failed":
+      return t(
+        "pages.redes.errorSaveFailed",
+        "Se conectó con Meta pero no se pudo guardar la cuenta. Probá de nuevo."
+      );
+    default:
+      return t("pages.redes.errorInvalidRequest", "Meta no mandó los datos esperados. Probá de nuevo.");
+  }
+}
+
+export default async function AdminRedesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ instagramConnected?: string; instagramError?: string }>;
+}) {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
+  const { instagramConnected, instagramError } = await searchParams;
   const accounts = await getSocialAccountsOverview();
 
   // Antes esta página armaba una tarjeta por CUENTA conectada — un cliente
@@ -47,6 +84,26 @@ export default async function AdminRedesPage() {
         )}
         actions={<Badge variant="secondary">{t("pages.redes.badge", "Fase avanzada")}</Badge>}
       />
+
+      {instagramConnected && (
+        <Card className="glass-card border-primary/30">
+          <CardContent className="flex items-center gap-3 py-3.5 text-sm">
+            <CircleCheck className="text-primary size-4.5 shrink-0" />
+            <span>
+              {t("pages.redes.connectedPrefix", "Instagram conectado:")}{" "}
+              <strong>@{instagramConnected}</strong>
+            </span>
+          </CardContent>
+        </Card>
+      )}
+      {instagramError && (
+        <Card className="glass-card border-destructive/30">
+          <CardContent className="flex items-center gap-3 py-3.5 text-sm">
+            <CircleAlert className="text-destructive size-4.5 shrink-0" />
+            <span>{instagramErrorMessage(instagramError, t)}</span>
+          </CardContent>
+        </Card>
+      )}
 
       {clients.length === 0 && (
         <Card className="glass-card">
@@ -154,7 +211,7 @@ export default async function AdminRedesPage() {
               </CardHeader>
               <CardContent>
                 <Button asChild size="sm" variant="outline">
-                  <a href="/api/oauth/meta/connect">
+                  <a href={`/api/oauth/meta/connect?clientId=${client.id}`}>
                     <Camera /> {t("pages.redes.connectInstagram", "Conectar Instagram")}
                   </a>
                 </Button>
