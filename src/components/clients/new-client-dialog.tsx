@@ -4,12 +4,13 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Copy, Check, KeyRound, ShieldAlert } from "lucide-react";
 
 import { createClientAction } from "@/app/actions/clients";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -67,12 +68,15 @@ export function NewClientDialog({
 
   const [open, setOpen] = React.useState(() => Boolean(initialContact));
   const [isPending, startTransition] = useTransition();
+  const [mode, setMode] = React.useState<"direct" | "invite">("direct");
   const [driveMode, setDriveMode] = React.useState<"auto" | "linked">("auto");
   const [countryIso, setCountryIso] = React.useState<string | undefined>(undefined);
   const [contactFullName, setContactFullName] = React.useState(initialContact?.name ?? "");
   const [contactEmail, setContactEmail] = React.useState(initialContact?.email ?? "");
   const [contactPhone, setContactPhone] = React.useState(initialContact?.phone ?? "");
   const [selectedContactId, setSelectedContactId] = React.useState(initialContactId ?? "none");
+  const [revealed, setRevealed] = React.useState<{ email: string; temporaryPassword: string } | null>(null);
+  const [copied, setCopied] = React.useState(false);
   const router = useRouter();
 
   const selectedCountryName = countryIso
@@ -96,48 +100,125 @@ export function NewClientDialog({
   }
 
   function resetForm() {
+    setMode("direct");
     setDriveMode("auto");
     setCountryIso(undefined);
     setContactFullName("");
     setContactEmail("");
     setContactPhone("");
     setSelectedContactId("none");
+    setRevealed(null);
+    setCopied(false);
+  }
+
+  function handleOpenChange(next: boolean) {
+    // Si se cierra mientras se estaba mostrando la contraseña temporal, no
+    // la dejamos "pegada" para la próxima apertura — vuelve a arrancar en
+    // el formulario.
+    if (!next) resetForm();
+    setOpen(next);
   }
 
   function handleSubmit(formData: FormData) {
     startTransition(async () => {
       const res = await createClientAction(formData);
-      if (res.ok) {
-        toast.success(
-          res.alreadyExisted
-            ? t(
-                "components.clients.alreadyExistedToast",
-                "Cliente creado — ya existía una cuenta con ese email, se vinculó."
-              )
-            : t(
-                "components.clients.createdToast",
-                "Cliente creado — le llegó el email de invitación y las carpetas de Drive en camino."
-              )
-        );
-        setOpen(false);
-        resetForm();
-        router.refresh();
-      } else {
+      if (!res.ok) {
         toast.error(res.error);
+        return;
       }
+
+      if (res.temporaryPassword) {
+        // Alta directa exitosa: mostramos la contraseña antes de cerrar —
+        // no se puede volver a consultar después. Mismo criterio que
+        // NewEditorDialog.
+        setRevealed({ email: res.invitedEmail, temporaryPassword: res.temporaryPassword });
+        router.refresh();
+        return;
+      }
+
+      toast.success(
+        res.alreadyExisted
+          ? t(
+              "components.clients.alreadyExistedToast",
+              "Cliente creado — ya existía una cuenta con ese email, se vinculó."
+            )
+          : t(
+              "components.clients.createdToast",
+              "Cliente creado — le llegó el email de invitación y las carpetas de Drive en camino."
+            )
+      );
+      setOpen(false);
+      resetForm();
+      router.refresh();
     });
   }
 
+  async function handleCopy() {
+    if (!revealed) return;
+    try {
+      await navigator.clipboard.writeText(revealed.temporaryPassword);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error(t("components.clients.copyFailed", "No se pudo copiar. Seleccionala manualmente."));
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus /> {t("components.clients.newClient", "Nuevo cliente")}
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="flex h-[85vh] max-h-[85vh] flex-col overflow-hidden"
+        className={revealed ? undefined : "flex h-[85vh] max-h-[85vh] flex-col overflow-hidden"}
       >
+        {revealed ? (
+          <div className="space-y-4">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <KeyRound className="text-primary size-4.5" />
+                {t("components.clients.credentialTitle", "Cliente creado")}
+              </DialogTitle>
+              <DialogDescription>
+                {t(
+                  "components.clients.credentialDesc",
+                  "Pasásela al contacto por un canal seguro (WhatsApp, en persona). No se vuelve a mostrar."
+                )}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-1.5">
+              <Label>{t("components.clients.contactEmailLabel", "Email de contacto")}</Label>
+              <Input readOnly value={revealed.email} className="font-mono text-sm" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>{t("components.clients.temporaryPasswordLabel", "Contraseña temporal")}</Label>
+              <div className="flex gap-2">
+                <Input readOnly value={revealed.temporaryPassword} className="font-mono text-sm tracking-wide" />
+                <Button type="button" variant="outline" size="icon" onClick={handleCopy} className="shrink-0">
+                  {copied ? <Check className="text-primary" /> : <Copy />}
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-muted-foreground flex items-start gap-1.5 text-xs">
+              <ShieldAlert className="mt-0.5 size-3.5 shrink-0" />
+              {t(
+                "components.clients.credentialHint",
+                "El contacto puede cambiarla cuando quiera desde su propio perfil, una vez que inicie sesión. Las carpetas de Drive se están creando en paralelo."
+              )}
+            </p>
+
+            <DialogFooter>
+              <Button type="button" onClick={() => handleOpenChange(false)}>
+                {t("components.clients.done", "Listo")}
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+        <>
         {/*
           Antes: DialogContent (overflow-y-auto) + este form (max-h-[80vh]) +
           la ScrollArea de abajo (max-h-[55vh]) eran TRES alturas adivinadas
@@ -163,10 +244,35 @@ export function NewClientDialog({
             <DialogDescription>
               {t(
                 "components.clients.newClientDesc",
-                "Se le envía una invitación real por email para acceder a su portal, y se crea su estructura de carpetas en Google Drive (Crudos, En Edición, Entregables Finales) automáticamente."
+                "Se crea su estructura de carpetas en Google Drive (Crudos, En Edición, Entregables Finales) automáticamente."
               )}
             </DialogDescription>
           </DialogHeader>
+
+          <Tabs value={mode} onValueChange={(v) => setMode(v as "direct" | "invite")}>
+            <TabsList className="w-full">
+              <TabsTrigger value="direct">{t("components.clients.modeDirect", "Crear con contraseña")}</TabsTrigger>
+              <TabsTrigger value="invite">{t("components.clients.modeInvite", "Invitar por email")}</TabsTrigger>
+            </TabsList>
+            <input type="hidden" name="mode" value={mode} />
+
+            <TabsContent value="direct" className="pt-1">
+              <p className="text-muted-foreground text-xs">
+                {t(
+                  "components.clients.modeDirectHintClient",
+                  "Su portal queda activo al toque. Te muestro una contraseña temporal para pasarle al contacto vos mismo."
+                )}
+              </p>
+            </TabsContent>
+            <TabsContent value="invite" className="pt-1">
+              <p className="text-muted-foreground text-xs">
+                {t(
+                  "components.clients.modeInviteHintClient",
+                  "Le llega un email para crear su propia contraseña. Depende de que el envío de emails esté funcionando."
+                )}
+              </p>
+            </TabsContent>
+          </Tabs>
 
           {/*
             <ScrollAreaPrimitive.Root> de Radix fija position:relative por
@@ -379,10 +485,14 @@ export function NewClientDialog({
           <DialogFooter className="pt-2">
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin" />}
-              {t("components.clients.createClient", "Crear cliente")}
+              {mode === "direct"
+                ? t("components.clients.createClient", "Crear cliente")
+                : t("components.clients.sendInvitation", "Enviar invitación")}
             </Button>
           </DialogFooter>
         </form>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   );

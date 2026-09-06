@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createClient as createSupabaseServerClient } from "@/lib/supabase/server";
 import { createClientDriveStructure, linkExistingClientFolder } from "@/lib/google-drive";
-import { inviteOrReuseUser } from "@/lib/onboarding";
+import { inviteOrReuseUser, createUserWithPassword } from "@/lib/onboarding";
 import { optionalPhoneSchema } from "@/lib/validation";
 import type { DriveFolderType } from "@/types/database";
 
@@ -25,6 +25,10 @@ const createClientSchema = z.object({
   billingCutoffDay: z.coerce.number().int().min(1).max(31).optional().or(z.nan()),
   driveMode: z.enum(["auto", "linked"]).default("auto"),
   existingDriveFolderId: z.string().optional(),
+  // "direct": la cuenta del contacto queda lista al toque con una contraseña
+  // temporal (mismo criterio que el alta de Editor — ver NewEditorDialog).
+  // "invite": el flujo original por email.
+  mode: z.enum(["direct", "invite"]).default("direct"),
 });
 
 /**
@@ -38,7 +42,7 @@ function withHandlePrefix(value: string | undefined): string | null {
 }
 
 export type CreateClientResult =
-  | { ok: true; clientId: string; invitedEmail: string; alreadyExisted: boolean }
+  | { ok: true; clientId: string; invitedEmail: string; alreadyExisted: boolean; temporaryPassword?: string }
   | { ok: false; error: string };
 
 /**
@@ -46,9 +50,10 @@ export type CreateClientResult =
  * automático. Un único flujo atómico (a nivel de aplicación; cada paso revierte
  * lo que puede si algo falla más adelante) que deja al cliente 100% operativo:
  *
- *  1. Invita al contacto por email vía Supabase Auth Admin API — le llega el
- *     correo oficial con el link para setear su contraseña (`lib/onboarding.ts`).
- *     El trigger `handle_new_user` crea su `profiles` con role=client solo.
+ *  1. Provisiona la cuenta del contacto vía Supabase Auth Admin API — directo
+ *     con contraseña temporal, o por email de invitación, según `mode`
+ *     (`lib/onboarding.ts`). El trigger `handle_new_user` crea su `profiles`
+ *     con role=client solo.
  *  2. Crea la fila de negocio en `clients` (datos de contacto, país, redes,
  *     fecha de corte de facturación).
  *  3. Vincula el nuevo perfil como miembro del portal de ese cliente
@@ -101,11 +106,16 @@ export async function createClientAction(
     billingCutoffDay,
     driveMode,
     existingDriveFolderId,
+    mode,
   } = parsed.data;
 
-  // 1. Invitar (o reutilizar) el usuario real que va a loguearse al portal.
-  const invite = await inviteOrReuseUser(contactEmail, contactFullName, "client");
-  if (!invite.ok) return { ok: false, error: invite.error };
+  // 1. Provisiona (o reutiliza) el usuario real que va a loguearse al portal
+  // — directo con contraseña temporal, o por invitación de email.
+  const provision =
+    mode === "direct"
+      ? await createUserWithPassword(contactEmail, contactFullName, "client")
+      : await inviteOrReuseUser(contactEmail, contactFullName, "client");
+  if (!provision.ok) return { ok: false, error: provision.error };
 
   const supabase = await createSupabaseServerClient();
 
@@ -133,10 +143,10 @@ export async function createClientAction(
     return { ok: false, error: clientError?.message ?? "No se pudo crear el cliente" };
   }
 
-  // 3. Vincula el perfil invitado como miembro del portal de este cliente.
+  // 3. Vincula el perfil provisionado como miembro del portal de este cliente.
   await supabase
     .from("client_members")
-    .insert({ client_id: client.id, profile_id: invite.profileId });
+    .insert({ client_id: client.id, profile_id: provision.profileId });
 
   // 4. Google Drive (auto o vincular existente) — si falla, no abortamos el
   // alta (ej: credenciales no configuradas todavía) — se puede reintentar
@@ -178,7 +188,8 @@ export async function createClientAction(
     ok: true,
     clientId: client.id,
     invitedEmail: contactEmail,
-    alreadyExisted: invite.alreadyExisted,
+    alreadyExisted: provision.alreadyExisted,
+    temporaryPassword: provision.temporaryPassword,
   };
 }
 

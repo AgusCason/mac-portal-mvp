@@ -1,6 +1,7 @@
 import { Camera, Music2, PlaySquare, Radar, Users, Eye, Zap } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { getSocialAccountsOverview } from "@/lib/queries/social";
+import { getClients } from "@/lib/queries/clients";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,19 @@ export default async function AdminRedesPage() {
   const profile = await requireRole(["admin"]);
   const t = getT(profile.language);
   const accounts = await getSocialAccountsOverview();
+
+  // Antes esta página armaba una tarjeta por CUENTA conectada — un cliente
+  // recién creado, sin Instagram/TikTok/YouTube todavía, no tenía ninguna
+  // fila en `social_accounts` y por lo tanto no aparecía acá ni una sola
+  // tarjeta, como si no existiera. `getSocialAccountsOverview` sigue
+  // devolviendo solo cuentas reales (la usa también `getSocialMediaOverview`
+  // para contar conexiones — no hay que tocarle la forma), así que la lista
+  // completa de clientes se trae acá aparte y se resta contra los que ya
+  // tienen alguna cuenta, para renderizar una tarjeta placeholder por cada
+  // cliente que todavía no conectó nada.
+  const clients = await getClients();
+  const connectedClientIds = new Set(accounts.map((a) => a.client_id));
+  const clientsWithoutAccounts = clients.filter((c) => !connectedClientIds.has(c.id));
 
   const withMetrics = accounts.filter((a) => a.latest !== null);
   const totalReach = withMetrics.reduce((sum, a) => sum + (a.latest?.reach ?? 0), 0);
@@ -34,24 +48,19 @@ export default async function AdminRedesPage() {
         actions={<Badge variant="secondary">{t("pages.redes.badge", "Fase avanzada")}</Badge>}
       />
 
-      {accounts.length === 0 && (
+      {clients.length === 0 && (
         <Card className="glass-card">
           <CardContent className="flex flex-col items-center gap-3 py-10 text-center">
             <Radar className="text-muted-foreground size-8" strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-medium">{t("pages.redes.noAccounts", "Todavía no conectaste ninguna cuenta")}</p>
+              <p className="text-sm font-medium">{t("pages.redes.noClients", "Todavía no cargaste ningún cliente")}</p>
               <p className="text-muted-foreground max-w-sm text-sm">
                 {t(
-                  "pages.redes.connectHint",
-                  "Conectá Instagram, TikTok o YouTube desde el detalle de cada cliente para ver alcance, reproducciones, engagement y crecimiento de seguidores acá."
+                  "pages.redes.noClientsHint",
+                  "Los clientes que crees en Cuentas van a aparecer acá — con o sin cuentas sociales conectadas."
                 )}
               </p>
             </div>
-            <Button asChild size="sm" variant="outline">
-              <a href="/api/oauth/meta/connect">
-                <Camera /> {t("pages.redes.connectInstagram", "Conectar Instagram")}
-              </a>
-            </Button>
           </CardContent>
         </Card>
       )}
@@ -94,7 +103,7 @@ export default async function AdminRedesPage() {
         </div>
       )}
 
-      {accounts.length > 0 && (
+      {(accounts.length > 0 || clientsWithoutAccounts.length > 0) && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {accounts.map((acc) => {
             const Icon = PLATFORM_ICON[acc.platform];
@@ -129,6 +138,29 @@ export default async function AdminRedesPage() {
               </Card>
             );
           })}
+
+          {/* Placeholder por cliente sin ninguna cuenta social conectada todavía
+              — antes estos clientes simplemente no aparecían en esta página. */}
+          {clientsWithoutAccounts.map((client) => (
+            <Card key={client.id} className="glass-card border-dashed">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Radar className="text-muted-foreground size-4" strokeWidth={1.75} />
+                  {client.brand_name ?? client.name}
+                </CardTitle>
+                <CardDescription>
+                  {t("pages.redes.noAccountsForClient", "Sin cuentas conectadas todavía")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild size="sm" variant="outline">
+                  <a href="/api/oauth/meta/connect">
+                    <Camera /> {t("pages.redes.connectInstagram", "Conectar Instagram")}
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>
