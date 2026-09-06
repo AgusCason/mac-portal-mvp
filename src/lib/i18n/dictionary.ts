@@ -63,6 +63,7 @@ const es = {
       group: "Finanzas",
       general: "General",
       clientes: "Clientes",
+      herramientas: "Herramientas",
       equipo: "Equipo",
     },
     config: {
@@ -1545,10 +1546,16 @@ const es = {
       clientsTitle: "Pago Clientes",
       viewBilling: "Ver facturación",
       toolsTitle: "Pago Herramientas",
-      viewTools: "Ver herramientas",
+      viewTools: "Ver detalle de costos",
       editorsTitle: "Pago Editor",
       viewEditors: "Ver detalle por editor",
       noEditorPayouts: "Todavía no hay pagos de editores cargados.",
+    },
+    finanzasHerramientas: {
+      title: "Finanzas de Herramientas",
+      description:
+        "Cuánto sale cada herramienta de la agencia, cuándo vence y alertas de vencimiento próximo — para accesos y credenciales, ver Herramientas.",
+      viewAccess: "Ver accesos",
     },
     equipo: {
       noName: "Sin nombre",
@@ -1825,6 +1832,7 @@ const en: typeof es = {
       group: "Finance",
       general: "General",
       clientes: "Clients",
+      herramientas: "Tools",
       equipo: "Team",
     },
     config: {
@@ -3305,10 +3313,16 @@ const en: typeof es = {
       clientsTitle: "Client Payments",
       viewBilling: "View billing",
       toolsTitle: "Tool Costs",
-      viewTools: "View tools",
+      viewTools: "View cost detail",
       editorsTitle: "Editor Payouts",
       viewEditors: "View editor detail",
       noEditorPayouts: "No editor payouts logged yet.",
+    },
+    finanzasHerramientas: {
+      title: "Tool Finances",
+      description:
+        "What each agency tool costs, when it renews, and upcoming renewal alerts — for access and credentials, see Tools.",
+      viewAccess: "View access",
     },
     equipo: {
       noName: "No name",

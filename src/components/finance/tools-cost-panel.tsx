@@ -12,17 +12,24 @@ import { getT } from "@/lib/i18n/dictionary";
 import type { ProfileLanguage } from "@/types/database";
 
 /**
- * Bloque "Pago Herramientas" del dashboard general de Finanzas — cuánto sale
- * cada herramienta (gasto recurrente normalizado a mensual, ver
- * `computeToolsCostOverview`), el ranking por herramienta y alertas de
- * vencimiento próximo, cargadas a mano por el admin en Herramientas.
+ * Bloque "Pago Herramientas" — cuánto sale cada herramienta (gasto
+ * recurrente normalizado a mensual, ver `computeToolsCostOverview`), el
+ * ranking por herramienta y alertas de vencimiento próximo, cargadas a mano
+ * por el admin en Herramientas (accesos). Se usa tanto en el resumen del
+ * dashboard general de Finanzas (`limit` corto) como en la vista de detalle
+ * `/admin/finanzas/herramientas` (`limit` largo) — Herramientas (accesos y
+ * credenciales) y Finanzas de Herramientas (costo y vencimientos) son dos
+ * cosas distintas que comparten la misma tabla de datos.
  */
 export function ToolsCostPanel({
   overview,
   language,
+  limit = 8,
 }: {
   overview: ToolsCostOverview;
   language: ProfileLanguage;
+  /** Cuántos vencimientos listar — 8 en el resumen del dashboard general, más en la vista de detalle. */
+  limit?: number;
 }) {
   const t = getT(language);
   const overdueCount = overview.renewals.filter((r) => r.urgency === "overdue").length;
@@ -81,7 +88,7 @@ export function ToolsCostPanel({
             </div>
           ) : (
             <div className="divide-border divide-y">
-              {overview.renewals.slice(0, 8).map((row) => {
+              {overview.renewals.slice(0, limit).map((row) => {
                 const badge = row.urgency ? URGENCY_BADGE[row.urgency] : null;
                 return (
                   <div key={row.toolId} className="flex items-center justify-between gap-3 px-6 py-2.5 text-sm">

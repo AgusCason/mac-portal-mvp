@@ -36,6 +36,7 @@ import {
   Globe,
   HandCoins,
   Wrench,
+  Coins,
 } from "lucide-react";
 import type { ModuleFlag, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
@@ -126,6 +127,12 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       children: [
         { label: "General", key: "nav.finanzas.general", href: "/admin/finanzas", icon: LayoutDashboard },
         { label: "Clientes", key: "nav.finanzas.clientes", href: "/admin/planes", icon: Wallet },
+        {
+          label: "Herramientas",
+          key: "nav.finanzas.herramientas",
+          href: "/admin/finanzas/herramientas",
+          icon: Coins,
+        },
         { label: "Equipo", key: "nav.finanzas.equipo", href: "/admin/finanzas-equipo", icon: UserCog },
       ],
     },

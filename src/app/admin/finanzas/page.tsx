@@ -65,8 +65,8 @@ export default async function AdminFinanzasPage() {
             {t("pages.finanzas.toolsTitle", "Pago Herramientas")}
           </h2>
           <Button variant="ghost" size="sm" asChild>
-            <Link href="/admin/herramientas">
-              {t("pages.finanzas.viewTools", "Ver herramientas")} <ArrowRight className="size-3.5" />
+            <Link href="/admin/finanzas/herramientas">
+              {t("pages.finanzas.viewTools", "Ver detalle de costos")} <ArrowRight className="size-3.5" />
             </Link>
           </Button>
         </div>
