@@ -126,31 +126,10 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         status: "incluido",
       },
       {
-        key: "finanzas",
-        label: "Finanzas",
-        description:
-          "Dashboard general de la plata de la agencia: lo que pagan los clientes, lo que salen las herramientas, y lo que se le paga al equipo — todo junto.",
-        status: "incluido",
-      },
-      {
-        key: "finanzas-equipo",
-        label: "Finanzas de Equipo",
-        description:
-          "Cuánto se le paga a cada editor por cada cliente, cuándo, e historial completo de pagos hechos y pendientes — panel general y por editor.",
-        status: "incluido",
-        dependsOn: "equipo",
-      },
-      {
         key: "herramientas",
         label: "Herramientas",
         description:
           "Catálogo de apps/servicios de la agencia con sus accesos, compartibles con editores de forma individual o con todo el equipo.",
-        status: "incluido",
-      },
-      {
-        key: "planes-facturacion",
-        label: "Planes y facturación",
-        description: "Planes contratados, facturas, morosidad y recordatorios automáticos.",
         status: "incluido",
       },
       {
@@ -170,6 +149,33 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         label: "Chat",
         description: "Mensajería centralizada por cliente, integrada con WhatsApp.",
         status: "incluido",
+      },
+    ],
+  },
+  {
+    area: "Gestión",
+    category: "Finanzas",
+    modules: [
+      {
+        key: "finanzas",
+        label: "Finanzas",
+        description:
+          "Dashboard general de la plata de la agencia: lo que pagan los clientes, lo que salen las herramientas, y lo que se le paga al equipo — todo junto.",
+        status: "incluido",
+      },
+      {
+        key: "planes-facturacion",
+        label: "Planes y facturación",
+        description: "Planes contratados, facturas, morosidad y recordatorios automáticos.",
+        status: "incluido",
+      },
+      {
+        key: "finanzas-equipo",
+        label: "Finanzas de Equipo",
+        description:
+          "Cuánto se le paga a cada editor por cada cliente, cuándo, e historial completo de pagos hechos y pendientes — panel general y por editor.",
+        status: "incluido",
+        dependsOn: "equipo",
       },
     ],
   },
@@ -197,12 +203,6 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         status: "incluido",
       },
       {
-        key: "contactos",
-        label: "Contactos",
-        description: "Libreta de contactos de clientes y prospectos.",
-        status: "incluido",
-      },
-      {
         key: "media-library",
         label: "Media Library",
         description: "Biblioteca de archivos multimedia reutilizables entre clientes.",
@@ -224,12 +224,18 @@ export const MODULES_CATALOG: ModuleCategory[] = [
   },
   {
     area: "Gestión",
-    category: "Comercial",
+    category: "Ventas y Contactos",
     modules: [
       {
         key: "crm",
         label: "CRM",
         description: "Pipeline liviano de prospectos y oportunidades comerciales de la agencia.",
+        status: "incluido",
+      },
+      {
+        key: "contactos",
+        label: "Contactos",
+        description: "Libreta de contactos de clientes y prospectos.",
         status: "incluido",
       },
     ],
@@ -331,8 +337,9 @@ const CATEGORY_KEY: Record<string, string> = {
   Analytics: "analytics",
   Reportes: "reportes",
   Cuentas: "cuentas",
+  Finanzas: "finanzas",
   Operación: "operacion",
-  Comercial: "comercial",
+  "Ventas y Contactos": "ventasContactos",
   "Inteligencia Artificial": "ia",
   Configuración: "configuracion",
 };

@@ -37,6 +37,7 @@ import {
   HandCoins,
   Wrench,
   Coins,
+  Landmark,
 } from "lucide-react";
 import type { ModuleFlag, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
@@ -92,18 +93,24 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       ],
     },
     {
-      label: "Management",
-      key: "nav.management.group",
-      icon: ListChecks,
+      label: "Proyectos",
+      key: "nav.proyectos.group",
+      icon: FolderKanban,
       children: [
-        { label: "Tareas", key: "nav.management.tareas", href: "/admin/tareas", icon: ListChecks },
-        { label: "Proyectos", key: "nav.management.proyectos", href: "/admin/proyectos", icon: FolderKanban },
-        { label: "Sitios Web", key: "nav.management.sitiosWeb", href: "/admin/sitios-web", icon: Globe },
-        { label: "Contactos", key: "nav.management.contactos", href: "/admin/contactos", icon: Users },
-        { label: "Media Library", key: "nav.management.mediaLibrary", href: "/admin/media-library", icon: ImageIcon },
-        { label: "Knowledge Base", key: "nav.management.knowledgeBase", href: "/admin/knowledge-base", icon: BookOpen },
-        { label: "Web Forms", key: "nav.management.webForms", href: "/admin/web-forms", icon: ClipboardList },
-        { label: "Actividad", key: "nav.management.actividad", href: "/admin/actividad", icon: Activity },
+        { label: "Tareas", key: "nav.proyectos.tareas", href: "/admin/tareas", icon: ListChecks },
+        { label: "Proyectos", key: "nav.proyectos.proyectos", href: "/admin/proyectos", icon: FolderKanban },
+        { label: "Sitios Web", key: "nav.proyectos.sitiosWeb", href: "/admin/sitios-web", icon: Globe },
+        { label: "Actividad", key: "nav.proyectos.actividad", href: "/admin/actividad", icon: Activity },
+      ],
+    },
+    {
+      label: "Recursos",
+      key: "nav.recursos.group",
+      icon: BookOpen,
+      children: [
+        { label: "Media Library", key: "nav.recursos.mediaLibrary", href: "/admin/media-library", icon: ImageIcon },
+        { label: "Knowledge Base", key: "nav.recursos.knowledgeBase", href: "/admin/knowledge-base", icon: BookOpen },
+        { label: "Web Forms", key: "nav.recursos.webForms", href: "/admin/web-forms", icon: ClipboardList },
       ],
     },
     {
@@ -126,21 +133,29 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       icon: HandCoins,
       children: [
         { label: "General", key: "nav.finanzas.general", href: "/admin/finanzas", icon: LayoutDashboard },
-        { label: "Clientes", key: "nav.finanzas.clientes", href: "/admin/planes", icon: Wallet },
+        { label: "Facturación", key: "nav.finanzas.facturacion", href: "/admin/planes", icon: Wallet },
         {
           label: "Herramientas",
           key: "nav.finanzas.herramientas",
           href: "/admin/finanzas/herramientas",
           icon: Coins,
         },
-        { label: "Equipo", key: "nav.finanzas.equipo", href: "/admin/finanzas-equipo", icon: UserCog },
+        { label: "Equipo", key: "nav.finanzas.equipo", href: "/admin/finanzas-equipo", icon: Landmark },
       ],
     },
     { label: "Herramientas", key: "nav.herramientas", href: "/admin/herramientas", icon: Wrench },
     { label: "Calendario", key: "nav.calendario", href: "/admin/calendario", icon: CalendarDays },
     { label: "Contratos", key: "nav.contratos", href: "/admin/contratos", icon: FileSignature },
     { label: "Chat", key: "nav.chat", href: "/admin/chat", icon: Inbox },
-    { label: "CRM", key: "nav.crm", href: "/admin/crm", icon: Handshake },
+    {
+      label: "Ventas y Contactos",
+      key: "nav.ventasContactos.group",
+      icon: Handshake,
+      children: [
+        { label: "CRM", key: "nav.ventasContactos.crm", href: "/admin/crm", icon: Handshake },
+        { label: "Contactos", key: "nav.ventasContactos.contactos", href: "/admin/contactos", icon: Users },
+      ],
+    },
     { label: "Asistente IA", key: "nav.asistenteIA", href: "/admin/asistente", icon: Sparkles },
     {
       label: "Configuración",

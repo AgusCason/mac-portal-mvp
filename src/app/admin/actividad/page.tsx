@@ -40,7 +40,7 @@ export default async function AdminActividadPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t("nav.management.actividad", "Actividad")}
+        title={t("nav.proyectos.actividad", "Actividad")}
         description={t("pages.actividad.description", "Bitácora completa de lo que pasó en el workspace.")}
       />
 

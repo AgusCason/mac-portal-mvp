@@ -39,7 +39,7 @@ export default async function AdminSitiosWebPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t("nav.management.sitiosWeb", "Sitios Web")}
+        title={t("nav.proyectos.sitiosWeb", "Sitios Web")}
         description={t("pages.sitiosWeb.description", "Proyectos de diseño y desarrollo web por cliente.")}
         actions={<NewWebProjectDialog clients={clients} />}
       />

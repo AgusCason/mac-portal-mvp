@@ -38,7 +38,7 @@ export default async function AdminProyectosPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t("nav.management.proyectos", "Proyectos")}
+        title={t("nav.proyectos.proyectos", "Proyectos")}
         description={t("pages.proyectos.pageDescription", "Engagements y proyectos del workspace.")}
         actions={<NewProjectDialog clients={clients} />}
       />

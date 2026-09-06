@@ -170,7 +170,7 @@ export function ContentStudioView({
             {t(labelKey, fallback)}
           </TabsTrigger>
         ))}
-        <TabsTrigger value="media">{t("nav.management.mediaLibrary", "Media Library")}</TabsTrigger>
+        <TabsTrigger value="media">{t("nav.recursos.mediaLibrary", "Media Library")}</TabsTrigger>
       </TabsList>
 
       {IDEA_TYPE_KEYS.map(({ value }) => (

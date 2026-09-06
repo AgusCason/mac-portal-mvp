@@ -30,7 +30,7 @@ export default async function AdminContactosPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title={t("nav.management.contactos", "Contactos")}
+        title={t("nav.ventasContactos.contactos", "Contactos")}
         description="Directorio de personas y referentes vinculados a tus cuentas."
         actions={
           <div className="flex items-center gap-2">

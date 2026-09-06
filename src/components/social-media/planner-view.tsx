@@ -240,7 +240,7 @@ export function PlannerView({
           <TabsTrigger value="planner">{t("components.planner.tabPlanner", "Planner")}</TabsTrigger>
           <TabsTrigger value="publicados">{t("components.planner.tabPublicados", "Publicados")}</TabsTrigger>
           <TabsTrigger value="grilla-ig">{t("components.planner.tabGrillaIg", "Grilla IG")}</TabsTrigger>
-          <TabsTrigger value="media">{t("nav.management.mediaLibrary", "Media Library")}</TabsTrigger>
+          <TabsTrigger value="media">{t("nav.recursos.mediaLibrary", "Media Library")}</TabsTrigger>
         </TabsList>
         <NewContentDialog clients={clients} />
       </div>
