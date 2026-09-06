@@ -1,10 +1,27 @@
 import "server-only";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile, UserRole } from "@/types/database";
 
-/** Devuelve el profile completo del usuario logueado, o null si no hay sesión. */
-export async function getCurrentProfile(): Promise<Profile | null> {
+/**
+ * Devuelve el profile completo del usuario logueado, o null si no hay sesión.
+ *
+ * Envuelto en `cache()` de React: dentro de UNA misma navegación, el layout
+ * de la sección (admin/client/editor) y la página que se está mostrando
+ * llaman `requireRole()` cada uno por su lado (por diseño — cada Server
+ * Component valida su propio acceso, ver comentario de `requireRole` abajo).
+ * Sin este cache, eso significaba `auth.getUser()` + un SELECT a `profiles`
+ * DOS veces por navegación (una del layout, otra de la página) además del
+ * `getUser()` que ya hace el middleware — tres viajes de ida y vuelta a
+ * Supabase Auth para exactamente el mismo usuario en la misma request. Con
+ * `cache()`, la segunda llamada dentro de esa misma request devuelve la
+ * promesa ya resuelta por la primera, sin pegarle de nuevo a la red — es una
+ * dedupe por-request, no una cache entre requests/usuarios, así que no
+ * afloja ningún chequeo de seguridad (cada navegación nueva sigue validando
+ * de cero).
+ */
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,7 +35,7 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     .single();
 
   return profile ?? null;
-}
+});
 
 /**
  * Exige que haya sesión y, opcionalmente, que el rol sea uno de los permitidos.
