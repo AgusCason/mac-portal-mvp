@@ -28,7 +28,19 @@ const toolSchema = z.object({
   url: z.string().url("URL inválida").optional().or(z.literal("")),
   accountEmail: z.string().optional(),
   notes: z.string().optional(),
+  costAmount: z.string().optional(),
+  costCurrency: z.string().optional(),
+  costFrequency: z.enum(["mensual", "anual", "unico"]).optional().or(z.literal("")),
+  nextRenewalDate: z.string().optional(),
 });
+
+/** "" o inválido -> null; si no, el número. Los montos de costo son opcionales. */
+function parseOptionalAmount(raw: FormDataEntryValue | null): number | null {
+  const str = String(raw ?? "").trim();
+  if (!str) return null;
+  const n = Number(str);
+  return Number.isFinite(n) ? n : null;
+}
 
 /** Alta de una herramienta — la contraseña se cifra en el momento, adentro de la función SQL. */
 export async function createToolAction(formData: FormData) {
@@ -39,6 +51,10 @@ export async function createToolAction(formData: FormData) {
     url: formData.get("url") || "",
     accountEmail: formData.get("accountEmail") ?? undefined,
     notes: formData.get("notes") ?? undefined,
+    costAmount: formData.get("costAmount") ?? undefined,
+    costCurrency: formData.get("costCurrency") ?? undefined,
+    costFrequency: (formData.get("costFrequency") as string) || "",
+    nextRenewalDate: formData.get("nextRenewalDate") ?? undefined,
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
@@ -60,11 +76,16 @@ export async function createToolAction(formData: FormData) {
     p_account_email: parsed.data.accountEmail || null,
     p_password: password || null,
     p_notes: parsed.data.notes || null,
+    p_cost_amount: parseOptionalAmount(formData.get("costAmount")),
+    p_cost_currency: parsed.data.costCurrency || "ARS",
+    p_cost_frequency: parsed.data.costFrequency || null,
+    p_next_renewal_date: parsed.data.nextRenewalDate || null,
     p_passphrase: passphrase,
   });
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/herramientas");
+  revalidatePath("/admin/finanzas");
   return { ok: true };
 }
 
@@ -77,6 +98,10 @@ export async function updateToolAction(toolId: string, formData: FormData) {
     url: formData.get("url") || "",
     accountEmail: formData.get("accountEmail") ?? undefined,
     notes: formData.get("notes") ?? undefined,
+    costAmount: formData.get("costAmount") ?? undefined,
+    costCurrency: formData.get("costCurrency") ?? undefined,
+    costFrequency: (formData.get("costFrequency") as string) || "",
+    nextRenewalDate: formData.get("nextRenewalDate") ?? undefined,
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
@@ -99,12 +124,17 @@ export async function updateToolAction(toolId: string, formData: FormData) {
     p_account_email: parsed.data.accountEmail || null,
     p_new_password: password || null,
     p_notes: parsed.data.notes || null,
+    p_cost_amount: parseOptionalAmount(formData.get("costAmount")),
+    p_cost_currency: parsed.data.costCurrency || "ARS",
+    p_cost_frequency: parsed.data.costFrequency || null,
+    p_next_renewal_date: parsed.data.nextRenewalDate || null,
     p_passphrase: passphrase,
   });
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/herramientas");
   revalidatePath("/editor/herramientas");
+  revalidatePath("/admin/finanzas");
   return { ok: true };
 }
 

@@ -1,6 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { AgencyTool } from "@/types/database";
+import type { AgencyTool, ToolCostFrequency } from "@/types/database";
 
 export interface ToolAccessEditor {
   editorId: string;
@@ -27,7 +27,7 @@ export async function getAgencyTools(limit = 300): Promise<AgencyToolWithAccess[
       // granted_by) — sin desambiguar, PostgREST rechaza la consulta ENTERA
       // con "more than one relationship was found" (mismo bug ya visto en
       // `editor_client_assignments`, ver queries/clients.ts).
-      "id, name, purpose, url, account_email, notes, created_by, created_at, updated_at, account_password_encrypted, agency_tool_access(editor_id, profiles!agency_tool_access_editor_id_fkey(full_name, email))"
+      "id, name, purpose, url, account_email, notes, cost_amount, cost_currency, cost_frequency, next_renewal_date, created_by, created_at, updated_at, account_password_encrypted, agency_tool_access(editor_id, profiles!agency_tool_access_editor_id_fkey(full_name, email))"
     )
     .order("name")
     .limit(limit);
@@ -44,6 +44,10 @@ export async function getAgencyTools(limit = 300): Promise<AgencyToolWithAccess[
     url: string | null;
     account_email: string | null;
     notes: string | null;
+    cost_amount: number | null;
+    cost_currency: string;
+    cost_frequency: ToolCostFrequency | null;
+    next_renewal_date: string | null;
     created_by: string | null;
     created_at: string;
     updated_at: string;
@@ -60,6 +64,10 @@ export async function getAgencyTools(limit = 300): Promise<AgencyToolWithAccess[
     url: row.url,
     account_email: row.account_email,
     notes: row.notes,
+    cost_amount: row.cost_amount,
+    cost_currency: row.cost_currency,
+    cost_frequency: row.cost_frequency,
+    next_renewal_date: row.next_renewal_date,
     created_by: row.created_by,
     created_at: row.created_at,
     updated_at: row.updated_at,

@@ -28,20 +28,19 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 
-function NotificationRow({ notification }: { notification: AppNotification }) {
+function NotificationRow({
+  notification,
+  onRead,
+}: {
+  notification: AppNotification;
+  onRead: (id: string) => void;
+}) {
   const { locale } = useLocale();
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const unread = !notification.read_at;
   const dateLocale = locale === "en" ? enUS : es;
 
   function open() {
-    if (unread) {
-      startTransition(async () => {
-        await markNotificationReadAction(notification.id);
-        router.refresh();
-      });
-    }
+    if (unread) onRead(notification.id);
   }
 
   const content = (
@@ -66,13 +65,13 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
 
   if (notification.link) {
     return (
-      <Link href={notification.link} onClick={open} className="block" aria-disabled={isPending}>
+      <Link href={notification.link} onClick={open} className="block">
         {content}
       </Link>
     );
   }
   return (
-    <button type="button" onClick={open} className="block w-full text-left" disabled={isPending}>
+    <button type="button" onClick={open} className="block w-full text-left">
       {content}
     </button>
   );
@@ -81,6 +80,14 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
 /**
  * Panel deslizante "Notificaciones" — menciones/eventos relevantes para el
  * usuario logueado (campana del navbar, equivalente al de MB Suite).
+ *
+ * El marcado como leído es OPTIMISTA: en vez de esperar a que la escritura
+ * en la base + `revalidatePath` + `router.refresh()` vuelvan (eso puede
+ * sentirse lento), el punto/badge desaparece al toque acá en el cliente y la
+ * escritura real se dispara en paralelo, en segundo plano. Si más tarde llega
+ * un contador del servidor MÁS ALTO que el que ya vimos (notificación nueva
+ * de verdad, no la que acabamos de marcar), se descartan los overrides
+ * optimistas para no esconderla.
  */
 export function NotificationsPanel({
   notificationsPromise,
@@ -91,22 +98,65 @@ export function NotificationsPanel({
 }) {
   // `use()` desenvuelve las promesas acá adentro, dentro del <Suspense> que
   // pone AppShell — así esta consulta no bloquea el resto del shell/página
-  // mientras está en vuelo (ver app-shell.tsx).
-  const notifications = use(notificationsPromise);
-  const unreadCount = use(unreadCountPromise);
+  // mientras está en vuelo (ver app-shell.tsx). Se leen en cada render, así
+  // que si el server component padre re-renderiza con promesas nuevas (por
+  // ej. un router.refresh() disparado desde otro lado), acá se refleja solo.
+  const serverNotifications = use(notificationsPromise);
+  const serverUnreadCount = use(unreadCountPromise);
   const { t } = useLocale();
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+
+  const [readOverrides, setReadOverrides] = React.useState<Set<string>>(() => new Set());
+  const [allReadOverride, setAllReadOverride] = React.useState(false);
+  const lastServerUnreadRef = React.useRef(serverUnreadCount);
+
+  React.useEffect(() => {
+    // Si el contador del servidor SUBIÓ respecto a la última vez que lo
+    // vimos, llegó una notificación nueva de verdad — se descartan los
+    // overrides optimistas para no seguir mostrando todo como leído.
+    if (serverUnreadCount > lastServerUnreadRef.current) {
+      setReadOverrides(new Set());
+      setAllReadOverride(false);
+    }
+    lastServerUnreadRef.current = serverUnreadCount;
+  }, [serverUnreadCount]);
+
+  const notifications = React.useMemo(
+    () =>
+      serverNotifications.map((n) =>
+        !n.read_at && (allReadOverride || readOverrides.has(n.id))
+          ? { ...n, read_at: new Date().toISOString() }
+          : n
+      ),
+    [serverNotifications, allReadOverride, readOverrides]
+  );
+  const unreadCount = allReadOverride ? 0 : Math.max(0, serverUnreadCount - readOverrides.size);
+
+  function markOneRead(id: string) {
+    setReadOverrides((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
+    startTransition(async () => {
+      await markNotificationReadAction(id);
+      router.refresh();
+    });
+  }
 
   function markAll() {
+    setAllReadOverride(true);
     startTransition(async () => {
       await markAllNotificationsReadAction();
       router.refresh();
     });
   }
 
+  function handleOpenChange(open: boolean) {
+    // Al abrir la campana, se marca todo como leído automáticamente — no
+    // hace falta que el usuario clickee nada para que el badge desaparezca.
+    if (open && unreadCount > 0) markAll();
+  }
+
   return (
-    <Sheet>
+    <Sheet onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" aria-label={t("components.shared.sectionNotifications", "Notificaciones")} className="circle-chip relative">
           <Bell />
@@ -137,7 +187,7 @@ export function NotificationsPanel({
                   <p className="text-muted-foreground text-sm">{t("components.shared.noNotifications", "No tenés notificaciones.")}</p>
                 )}
                 {notifications.map((n) => (
-                  <NotificationRow key={n.id} notification={n} />
+                  <NotificationRow key={n.id} notification={n} onRead={markOneRead} />
                 ))}
               </div>
             </ScrollArea>
@@ -145,7 +195,7 @@ export function NotificationsPanel({
         </div>
         {unreadCount > 0 && (
           <SheetFooter>
-            <Button variant="outline" size="sm" onClick={markAll} disabled={isPending}>
+            <Button variant="outline" size="sm" onClick={markAll}>
               <CheckCheck /> {t("components.shared.markAllRead", "Marcar todas como leídas")}
             </Button>
           </SheetFooter>

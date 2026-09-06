@@ -26,6 +26,7 @@ export const ROUTE_MODULE_MAP: { prefix: string; key: string }[] = [
   { prefix: "/admin/clientes", key: "cuentas" },
   { prefix: "/admin/equipo", key: "equipo" },
   { prefix: "/admin/finanzas-equipo", key: "finanzas-equipo" },
+  { prefix: "/admin/finanzas", key: "finanzas" },
   { prefix: "/editor/finanzas", key: "finanzas-equipo" },
   { prefix: "/admin/herramientas", key: "herramientas" },
   { prefix: "/editor/herramientas", key: "herramientas" },

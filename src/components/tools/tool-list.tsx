@@ -17,6 +17,7 @@ import { ShareToolDialog } from "@/components/tools/share-tool-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -26,9 +27,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { getDateUrgency, URGENCY_BADGE } from "@/lib/finance-utils";
 import type { Profile } from "@/types/database";
 
 function ToolFormFields({
@@ -75,6 +85,61 @@ function ToolFormFields({
       <div className="space-y-1.5">
         <Label htmlFor="notes">{t("components.tools.notesLabel", "Notas")}</Label>
         <Input id="notes" name="notes" defaultValue={tool?.notes ?? ""} />
+      </div>
+
+      <div className="border-border space-y-3 border-t pt-3.5">
+        <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+          {t("components.tools.costSectionTitle", "Costo (opcional)")}
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="costAmount">{t("components.tools.costAmountLabel", "Monto")}</Label>
+            <Input
+              id="costAmount"
+              name="costAmount"
+              type="number"
+              min={0}
+              step="0.01"
+              defaultValue={tool?.cost_amount ?? ""}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="costCurrency">{t("components.tools.costCurrencyLabel", "Moneda")}</Label>
+            <Select name="costCurrency" defaultValue={tool?.cost_currency || "ARS"}>
+              <SelectTrigger id="costCurrency" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ARS">{t("components.finance.currencyArs", "Pesos (ARS)")}</SelectItem>
+                <SelectItem value="USD">{t("components.finance.currencyUsd", "Dólares (USD)")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="costFrequency">{t("components.tools.costFrequencyLabel", "Frecuencia")}</Label>
+            <Select name="costFrequency" defaultValue={tool?.cost_frequency ?? "mensual"}>
+              <SelectTrigger id="costFrequency" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="mensual">{t("components.tools.costFrequencyMonthly", "Mensual")}</SelectItem>
+                <SelectItem value="anual">{t("components.tools.costFrequencyYearly", "Anual")}</SelectItem>
+                <SelectItem value="unico">{t("components.tools.costFrequencyOnce", "Pago único")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="nextRenewalDate">{t("components.tools.nextRenewalLabel", "Próximo vencimiento")}</Label>
+            <Input
+              id="nextRenewalDate"
+              name="nextRenewalDate"
+              type="date"
+              defaultValue={tool?.next_renewal_date ?? ""}
+            />
+          </div>
+        </div>
       </div>
     </>
   );
@@ -243,6 +308,31 @@ function RevealPasswordButton({ toolId }: { toolId: string }) {
   );
 }
 
+function CopyEmailButton({ email }: { email: string }) {
+  const { t } = useLocale();
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(email);
+      toast.success(t("components.tools.copiedToClipboard", "Copiado al portapapeles"));
+    } catch {
+      toast.error(t("components.tools.copyFailed", "No se pudo copiar"));
+    }
+  }
+
+  return (
+    <Button size="icon" variant="ghost" onClick={copy} aria-label={t("components.tools.copyEmailAria", "Copiar mail")}>
+      <Copy className="size-3.5" />
+    </Button>
+  );
+}
+
+const COST_FREQUENCY_LABEL: Record<string, [string, string]> = {
+  mensual: ["components.tools.costFrequencyMonthly", "Mensual"],
+  anual: ["components.tools.costFrequencyYearly", "Anual"],
+  unico: ["components.tools.costFrequencyOnce", "Pago único"],
+};
+
 /** Catálogo de Herramientas de la agencia (/admin/herramientas). Solo admin. */
 export function ToolList({ tools, editors }: { tools: AgencyToolWithAccess[]; editors: Profile[] }) {
   const { t } = useLocale();
@@ -261,50 +351,91 @@ export function ToolList({ tools, editors }: { tools: AgencyToolWithAccess[]; ed
           <TableHead>{t("components.tools.tablePurpose", "Para qué es")}</TableHead>
           <TableHead>{t("components.tools.tableEmail", "Mail")}</TableHead>
           <TableHead>{t("components.tools.tablePassword", "Contraseña")}</TableHead>
+          <TableHead>{t("components.tools.tableCost", "Costo")}</TableHead>
+          <TableHead>{t("components.tools.tableRenewal", "Vence")}</TableHead>
           <TableHead>{t("components.tools.tableSharedWith", "Compartida con")}</TableHead>
           <TableHead className="text-right">{t("components.tools.tableActions", "Acciones")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {tools.map((tool) => (
-          <TableRow key={tool.id}>
-            <TableCell className="font-medium">
-              <div className="flex items-center gap-2">
-                {tool.name}
-                {tool.url && (
-                  <a
-                    href={tool.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-muted-foreground hover:text-foreground text-xs underline"
-                  >
-                    {t("components.tools.openLink", "abrir")}
-                  </a>
+        {tools.map((tool) => {
+          const urgency = getDateUrgency(tool.next_renewal_date);
+          const badge = urgency ? URGENCY_BADGE[urgency] : null;
+          return (
+            <TableRow key={tool.id}>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  {tool.name}
+                  {tool.url && (
+                    <a
+                      href={tool.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-muted-foreground hover:text-foreground text-xs underline"
+                    >
+                      {t("components.tools.openLink", "abrir")}
+                    </a>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell className="text-muted-foreground">{tool.purpose || "—"}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {tool.account_email ? (
+                  <div className="flex items-center gap-1">
+                    <span className="truncate">{tool.account_email}</span>
+                    <CopyEmailButton email={tool.account_email} />
+                  </div>
+                ) : (
+                  "—"
                 )}
-              </div>
-            </TableCell>
-            <TableCell className="text-muted-foreground">{tool.purpose || "—"}</TableCell>
-            <TableCell className="text-muted-foreground">{tool.account_email || "—"}</TableCell>
-            <TableCell>
-              {tool.hasPassword ? (
-                <RevealPasswordButton toolId={tool.id} />
-              ) : (
-                <span className="text-muted-foreground text-xs">{t("components.tools.noPassword", "Sin guardar")}</span>
-              )}
-            </TableCell>
-            <TableCell className="text-muted-foreground text-xs">
-              {tool.sharedWith.length === 0
-                ? t("components.tools.notShared", "Nadie todavía")
-                : tool.sharedWith.map((e) => e.name).join(", ")}
-            </TableCell>
-            <TableCell className="text-right">
-              <div className="flex justify-end gap-1.5">
-                <ShareToolDialog toolId={tool.id} toolName={tool.name} editors={editors} sharedWith={tool.sharedWith} />
-                <EditToolDialog tool={tool} />
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+              </TableCell>
+              <TableCell>
+                {tool.hasPassword ? (
+                  <RevealPasswordButton toolId={tool.id} />
+                ) : (
+                  <span className="text-muted-foreground text-xs">{t("components.tools.noPassword", "Sin guardar")}</span>
+                )}
+              </TableCell>
+              <TableCell className="text-muted-foreground text-xs">
+                {tool.cost_amount != null ? (
+                  <div>
+                    <div className="text-foreground font-medium">{formatCurrency(tool.cost_amount, tool.cost_currency)}</div>
+                    {tool.cost_frequency && (
+                      <div>{t(...COST_FREQUENCY_LABEL[tool.cost_frequency])}</div>
+                    )}
+                  </div>
+                ) : (
+                  "—"
+                )}
+              </TableCell>
+              <TableCell className="text-xs">
+                {tool.next_renewal_date ? (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-muted-foreground">{formatDate(tool.next_renewal_date)}</span>
+                    {badge && (
+                      <Badge variant={badge.variant} className="w-fit">
+                        {t(badge.key, badge.fallback)}
+                      </Badge>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell className="text-muted-foreground text-xs">
+                {tool.sharedWith.length === 0
+                  ? t("components.tools.notShared", "Nadie todavía")
+                  : tool.sharedWith.map((e) => e.name).join(", ")}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-1.5">
+                  <ShareToolDialog toolId={tool.id} toolName={tool.name} editors={editors} sharedWith={tool.sharedWith} />
+                  <EditToolDialog tool={tool} />
+                </div>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

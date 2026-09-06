@@ -66,6 +66,25 @@ function RevealPasswordButton({ toolId }: { toolId: string }) {
   );
 }
 
+function CopyEmailButton({ email }: { email: string }) {
+  const { t } = useLocale();
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(email);
+      toast.success(t("components.tools.copiedToClipboard", "Copiado al portapapeles"));
+    } catch {
+      toast.error(t("components.tools.copyFailed", "No se pudo copiar"));
+    }
+  }
+
+  return (
+    <Button size="icon" variant="ghost" onClick={copy} aria-label={t("components.tools.copyEmailAria", "Copiar mail")} className="size-6">
+      <Copy className="size-3.5" />
+    </Button>
+  );
+}
+
 /** Herramientas compartidas con el editor (/editor/herramientas) — solo lo que necesita para usarlas. */
 export function MyToolsGrid({ tools }: { tools: EditorToolCard[] }) {
   const { t } = useLocale();
@@ -106,7 +125,10 @@ export function MyToolsGrid({ tools }: { tools: EditorToolCard[] }) {
                 <p className="text-muted-foreground text-[11px] uppercase tracking-wide">
                   {t("components.tools.accountEmailLabel", "Mail de la cuenta")}
                 </p>
-                <p className="truncate text-sm">{tool.accountEmail}</p>
+                <div className="flex items-center gap-1">
+                  <p className="min-w-0 flex-1 truncate text-sm">{tool.accountEmail}</p>
+                  <CopyEmailButton email={tool.accountEmail} />
+                </div>
               </div>
             )}
             {tool.hasPassword ? (

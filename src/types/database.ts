@@ -80,6 +80,8 @@ export type WebAssetStatus = "pendiente" | "aprobado" | "requiere_cambios";
 
 /** Frecuencia de pago acordada por editor+cliente (ver EditorClientAssignment.pay_*). */
 export type EditorPayFrequency = "mensual" | "quincenal" | "unico" | "por_entrega";
+/** Frecuencia de costo de una herramienta de la agencia (ver AgencyTool.cost_*). */
+export type ToolCostFrequency = "mensual" | "anual" | "unico";
 /** Estado de una fila del historial de pagos de un editor (editor_payouts). */
 export type EditorPayoutStatus = "pendiente" | "pagado";
 export type EditorPayoutMethod =
@@ -221,6 +223,12 @@ export interface AgencyTool {
   url: string | null;
   account_email: string | null;
   notes: string | null;
+  /** Cuánto sale esta herramienta — null = costo no cargado (ej. plan gratuito). */
+  cost_amount: number | null;
+  cost_currency: string;
+  cost_frequency: ToolCostFrequency | null;
+  /** Próxima fecha de renovación/vencimiento — la carga el admin a mano, no se auto-genera. */
+  next_renewal_date: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -1649,6 +1657,10 @@ export interface Database {
             | "account_email"
             | "account_password_encrypted"
             | "notes"
+            | "cost_amount"
+            | "cost_currency"
+            | "cost_frequency"
+            | "next_renewal_date"
             | "created_by"
             | "created_at"
             | "updated_at"
@@ -1761,6 +1773,10 @@ export interface Database {
           p_account_email?: string | null;
           p_password?: string | null;
           p_notes?: string | null;
+          p_cost_amount?: number | null;
+          p_cost_currency?: string | null;
+          p_cost_frequency?: ToolCostFrequency | null;
+          p_next_renewal_date?: string | null;
           p_passphrase: string;
         }>;
         Returns: string;
@@ -1774,6 +1790,10 @@ export interface Database {
           p_account_email?: string | null;
           p_new_password?: string | null;
           p_notes?: string | null;
+          p_cost_amount?: number | null;
+          p_cost_currency?: string | null;
+          p_cost_frequency?: ToolCostFrequency | null;
+          p_next_renewal_date?: string | null;
           p_passphrase: string;
         }>;
         Returns: null;

@@ -1,0 +1,99 @@
+import "server-only";
+import { getInvoices } from "@/lib/queries/billing";
+import { getAgencyTools } from "@/lib/queries/tools";
+import { getEditorFinanceOverview, mergeFinanceTotals } from "@/lib/queries/editor-finance";
+import { computeToolsCostOverview, type ToolsCostOverview } from "@/lib/finance-utils";
+
+/* ------------------------------------------------------------------ */
+/* Pago Clientes — reutiliza billing_invoices (ya es "lo que pagan los */
+/* clientes"), no hace falta tabla nueva.                              */
+/* ------------------------------------------------------------------ */
+
+export interface ClientPaymentTotals {
+  currency: string;
+  collectedThisMonth: number;
+  pendingTotal: number;
+  overdueTotal: number;
+}
+
+export interface UpcomingClientPayment {
+  clientId: string;
+  clientName: string;
+  amount: number;
+  currency: string;
+  dueDate: string;
+  isOverdue: boolean;
+}
+
+export interface ClientPaymentsOverview {
+  byCurrency: ClientPaymentTotals[];
+  /** Facturas pendientes/atrasadas, la más próxima primero — "fechas de pago de cada uno". */
+  upcoming: UpcomingClientPayment[];
+}
+
+function monthKeyOf(dateStr: string): string {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${d.getMonth()}`;
+}
+
+/** Resumen de lo que pagan los clientes — total del mes, pendiente, atrasado, y próximos vencimientos. */
+export async function getClientPaymentsOverview(): Promise<ClientPaymentsOverview> {
+  const invoices = await getInvoices();
+  const nowKey = monthKeyOf(new Date().toISOString());
+
+  const byCurrencyMap = new Map<string, ClientPaymentTotals>();
+  for (const inv of invoices) {
+    const bucket = byCurrencyMap.get(inv.currency) ?? {
+      currency: inv.currency,
+      collectedThisMonth: 0,
+      pendingTotal: 0,
+      overdueTotal: 0,
+    };
+    const amount = Number(inv.amount);
+    if (inv.status === "paid") {
+      if (inv.paid_at && monthKeyOf(inv.paid_at) === nowKey) bucket.collectedThisMonth += amount;
+    } else if (inv.status !== "cancelled") {
+      if (inv.daysOverdue > 0) bucket.overdueTotal += amount;
+      else bucket.pendingTotal += amount;
+    }
+    byCurrencyMap.set(inv.currency, bucket);
+  }
+
+  const upcoming: UpcomingClientPayment[] = invoices
+    .filter((i) => i.status === "pending" || i.status === "overdue")
+    .map((i) => ({
+      clientId: i.client_id,
+      clientName: i.client_name,
+      amount: Number(i.amount),
+      currency: i.currency,
+      dueDate: i.due_date,
+      isOverdue: i.daysOverdue > 0,
+    }))
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+
+  return {
+    byCurrency: Array.from(byCurrencyMap.values()).sort((a, b) => a.currency.localeCompare(b.currency)),
+    upcoming,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Pago Herramientas — costo cargado a mano en cada herramienta         */
+/* (agency_tools.cost_*). La agregación pura (`computeToolsCostOverview`) */
+/* vive en `@/lib/finance-utils` para poder testearla con vitest sin      */
+/* arrastrar el guard de "server-only" de este archivo — acá solo se hace */
+/* el fetch y se la pasa.                                                 */
+/* ------------------------------------------------------------------ */
+
+export type { ToolsCostOverview, ToolCostTotals, ToolRenewalRow } from "@/lib/finance-utils";
+
+export async function getToolsCostOverview(): Promise<ToolsCostOverview> {
+  const tools = await getAgencyTools();
+  return computeToolsCostOverview(tools);
+}
+
+/* ------------------------------------------------------------------ */
+/* Pago Editor — reutiliza lo que ya existe en queries/editor-finance.  */
+/* ------------------------------------------------------------------ */
+
+export { getEditorFinanceOverview, mergeFinanceTotals };

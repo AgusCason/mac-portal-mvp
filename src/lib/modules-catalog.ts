@@ -126,6 +126,13 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         status: "incluido",
       },
       {
+        key: "finanzas",
+        label: "Finanzas",
+        description:
+          "Dashboard general de la plata de la agencia: lo que pagan los clientes, lo que salen las herramientas, y lo que se le paga al equipo — todo junto.",
+        status: "incluido",
+      },
+      {
         key: "finanzas-equipo",
         label: "Finanzas de Equipo",
         description:

@@ -119,6 +119,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       ],
     },
     { label: "Equipo", key: "nav.equipo", href: "/admin/equipo", icon: UserCog },
+    { label: "Finanzas", key: "nav.finanzas", href: "/admin/finanzas", icon: Wallet },
     { label: "Finanzas de Equipo", key: "nav.finanzasEquipo", href: "/admin/finanzas-equipo", icon: HandCoins },
     { label: "Herramientas", key: "nav.herramientas", href: "/admin/herramientas", icon: Wrench },
     { label: "Calendario", key: "nav.calendario", href: "/admin/calendario", icon: CalendarDays },
