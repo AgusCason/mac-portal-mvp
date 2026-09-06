@@ -38,6 +38,8 @@ import {
   Wrench,
   Coins,
   Landmark,
+  Gauge,
+  CalendarClock,
 } from "lucide-react";
 import type { ModuleFlag, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
@@ -93,14 +95,14 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       ],
     },
     {
-      label: "Proyectos",
-      key: "nav.proyectos.group",
+      label: "Operación",
+      key: "nav.operacion.group",
       icon: FolderKanban,
       children: [
-        { label: "Tareas", key: "nav.proyectos.tareas", href: "/admin/tareas", icon: ListChecks },
-        { label: "Proyectos", key: "nav.proyectos.proyectos", href: "/admin/proyectos", icon: FolderKanban },
-        { label: "Sitios Web", key: "nav.proyectos.sitiosWeb", href: "/admin/sitios-web", icon: Globe },
-        { label: "Actividad", key: "nav.proyectos.actividad", href: "/admin/actividad", icon: Activity },
+        { label: "Tareas", key: "nav.operacion.tareas", href: "/admin/tareas", icon: ListChecks },
+        { label: "Proyectos", key: "nav.operacion.proyectos", href: "/admin/proyectos", icon: FolderKanban },
+        { label: "Sitios Web", key: "nav.operacion.sitiosWeb", href: "/admin/sitios-web", icon: Globe },
+        { label: "Actividad", key: "nav.operacion.actividad", href: "/admin/actividad", icon: Activity },
       ],
     },
     {
@@ -120,7 +122,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       children: [
         { label: "Overview", key: "nav.socialMedia.overview", href: "/admin/social-media", icon: Share2 },
         { label: "Insights", key: "nav.socialMedia.insights", href: "/admin/redes", icon: Radar },
-        { label: "Planner", key: "nav.socialMedia.planner", href: "/admin/social-media/planner", icon: Compass },
+        { label: "Planner", key: "nav.socialMedia.planner", href: "/admin/social-media/planner", icon: CalendarClock },
         { label: "Content Studio", key: "nav.socialMedia.contentStudio", href: "/admin/social-media/content-studio", icon: Sparkle },
         { label: "Brand Voice", key: "nav.socialMedia.brandVoice", href: "/admin/social-media/brand-voice", icon: LayoutGrid },
         { label: "Competidores", key: "nav.socialMedia.competidores", href: "/admin/social-media/competidores", icon: Swords },
@@ -132,7 +134,7 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       key: "nav.finanzas.group",
       icon: HandCoins,
       children: [
-        { label: "General", key: "nav.finanzas.general", href: "/admin/finanzas", icon: LayoutDashboard },
+        { label: "General", key: "nav.finanzas.general", href: "/admin/finanzas", icon: Gauge },
         { label: "Facturación", key: "nav.finanzas.facturacion", href: "/admin/planes", icon: Wallet },
         {
           label: "Herramientas",

@@ -47,8 +47,8 @@ const es = {
       brandVoice: "Brand Voice",
       competidores: "Competidores",
     },
-    proyectos: {
-      group: "Proyectos",
+    operacion: {
+      group: "Operación",
       tareas: "Tareas",
       proyectos: "Proyectos",
       sitiosWeb: "Sitios Web",
@@ -1823,8 +1823,8 @@ const en: typeof es = {
       brandVoice: "Brand Voice",
       competidores: "Competitors",
     },
-    proyectos: {
-      group: "Projects",
+    operacion: {
+      group: "Operations",
       tareas: "Tasks",
       proyectos: "Projects",
       sitiosWeb: "Websites",
