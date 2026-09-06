@@ -126,6 +126,21 @@ export const MODULES_CATALOG: ModuleCategory[] = [
         status: "incluido",
       },
       {
+        key: "finanzas-equipo",
+        label: "Finanzas de Equipo",
+        description:
+          "Cuánto se le paga a cada editor por cada cliente, cuándo, e historial completo de pagos hechos y pendientes — panel general y por editor.",
+        status: "incluido",
+        dependsOn: "equipo",
+      },
+      {
+        key: "herramientas",
+        label: "Herramientas",
+        description:
+          "Catálogo de apps/servicios de la agencia con sus accesos, compartibles con editores de forma individual o con todo el equipo.",
+        status: "incluido",
+      },
+      {
         key: "contratos",
         label: "Contratos",
         description: "Documentos legales con firma digital y trazabilidad (IP + fecha).",

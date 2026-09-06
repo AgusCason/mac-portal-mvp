@@ -8,6 +8,7 @@ import { UserCog, Loader2 } from "lucide-react";
 
 import { assignEditorToClientAction } from "@/app/actions/editors";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -41,6 +42,11 @@ export function AssignEditorDialog({
   const [editorId, setEditorId] = React.useState<string>("");
   const [canViewChat, setCanViewChat] = React.useState(false);
   const [canViewDrive, setCanViewDrive] = React.useState(true);
+  const [payAmount, setPayAmount] = React.useState<string>("");
+  const [payCurrency, setPayCurrency] = React.useState<string>("ARS");
+  const [payFrequency, setPayFrequency] = React.useState<string>("mensual");
+  const [payDay, setPayDay] = React.useState<string>("");
+  const [payNotes, setPayNotes] = React.useState<string>("");
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -55,6 +61,11 @@ export function AssignEditorDialog({
         clientId,
         canViewChat,
         canViewDrive,
+        payAmount: payAmount ? Number(payAmount) : null,
+        payCurrency,
+        payFrequency: payAmount ? (payFrequency as "mensual" | "quincenal" | "unico" | "por_entrega") : null,
+        payDay: payDay ? Number(payDay) : null,
+        payNotes: payNotes || null,
       });
       if (res.ok) {
         toast.success(t("components.clients.editorAssigned", "Editor asignado"));
@@ -106,6 +117,70 @@ export function AssignEditorDialog({
             <Checkbox checked={canViewChat} onCheckedChange={(v) => setCanViewChat(!!v)} />
             {t("components.clients.canViewChat", "Puede ver el chat del cliente")}
           </label>
+
+          <div className="space-y-3 border-t border-border pt-3.5">
+            <p className="text-sm font-medium">
+              {t("components.clients.payRateTitle", "Pago por este cliente (opcional)")}
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="assign-pay-amount">{t("components.finance.amountLabel", "Monto")}</Label>
+                <Input
+                  id="assign-pay-amount"
+                  type="number"
+                  min={0}
+                  step={100}
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="assign-pay-currency">{t("components.finance.currencyLabel", "Moneda")}</Label>
+                <Select value={payCurrency} onValueChange={setPayCurrency}>
+                  <SelectTrigger id="assign-pay-currency" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ARS">{t("components.finance.currencyArs", "Pesos (ARS)")}</SelectItem>
+                    <SelectItem value="USD">{t("components.finance.currencyUsd", "Dólares (USD)")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="assign-pay-frequency">{t("components.finance.frequencyLabel", "Frecuencia")}</Label>
+                <Select value={payFrequency} onValueChange={setPayFrequency}>
+                  <SelectTrigger id="assign-pay-frequency" className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mensual">{t("components.finance.frequencyMonthly", "Mensual")}</SelectItem>
+                    <SelectItem value="quincenal">{t("components.finance.frequencyBiweekly", "Quincenal")}</SelectItem>
+                    <SelectItem value="unico">{t("components.finance.frequencyOnce", "Pago único")}</SelectItem>
+                    <SelectItem value="por_entrega">
+                      {t("components.finance.frequencyPerDelivery", "Por entrega")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="assign-pay-day">{t("components.finance.payDayLabel", "Día de pago (opcional)")}</Label>
+                <Input
+                  id="assign-pay-day"
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={payDay}
+                  onChange={(e) => setPayDay(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="assign-pay-notes">{t("components.finance.notesLabel", "Notas (opcional)")}</Label>
+              <Input id="assign-pay-notes" value={payNotes} onChange={(e) => setPayNotes(e.target.value)} />
+            </div>
+          </div>
         </div>
 
         <DialogFooter>

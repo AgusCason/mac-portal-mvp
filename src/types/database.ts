@@ -78,6 +78,19 @@ export type WebProjectStage =
   | "cancelado";
 export type WebAssetStatus = "pendiente" | "aprobado" | "requiere_cambios";
 
+/** Frecuencia de pago acordada por editor+cliente (ver EditorClientAssignment.pay_*). */
+export type EditorPayFrequency = "mensual" | "quincenal" | "unico" | "por_entrega";
+/** Estado de una fila del historial de pagos de un editor (editor_payouts). */
+export type EditorPayoutStatus = "pendiente" | "pagado";
+export type EditorPayoutMethod =
+  | "transferencia"
+  | "mercadopago"
+  | "paypal"
+  | "payoneer"
+  | "efectivo"
+  | "crypto"
+  | "otro";
+
 export type ProfileTheme = "midnight_dark" | "modern_mix" | "pure_light" | "psychedelic";
 export type ProfileLanguage = "es" | "en" | "pt";
 export type ProfileNumberFormat = "es_latam" | "en_us";
@@ -164,6 +177,62 @@ export interface EditorClientAssignment {
   can_view_drive: boolean;
   assigned_by: string | null;
   created_at: string;
+  /** Monto acordado con este editor por este cliente — null = todavía sin definir. */
+  pay_amount: number | null;
+  pay_currency: string;
+  pay_frequency: EditorPayFrequency | null;
+  /** Día del mes (1-31) en que se espera el pago, si la frecuencia lo amerita. */
+  pay_day: number | null;
+  pay_notes: string | null;
+}
+
+/**
+ * Historial de pagos concretos a un editor (Finanzas de Equipo) — el admin
+ * carga cada fila a mano, tanto pagos ya hechos como pendientes con su fecha
+ * esperada (ver comentario de 0040_editor_finance_and_tools.sql).
+ */
+export interface EditorPayout {
+  id: string;
+  editor_id: string;
+  client_id: string | null;
+  amount: number;
+  currency: string;
+  method: EditorPayoutMethod | null;
+  status: EditorPayoutStatus;
+  period_label: string | null;
+  due_date: string;
+  paid_at: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Herramienta/app de la agencia (Herramientas) — nombre, para qué es, link y
+ * accesos. `account_password_encrypted` nunca sale de una consulta normal:
+ * solo se descifra bajo demanda vía `agency_tool_reveal_password` (admin, o
+ * un editor al que se la compartieron — ver `AgencyToolAccess`).
+ */
+export interface AgencyTool {
+  id: string;
+  name: string;
+  purpose: string | null;
+  url: string | null;
+  account_email: string | null;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Fila de "a quién se le compartió" una herramienta puntual. */
+export interface AgencyToolAccess {
+  id: string;
+  tool_id: string;
+  editor_id: string;
+  granted_by: string | null;
+  granted_at: string;
 }
 
 export interface DriveFolder {
@@ -815,7 +884,16 @@ export interface Database {
         Insert: Flatten<
           Optional<
             EditorClientAssignment,
-            "id" | "can_view_chat" | "can_view_drive" | "assigned_by" | "created_at"
+            | "id"
+            | "can_view_chat"
+            | "can_view_drive"
+            | "assigned_by"
+            | "created_at"
+            | "pay_amount"
+            | "pay_currency"
+            | "pay_frequency"
+            | "pay_day"
+            | "pay_notes"
           >
         >;
         Update: Flatten<Partial<EditorClientAssignment>>;
@@ -1522,6 +1600,84 @@ export interface Database {
         Update: Flatten<Partial<AiAuditLog>>;
         Relationships: [];
       };
+      editor_payouts: {
+        Row: Flatten<EditorPayout>;
+        Insert: Flatten<
+          Optional<
+            EditorPayout,
+            | "id"
+            | "client_id"
+            | "method"
+            | "status"
+            | "period_label"
+            | "paid_at"
+            | "notes"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<EditorPayout>>;
+        Relationships: [
+          {
+            foreignKeyName: "editor_payouts_editor_id_fkey";
+            columns: ["editor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "editor_payouts_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      agency_tools: {
+        Row: Flatten<AgencyTool & { account_password_encrypted: string | null }>;
+        // El insert/update reales pasan por agency_tool_create/agency_tool_update
+        // (necesitan cifrar la contraseña) — esto solo tipa el SELECT de listado
+        // y el DELETE directo.
+        Insert: Flatten<
+          Optional<
+            AgencyTool & { account_password_encrypted: string | null },
+            | "id"
+            | "purpose"
+            | "url"
+            | "account_email"
+            | "account_password_encrypted"
+            | "notes"
+            | "created_by"
+            | "created_at"
+            | "updated_at"
+          >
+        >;
+        Update: Flatten<Partial<AgencyTool & { account_password_encrypted: string | null }>>;
+        Relationships: [];
+      };
+      agency_tool_access: {
+        Row: Flatten<AgencyToolAccess>;
+        Insert: Flatten<Optional<AgencyToolAccess, "id" | "granted_by" | "granted_at">>;
+        Update: Flatten<Partial<AgencyToolAccess>>;
+        Relationships: [
+          {
+            foreignKeyName: "agency_tool_access_tool_id_fkey";
+            columns: ["tool_id"];
+            isOneToOne: false;
+            referencedRelation: "agency_tools";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "agency_tool_access_editor_id_fkey";
+            columns: ["editor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1594,6 +1750,35 @@ export interface Database {
         Returns: null;
       };
       social_account_reveal_token: {
+        Args: Flatten<{ p_id: string; p_passphrase: string }>;
+        Returns: string | null;
+      };
+      agency_tool_create: {
+        Args: Flatten<{
+          p_name: string;
+          p_purpose?: string | null;
+          p_url?: string | null;
+          p_account_email?: string | null;
+          p_password?: string | null;
+          p_notes?: string | null;
+          p_passphrase: string;
+        }>;
+        Returns: string;
+      };
+      agency_tool_update: {
+        Args: Flatten<{
+          p_id: string;
+          p_name: string;
+          p_purpose?: string | null;
+          p_url?: string | null;
+          p_account_email?: string | null;
+          p_new_password?: string | null;
+          p_notes?: string | null;
+          p_passphrase: string;
+        }>;
+        Returns: null;
+      };
+      agency_tool_reveal_password: {
         Args: Flatten<{ p_id: string; p_passphrase: string }>;
         Returns: string | null;
       };

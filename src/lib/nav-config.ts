@@ -34,6 +34,8 @@ import {
   LayoutGrid,
   History,
   Globe,
+  HandCoins,
+  Wrench,
 } from "lucide-react";
 import type { ModuleFlag, UserRole } from "@/types/database";
 import { findModuleKeyForPath } from "@/lib/module-route-map";
@@ -117,6 +119,8 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
       ],
     },
     { label: "Equipo", key: "nav.equipo", href: "/admin/equipo", icon: UserCog },
+    { label: "Finanzas de Equipo", key: "nav.finanzasEquipo", href: "/admin/finanzas-equipo", icon: HandCoins },
+    { label: "Herramientas", key: "nav.herramientas", href: "/admin/herramientas", icon: Wrench },
     { label: "Calendario", key: "nav.calendario", href: "/admin/calendario", icon: CalendarDays },
     { label: "Contratos", key: "nav.contratos", href: "/admin/contratos", icon: FileSignature },
     { label: "Chat", key: "nav.chat", href: "/admin/chat", icon: Inbox },
@@ -149,6 +153,8 @@ export const NAV_CONFIG: Record<UserRole, NavItem[]> = {
     { label: "Calendario", key: "nav.calendario", href: "/editor/calendario", icon: CalendarDays },
     { label: "Drive de clientes", key: "nav.editor.driveClientes", href: "/editor/drive", icon: FolderOpen },
     { label: "Chat", key: "nav.chat", href: "/editor/chat", icon: Inbox },
+    { label: "Mis Pagos", key: "nav.editor.misPagos", href: "/editor/finanzas", icon: HandCoins },
+    { label: "Herramientas", key: "nav.editor.herramientas", href: "/editor/herramientas", icon: Wrench },
   ],
   client: [
     { label: "Dashboard", key: "nav.dashboard", href: "/client", icon: LayoutDashboard },
