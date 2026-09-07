@@ -1856,6 +1856,13 @@ export interface Database {
         Args: Flatten<{ p_account_ids: string[] }>;
         Returns: SocialMetric[];
       };
+      // Excepción puntual para que un cliente Pausado/Perdido pueda leer su
+      // propio status aunque `client_has_access()` ya no se lo permita para
+      // el resto de sus datos — ver 0044_block_inactive_client_access.sql.
+      my_client_status: {
+        Args: Flatten<{ p_client_id: string }>;
+        Returns: ClientStatus | null;
+      };
     };
   };
 }

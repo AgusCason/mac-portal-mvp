@@ -1522,6 +1522,14 @@ const es = {
         "Tu cuenta no tiene permisos para ver esta página. Si creés que es un error, contactá a la agencia.",
       backButton: "Volver a mi panel",
     },
+    cuentaPausada: {
+      titleGeneric: "Tu cuenta no tiene acceso al portal",
+      descriptionGeneric: "Contactá a la agencia si creés que es un error.",
+      titlePaused: "Tu cuenta está pausada",
+      descriptionPaused: "El acceso a tu portal está temporalmente pausado. Contactá a la agencia para reactivarlo.",
+      titleChurned: "Tu cuenta ya no está activa",
+      descriptionChurned: "Esta cuenta dejó de estar activa en la agencia. Si creés que es un error, contactá a la agencia.",
+    },
     redes: {
       title: "Redes sociales",
       badge: "Fase avanzada",
@@ -3298,6 +3306,14 @@ const en: typeof es = {
       description:
         "Your account doesn't have permissions to view this page. If you think this is a mistake, contact the agency.",
       backButton: "Back to my dashboard",
+    },
+    cuentaPausada: {
+      titleGeneric: "Your account doesn't have portal access",
+      descriptionGeneric: "Contact the agency if you think this is a mistake.",
+      titlePaused: "Your account is paused",
+      descriptionPaused: "Access to your portal is temporarily paused. Contact the agency to reactivate it.",
+      titleChurned: "Your account is no longer active",
+      descriptionChurned: "This account is no longer active with the agency. If you think this is a mistake, contact the agency.",
     },
     redes: {
       title: "Social Accounts",
