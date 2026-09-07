@@ -65,7 +65,20 @@ export function AiChatPanel({
 
   return (
     <div className="flex h-[36rem] flex-col overflow-hidden rounded-xl border border-border">
-      <ScrollArea className="flex-1 p-4">
+      {/* <ScrollAreaPrimitive.Root> de Radix fija position:relative por
+          INLINE style, así que una clase "absolute" en la propia ScrollArea
+          nunca gana esa pulseada (sigue relative). El wrapper PLANO de acá
+          abajo sí puede ser absolute inset-0 — con top/bottom en 0 su alto
+          queda definido explícitamente, y la ScrollArea adentro (h-full) y
+          su viewport interno (height:100%) resuelven en cascada. Sin esto,
+          un `flex-1` solo en la ScrollArea no alcanza (min-height:auto de
+          flexbox) y el historial completo se renderiza sin límite de alto,
+          quedando cortado por el overflow-hidden del contenedor de afuera
+          SIN scroll para volver a ver lo que se fue para arriba. Ver
+          new-client-dialog.tsx para el diagnóstico completo. */}
+      <div className="relative min-h-0 flex-1">
+      <div className="absolute inset-0">
+      <ScrollArea className="h-full p-4">
         <div className="flex flex-col gap-4">
           {messages.length === 0 && !pendingText && (
             <p className="text-muted-foreground text-sm">
@@ -111,6 +124,8 @@ export function AiChatPanel({
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
+      </div>
+      </div>
       <form
         ref={formRef}
         action={handleSubmit}
