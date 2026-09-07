@@ -69,11 +69,22 @@ export async function previewAction(
   const parsed = schema.safeParse(payload);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Payload inválido" };
 
+  // IMPORTANTE: cada case de acá abajo tiene que devolver `{ error }` cuando
+  // el `targetId` no resuelve a una fila real. runAssistantTurn (client.ts)
+  // depende de esto para el loop de auto-corrección: si el preview falla,
+  // le devuelve el error a Claude como tool_result y le pide un target_id
+  // real en vez de mostrarle al admin una propuesta que va a fallar recién
+  // al confirmarla. Antes, todos los cases silenciaban el "no encontrado"
+  // (usaban `data?.campo` con fallback y devolvían éxito igual) — un
+  // target_id inventado o de una conversación vieja pasaba de largo el
+  // preview y solo se descubría al confirmar, con un error genérico tipo
+  // "Cliente no encontrado." en vez de dejar que Claude se autocorrija.
   switch (actionType) {
     case "fix_missing_drive_folders": {
-      const { data } = await supabase.from("clients").select("name").eq("id", targetId).single();
+      const { data } = await supabase.from("clients").select("name").eq("id", targetId).maybeSingle();
+      if (!data) return { error: "No se encontró el cliente para esta propuesta." };
       return {
-        label: `Crear carpetas de Drive faltantes${data ? ` para "${data.name}"` : ""}`,
+        label: `Crear carpetas de Drive faltantes para "${data.name}"`,
         targetTable: "drive_folders",
         before: { drive_folders: "ninguna" },
         after: { drive_folders: "Crudos, En Edición, Entregables Finales" },
@@ -84,11 +95,12 @@ export async function previewAction(
         .from("clients")
         .select("name, status")
         .eq("id", targetId)
-        .single();
+        .maybeSingle();
+      if (!data) return { error: "No se encontró el cliente para esta propuesta." };
       return {
-        label: `Cambiar estado de cliente${data ? ` "${data.name}"` : ""}`,
+        label: `Cambiar estado de cliente "${data.name}"`,
         targetTable: "clients",
-        before: { status: data?.status ?? "—" },
+        before: { status: data.status },
         after: parsed.data,
       };
     }
@@ -97,11 +109,12 @@ export async function previewAction(
         .from("clients")
         .select("name, contact_email, contact_phone")
         .eq("id", targetId)
-        .single();
+        .maybeSingle();
+      if (!data) return { error: "No se encontró el cliente para esta propuesta." };
       return {
-        label: `Actualizar contacto de cliente${data ? ` "${data.name}"` : ""}`,
+        label: `Actualizar contacto de cliente "${data.name}"`,
         targetTable: "clients",
-        before: { contact_email: data?.contact_email, contact_phone: data?.contact_phone },
+        before: { contact_email: data.contact_email, contact_phone: data.contact_phone },
         after: parsed.data,
       };
     }
@@ -110,13 +123,14 @@ export async function previewAction(
         .from("editor_client_assignments")
         .select("can_view_chat, can_view_drive, clients(name), profiles(full_name)")
         .eq("id", targetId)
-        .single();
-      const clientName = (data?.clients as unknown as { name: string } | null)?.name;
-      const editorName = (data?.profiles as unknown as { full_name: string } | null)?.full_name;
+        .maybeSingle();
+      if (!data) return { error: "No se encontró la asignación de editor para esta propuesta." };
+      const clientName = (data.clients as unknown as { name: string } | null)?.name;
+      const editorName = (data.profiles as unknown as { full_name: string } | null)?.full_name;
       return {
         label: `Actualizar permisos de ${editorName ?? "editor"}${clientName ? ` en "${clientName}"` : ""}`,
         targetTable: "editor_client_assignments",
-        before: { can_view_chat: data?.can_view_chat, can_view_drive: data?.can_view_drive },
+        before: { can_view_chat: data.can_view_chat, can_view_drive: data.can_view_drive },
         after: parsed.data,
       };
     }
@@ -125,11 +139,12 @@ export async function previewAction(
         .from("content_items")
         .select("title, status")
         .eq("id", targetId)
-        .single();
+        .maybeSingle();
+      if (!data) return { error: "No se encontró la pieza de contenido para esta propuesta." };
       return {
-        label: `Cambiar estado de contenido${data ? ` "${data.title}"` : ""}`,
+        label: `Cambiar estado de contenido "${data.title}"`,
         targetTable: "content_items",
-        before: { status: data?.status ?? "—" },
+        before: { status: data.status },
         after: parsed.data,
       };
     }
@@ -155,7 +170,7 @@ export async function executeAction(
         .from("clients")
         .select("name")
         .eq("id", targetId)
-        .single();
+        .maybeSingle();
       if (!client) return { ok: false, error: "Cliente no encontrado." };
 
       try {
@@ -184,47 +199,59 @@ export async function executeAction(
 
     case "update_client_status": {
       const data = parsedGeneric.data as z.infer<typeof ACTION_SCHEMAS.update_client_status>;
-      const { error } = await supabase
+      const { data: updatedRow, error } = await supabase
         .from("clients")
         .update({ status: data.status })
-        .eq("id", targetId);
+        .eq("id", targetId)
+        .select("id")
+        .maybeSingle();
       if (error) return { ok: false, error: error.message };
+      if (!updatedRow) return { ok: false, error: "Cliente no encontrado." };
       return { ok: true, summary: `Estado del cliente actualizado a "${data.status}".` };
     }
 
     case "update_client_contact": {
       const data = parsedGeneric.data as z.infer<typeof ACTION_SCHEMAS.update_client_contact>;
-      const { error } = await supabase
+      const { data: updatedRow, error } = await supabase
         .from("clients")
         .update({
           contact_email: data.contactEmail,
           contact_phone: data.contactPhone,
         })
-        .eq("id", targetId);
+        .eq("id", targetId)
+        .select("id")
+        .maybeSingle();
       if (error) return { ok: false, error: error.message };
+      if (!updatedRow) return { ok: false, error: "Cliente no encontrado." };
       return { ok: true, summary: "Datos de contacto del cliente actualizados." };
     }
 
     case "update_editor_permissions": {
       const data = parsedGeneric.data as z.infer<typeof ACTION_SCHEMAS.update_editor_permissions>;
-      const { error } = await supabase
+      const { data: updatedRow, error } = await supabase
         .from("editor_client_assignments")
         .update({
           can_view_chat: data.canViewChat,
           can_view_drive: data.canViewDrive,
         })
-        .eq("id", targetId);
+        .eq("id", targetId)
+        .select("id")
+        .maybeSingle();
       if (error) return { ok: false, error: error.message };
+      if (!updatedRow) return { ok: false, error: "Asignación de editor no encontrada." };
       return { ok: true, summary: "Permisos del editor actualizados." };
     }
 
     case "update_content_status": {
       const data = parsedGeneric.data as z.infer<typeof ACTION_SCHEMAS.update_content_status>;
-      const { error } = await supabase
+      const { data: updatedRow, error } = await supabase
         .from("content_items")
         .update({ status: data.status })
-        .eq("id", targetId);
+        .eq("id", targetId)
+        .select("id")
+        .maybeSingle();
       if (error) return { ok: false, error: error.message };
+      if (!updatedRow) return { ok: false, error: "Pieza de contenido no encontrada." };
       return { ok: true, summary: `Estado de la pieza actualizado a "${data.status}".` };
     }
   }
