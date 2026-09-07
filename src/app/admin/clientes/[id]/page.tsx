@@ -13,6 +13,7 @@ import { createClient as createSupabaseServerClient } from "@/lib/supabase/serve
 import { AssignEditorDialog } from "@/components/clients/assign-editor-dialog";
 import { LinkClientMemberDialog } from "@/components/clients/link-client-member-dialog";
 import { ClientAccessPanel } from "@/components/clients/client-access-panel";
+import { ClientStatusMenu } from "@/components/clients/client-status-menu";
 import { DriveBrowser } from "@/components/drive/drive-browser";
 import { ContentBoard } from "@/components/content/content-board";
 import { NewContentDialog } from "@/components/content/new-content-dialog";
@@ -130,14 +131,8 @@ export default async function AdminClientDetailPage({
             </div>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Badge variant={client.status === "active" ? "success" : "secondary"}>
-            {client.status === "active"
-              ? t("pages.clienteDetail.statusActive", "Activo")
-              : client.status === "paused"
-                ? t("pages.clienteDetail.statusPaused", "Pausado")
-                : t("pages.clienteDetail.statusLost", "Perdido")}
-          </Badge>
+        <div className="flex items-center gap-2">
+          <ClientStatusMenu clientId={client.id} status={client.status} />
           {planName && (
             <Badge variant="info">
               {t("pages.clienteDetail.planPrefix", "Plan")} {planName}

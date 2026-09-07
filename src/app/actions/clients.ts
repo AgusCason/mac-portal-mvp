@@ -215,7 +215,14 @@ export async function toggleClientFavoriteAction(clientId: string, makeFavorite:
   return { ok: true };
 }
 
-/** Cambia el estado comercial de un cliente (activo/pausado/perdido). Solo admin. */
+/**
+ * Cambia el estado comercial de un cliente (activo/pausado/perdido). Solo
+ * admin. Es el mecanismo de "archivar" del portal: un cliente Pausado o
+ * Perdido sale del filtro "Activas" (default) de /admin/clientes sin borrar
+ * nada — facturas, contratos, contenido y métricas quedan intactos. El
+ * borrado permanente es una función aparte, todavía no implementada (ver
+ * discusión sobre qué debería pasar con los datos en cascada).
+ */
 export async function updateClientStatusAction(
   clientId: string,
   status: "active" | "paused" | "churned"
@@ -229,5 +236,6 @@ export async function updateClientStatusAction(
 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/clientes");
+  revalidatePath(`/admin/clientes/${clientId}`);
   return { ok: true };
 }

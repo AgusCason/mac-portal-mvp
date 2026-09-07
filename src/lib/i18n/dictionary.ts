@@ -1630,6 +1630,9 @@ const es = {
       noEmail: "sin email",
       platformWebsite: "Sitio web",
       planPrefix: "Plan",
+      changeStatus: "Cambiar estado",
+      statusUpdated: "Estado actualizado.",
+      statusUpdateError: "No se pudo actualizar el estado.",
     },
     proyectos: {
       internal: "Proyecto interno",
@@ -3403,6 +3406,9 @@ const en: typeof es = {
       noEmail: "no email",
       platformWebsite: "Website",
       planPrefix: "Plan",
+      changeStatus: "Change status",
+      statusUpdated: "Status updated.",
+      statusUpdateError: "Couldn't update the status.",
     },
     proyectos: {
       internal: "Internal project",
