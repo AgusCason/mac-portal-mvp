@@ -41,3 +41,38 @@ export async function createPlanAction(formData: FormData) {
   revalidatePath("/admin/planes");
   return { ok: true };
 }
+
+/** Edita un plan comercial existente. Información financiera — solo admin (RLS también lo exige). */
+export async function updatePlanAction(planId: string, formData: FormData) {
+  await requireAdmin();
+  const parsed = planSchema.safeParse({
+    name: formData.get("name"),
+    description: formData.get("description") ?? undefined,
+    priceMonthly: formData.get("priceMonthly"),
+    currency: formData.get("currency") || undefined,
+    monthlyQuota: formData.get("monthlyQuota") || undefined,
+  });
+
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: updatedRow, error } = await supabase
+    .from("plans")
+    .update({
+      name: parsed.data.name,
+      description: parsed.data.description || null,
+      price_monthly: parsed.data.priceMonthly,
+      currency: parsed.data.currency,
+      monthly_quota: Number.isFinite(parsed.data.monthlyQuota) ? parsed.data.monthlyQuota : null,
+    })
+    .eq("id", planId)
+    .select("id")
+    .maybeSingle();
+
+  if (error) return { ok: false, error: error.message };
+  if (!updatedRow) return { ok: false, error: "No se encontró el plan." };
+  revalidatePath("/admin/planes");
+  return { ok: true };
+}

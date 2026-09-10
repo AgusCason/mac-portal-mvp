@@ -4,6 +4,7 @@ import { getInvoices, getBillingSummary, computeBillingAnalytics, type InvoiceWi
 import { getSelectableClients } from "@/lib/queries/content";
 import { getPaymentMethods } from "@/lib/queries/payment-methods";
 import { NewPlanDialog } from "@/components/plans/new-plan-dialog";
+import { EditPlanDialog } from "@/components/plans/edit-plan-dialog";
 import { NewInvoiceDialog } from "@/components/billing/new-invoice-dialog";
 import { InvoiceList } from "@/components/billing/invoice-list";
 import { BillingDashboard } from "@/components/billing/billing-dashboard";
@@ -142,8 +143,11 @@ export default async function AdminPlanesPage() {
             {(plans as Plan[] ?? []).map((plan) => (
               <Card key={plan.id} className="glass-card">
                 <CardHeader>
-                  <CardTitle className="flex items-baseline justify-between">
-                    <span>{plan.name}</span>
+                  <CardTitle className="flex items-baseline justify-between gap-2">
+                    <span className="flex items-center gap-1">
+                      {plan.name}
+                      <EditPlanDialog plan={plan} />
+                    </span>
                     <span className="tabular-nums text-lg">
                       {formatCurrency(plan.price_monthly, plan.currency)}
                     </span>
